@@ -13,7 +13,8 @@ for k,v in Constants.dataset_digital.items():
                             key = dataset_dict['key'],
                             type = dataset_dict['type'],
                             remove_exist=True,
+                            parameters=dataset_dict['parameters'],
                             )
-    data.preprocess()
     data.import_datasets()
+    data.preprocess()
     break

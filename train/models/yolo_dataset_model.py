@@ -27,8 +27,11 @@ class YOLODataset(Dataset):
             type=self.type,
             key=self.key,
             remove_exist=self.remove_exists,
+            parameters=dataset_dict['parameters']
         )
         self.dataset.import_datasets()
+        self.dataset.preprocess()
+        
         self.target_folder_path_with_folder_name = self.prepare_train()
         self.data_yaml_path = self.target_folder_path_with_folder_name / "data.yaml"
         
@@ -53,6 +56,8 @@ class YOLODataset(Dataset):
                 map_dict=Constants.map_data_dict[self.type][self.key],
             )["target"].keys()
         )
+        
+        self.change_settings_dataset()
         
         # self.prepare_train()
         # self.data_yaml_path = self.target_folder_path_with_folder_name / "data.yaml"

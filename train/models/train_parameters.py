@@ -9,6 +9,7 @@ class TrainParameters:
         patience=None,
         device=None,
         workers=None,
+        resume=False,
     ):
         self.data_yaml_path = data_yaml_path
         self.epochs = epochs
@@ -18,6 +19,7 @@ class TrainParameters:
         self.patience = patience
         self.device = device
         self.workers = workers
+        self.resume = resume
     
     def get_data_yaml_path(self):
         return self.data_yaml_path
@@ -42,3 +44,7 @@ class TrainParameters:
 
     def get_workers(self):
         return self.workers
+    
+    def get_resume(self):
+        return self.resume
+

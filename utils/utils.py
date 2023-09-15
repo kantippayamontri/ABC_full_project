@@ -338,11 +338,13 @@ class Utils:
         for index, _bb in enumerate(bb):
             key = value_to_key_before[int(_bb[0])]
             if key in list(bb_dict_after.keys()):
-                new_value = bb_dict_before[key]
+                new_value = bb_dict_after[key]
+                # minus_for_crop =0
                 if (class_crop != None) and (new_value > class_crop):
                     # print(f'use -> class_crop: {class_crop}, new_value: {new_value}')
-                    new_value -=1
-                bb[index][0] = new_value
+                    # minus_for_crop -=1
+                    pass
+                bb[index][0] = int(new_value ) # + minus_for_crop
                 bb_temp.append(bb[index])
 
         return bb_temp
@@ -444,8 +446,6 @@ class Utils:
             else:
                 filename_with_extension = Path(filename).stem + f"_{index}" + extension
                 return filepath.parent / filename_with_extension
-
-        return ""
 
     @staticmethod
     def match_img_bb_filename(img_filenames_list=None, bb_filenames_list=None,source_folder=None):

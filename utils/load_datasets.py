@@ -19,6 +19,7 @@ class DatasetFromRoboflow:
         type=None,
         key=None,
         remove_exist=True,
+        parameters=None,
     ):
         self.version = version
         self.api_key = api_key
@@ -28,6 +29,7 @@ class DatasetFromRoboflow:
         self.remove_exist = remove_exist
         self.key = key
         self.type = type
+        self.parameters = parameters
 
     def import_datasets(
         self,
@@ -42,13 +44,11 @@ class DatasetFromRoboflow:
             rf.workspace().project(self.project_name).version(self.version).download(
                 location=str(self.dataset_folder)
             )
+            print(f"--- downloading dataset successfully ---")
             # self.preprocess()
         else:
             print(f"--- folder exists not download dataset ---")
-    
-    
-    def parepare_for_train(self, ):
-        return
+            pass
 
     def preprocess(self):
         key = self.key
@@ -58,7 +58,7 @@ class DatasetFromRoboflow:
             yaml_path=self.dataset_folder / "data.yaml",
             map_dict=Constants.map_data_dict[type][key],
         )
-        # return
+        print(f"target_class_map_dict: {target_class_map_dict}")
         for _ in [
             Constants.train_folder,
             Constants.val_folder,
@@ -118,12 +118,19 @@ class DatasetFromRoboflow:
                             
                             new_img_bb = self.preprocess_gauge_display_frame(img=img, bb=bb, map_dict=target_class_map_dict)
                             
-                            for index, _n in enumerate(new_img_bb):
-                                # Utils.visualize_img_bb(img=new_img_bb[index][0], bb=new_img_bb[index][1],with_class=True,labels=list(target_class_map_dict['target'].keys()))
-                                new_label_path = Utils.change_filename_sample(filepath=label_path,filename=image_filename,index=index,extension='.txt', start_index=0)
-                                new_img_path = Utils.change_filename_sample(filepath=image_path, filename=image_filename, index=index, start_index=0)
-                                Utils.save_image(img=new_img_bb[index][0], filepath=new_img_path)
-                                self.overwrite_label(new_label_path, new_img_bb[index][1])
+                            self.change_image_label_filename(new_img_bb=new_img_bb, image_label_file_name=image_filename, image_filepath=image_path, label_filepath=label_path, labels=list(target_class_map_dict['target'].keys()))
+                            
+                            # if count > 5:
+                            #     return
+                            
+                            # for index, _n in enumerate(new_img_bb):
+                            #     if index < 5:
+                            #         Utils.visualize_img_bb(img=new_img_bb[index][0], bb=new_img_bb[index][1],with_class=True,labels=list(target_class_map_dict['target'].keys()))
+    
+                            #     new_label_path = Utils.change_filename_sample(filepath=label_path,filename=image_filename,index=index,extension='.txt', start_index=0)
+                            #     new_img_path = Utils.change_filename_sample(filepath=image_path, filename=image_filename, index=index, start_index=0)
+                            #     Utils.save_image(img=new_img_bb[index][0], filepath=new_img_path)
+                            #     self.overwrite_label(new_label_path, new_img_bb[index][1])
 
                     
 
@@ -149,6 +156,17 @@ class DatasetFromRoboflow:
                     data_yaml_path=self.dataset_folder / "data.yaml",
                     target_dict=target_class_map_dict["target"],
                 )
+    
+    def change_image_label_filename(self, new_img_bb=[], image_label_file_name=None, image_filepath=None, label_filepath=None,labels=None):
+        for index, _n in enumerate(new_img_bb):
+    
+            # Utils.visualize_img_bb(img=new_img_bb[index][0], bb=new_img_bb[index][1],with_class=True,labels=labels)
+            
+            new_label_path = Utils.change_filename_sample(filepath=label_filepath,filename=image_label_file_name,index=index,extension='.txt', start_index=0)
+            new_img_path = Utils.change_filename_sample(filepath=image_filepath, filename=image_label_file_name, index=index, start_index=0)
+            Utils.save_image(img=new_img_bb[index][0], filepath=new_img_path)
+            self.overwrite_label(new_label_path, new_img_bb[index][1])
+        return
 
     def map_class_yaml(self, yaml_path=None, map_dict=None):
         yaml_dict = Utils.read_yaml_file(yaml_path)
@@ -196,7 +214,7 @@ class DatasetFromRoboflow:
     def preprocess_gauge_display_frame(self,img=None, bb=None, map_dict=None):
         new_img_bb_list = []
         
-        new_img_bb = Utils.resize_img_bb(target_size=[1280,1280], img=img, bb=bb) #resize the image
+        new_img_bb = Utils.resize_img_bb(target_size=self.parameters['image_size'], img=img, bb=bb) #resize the image
         new_img_bb[1] = Utils.reclass_bb_from_dict(bb=new_img_bb[1],bb_dict_before=map_dict['source'], bb_dict_after=map_dict['target']) #reclass image
         
         new_img_bb_list.append(new_img_bb)

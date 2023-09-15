@@ -121,17 +121,20 @@ class Constants:
         #     project_name=project_name,
         #     dataset_folder=dataset_folder / "type3" / "frame",
         # ),
-        DatasetUse.TYPE_3_NUMBER.value: {
-            "dataset dict": Utils.make_dataset_dict(
-                version=28,
-                api_key=api_key,
-                model_format=model_format,
-                project_name=project_name,
-                dataset_folder=dataset_folder / "type3" / "number",
-            ),
-            "type": DatasetType.TYPE_3.value,
-            "key": DatasetUse.TYPE_3_NUMBER.value,
-        },
+        # DatasetUse.TYPE_3_NUMBER.value: {
+        #     "dataset dict": Utils.make_dataset_dict(
+        #         version=28,
+        #         api_key=api_key,
+        #         model_format=model_format,
+        #         project_name=project_name,
+        #         dataset_folder=dataset_folder / "type3" / "number",
+        #     ),
+        #     "type": DatasetType.TYPE_3.value,
+        #     "key": DatasetUse.TYPE_3_NUMBER.value,
+        # "parameters":{
+        #         "image_size": [1280, 1280],
+        #     }
+        # },
         DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: {
             "dataset dict": Utils.make_dataset_dict(
                 version=27,
@@ -142,6 +145,9 @@ class Constants:
             ),
             "type": DatasetType.TYPE_3.value,
             "key": DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value,
+            "parameters":{
+                "image_size": [1280, 1280],
+            }
         },
     }
     
