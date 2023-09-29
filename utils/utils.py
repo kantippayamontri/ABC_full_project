@@ -79,6 +79,8 @@ class Utils:
         model_format=None,
         project_name=None,
         dataset_folder=None,
+        workspace=None,
+        user_name=None,
     ):
         return {
             "version": version,
@@ -86,6 +88,8 @@ class Utils:
             "model_format": model_format,
             "project_name": project_name,
             "dataset_folder": dataset_folder,
+            "workspace": workspace,
+            "user_name": user_name
         }
 
     @staticmethod
@@ -497,3 +501,23 @@ class Utils:
 
         bb = np.array(bb) 
         return bb
+    
+    @staticmethod
+    def make_dict_roboflow_dataset(roboflow_dict):
+        # from utils.constants import Constants
+        print(f"--- pass ---\n")
+        return roboflow_dict
+        # return  {
+        #     "dataset dict": Utils.make_dataset_dict(
+        #         version=27,
+        #         api_key=api_key,
+        #         model_format=model_format,
+        #         project_name=project_name,
+        #         dataset_folder=dataset_folder / "type3" / "gauge_display_frame",
+        #     ),
+        #     "type": DatasetType.TYPE_3.value,
+        #     "key": DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value,
+        #     "parameters":{
+        #         "image_size": [1280, 1280],
+        #     }
+        # },

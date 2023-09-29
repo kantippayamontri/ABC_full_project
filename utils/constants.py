@@ -1,23 +1,32 @@
 import os
 from pathlib import Path
-from utils.utils import Utils
 from enum import Enum, auto
 
 
 class Constants:
+    from utils.utils import Utils
+    # from utils.dataset_roboflow_dict import DatasetRoboflowDict
     root_path = Path("./")
     dataset_folder = root_path / "dataset"
     train_dataset_folder = root_path / "dataset" / "train_dataset" # "train_dataset"
-    api_key = "aBYrVyIssugbbtJgvuCl"
+    # api_key = "aBYrVyIssugbbtJgvuCl"
     model_format = "yolov8"
-    project_name = "gauges-detection"
+    # project_name = "gauges-detection"
     train_folder = "train"
     val_folder = "valid"
     test_folder = "test"
     image_folder = "images"
     label_folder = "labels"
+    data_yaml_file = "data.yaml"
     setting_yaml = Path("/Users/kantip/Library/Application Support/Ultralytics/settings.yaml")
     dataset_dir_setting = Path("/Users/kantip/Desktop/work/ABC_training") #/dataset/train_dataset/dataset/datasets
+    
+    class GaugeType(Enum):
+        digital = "digital"
+        dial = "dial"
+        clock = "clock"
+        level = "level"
+        number = "number"
     
     # Define the format of data
     class BoundingBoxFormat(Enum):
@@ -28,6 +37,7 @@ class Constants:
     class DatasetUse(Enum):
         TYPE_3_NUMBER = "number"
         TYPE_3_GAUGE_DISPLAY_FRAME = "gauge_display_frame"
+        TYPE_3_gauge_display = "gauge_display"
 
     class DatasetType(Enum):
         TYPE_3 = "type3"
@@ -36,6 +46,10 @@ class Constants:
         TRAIN = auto()
         VAL = auto()
         TEST = auto()
+    
+    class DatasetSource(Enum):
+        FOLDER = auto()
+        ROBOFLOW = auto()
 
     # Define an enumeration for colors
     colors = {
@@ -135,20 +149,21 @@ class Constants:
         #         "image_size": [1280, 1280],
         #     }
         # },
-        DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: {
-            "dataset dict": Utils.make_dataset_dict(
-                version=27,
-                api_key=api_key,
-                model_format=model_format,
-                project_name=project_name,
-                dataset_folder=dataset_folder / "type3" / "gauge_display_frame",
-            ),
-            "type": DatasetType.TYPE_3.value,
-            "key": DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value,
-            "parameters":{
-                "image_size": [1280, 1280],
-            }
-        },
+        # DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: {
+        #     "dataset dict": Utils.make_dataset_dict(
+        #         version=27,
+        #         api_key=api_key,
+        #         model_format=model_format,
+        #         project_name=project_name,
+        #         dataset_folder=dataset_folder / "type3" / "gauge_display_frame",
+        #     ),
+        #     "type": DatasetType.TYPE_3.value,
+        #     "key": DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value,
+        #     "parameters":{
+        #         "image_size": [1280, 1280],
+        #     }
+        # },
+        DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: None
     }
     
     class ModelType(Enum):

@@ -4,6 +4,8 @@
 ### Project file ###
 # Folder
 dataset
+datasets
+dataset_
 runs
 # File
 *.pt

@@ -1,6 +1,4 @@
 from roboflow import Roboflow
-from utils.utils import Utils
-from utils.constants import Constants
 import pathlib
 import os
 import cv2
@@ -20,6 +18,7 @@ class DatasetFromRoboflow:
         key=None,
         remove_exist=True,
         parameters=None,
+        from_folder=None,
     ):
         self.version = version
         self.api_key = api_key
@@ -34,6 +33,7 @@ class DatasetFromRoboflow:
     def import_datasets(
         self,
     ):
+        from utils.utils import Utils
         if Utils.delete_folder_mkdir(self.dataset_folder, remove=self.remove_exist):
 
             # download dataset from roboflow
@@ -51,6 +51,8 @@ class DatasetFromRoboflow:
             pass
 
     def preprocess(self):
+        from utils.utils import Utils
+        from utils.constants import Constants
         key = self.key
         type = self.type
         # print(f"preprocess, key: {key}, type: {type}")
@@ -158,6 +160,7 @@ class DatasetFromRoboflow:
                 )
     
     def change_image_label_filename(self, new_img_bb=[], image_label_file_name=None, image_filepath=None, label_filepath=None,labels=None):
+        from utils.utils import Utils
         for index, _n in enumerate(new_img_bb):
     
             # Utils.visualize_img_bb(img=new_img_bb[index][0], bb=new_img_bb[index][1],with_class=True,labels=labels)
@@ -169,6 +172,7 @@ class DatasetFromRoboflow:
         return
 
     def map_class_yaml(self, yaml_path=None, map_dict=None):
+        from utils.utils import Utils
         yaml_dict = Utils.read_yaml_file(yaml_path)
         source = map_dict["source"]
         target = map_dict["target"]
@@ -212,6 +216,7 @@ class DatasetFromRoboflow:
         return {"source": result_source, "target": result_target, "final_target": None}
     
     def preprocess_gauge_display_frame(self,img=None, bb=None, map_dict=None):
+        from utils.utils import Utils
         new_img_bb_list = []
         
         new_img_bb = Utils.resize_img_bb(target_size=self.parameters['image_size'], img=img, bb=bb) #resize the image
@@ -291,6 +296,7 @@ class DatasetFromRoboflow:
         return img, result_bb
 
     def preprocess_number(self, img, bb, map_dict=None):
+        from utils.utils import Utils
         new_img_bb_list = []
         
         new_img_bb = Utils.make_crop_image_and_bb(
