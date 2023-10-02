@@ -104,6 +104,38 @@ class Utils:
     def write_yaml(data, filepath):
         with open(str(filepath), "w") as file:
             yaml.dump(data,file)
+    
+    @staticmethod
+    def make_data_yaml_dict(nc,names):
+        data_yaml_dict = {
+            "train": "../train/images",
+            "val": "../valid/images",
+            "test": "../test/images",
+            "nc": nc,
+            "names": names
+        }
+        return data_yaml_dict
+    
+    @staticmethod
+    def check_2_dataset_classe_index_ismatch(dataset_dict1, dataset_dict2):
+        dict_check = {"nc": None,"names": None}
+        
+        dict1_check = dict_check.copy()
+        dict1_check["nc"] = dataset_dict1["nc"]
+        dict1_check["names"] = dataset_dict1["names"]
+        
+        dict2_check = dict_check.copy()
+        dict2_check["nc"] = dataset_dict2["nc"]
+        dict2_check["names"] = dataset_dict2["names"]
+        
+        if dict1_check != dict2_check:
+            return False
+        
+        return True
+    
+    @staticmethod
+    def make_list_to_dict_index_value(data:list):
+        return {value: index for index,value in enumerate(data)}
 
     @staticmethod
     def albu_crop_img_bb(img=None, bb_crop=None, format=None):
@@ -501,6 +533,16 @@ class Utils:
 
         bb = np.array(bb) 
         return bb
+    
+    @staticmethod
+    def overwrite_label(txt_file_path, bb):
+        file = open(txt_file_path, "w")
+        # Write new content to the file
+        str_save = ""
+        for _bb in bb:
+            str_save += f"{int(_bb[0])} {_bb[1]} {_bb[2]} {_bb[3]} {_bb[4]}\n"
+        file.write(str_save)
+        file.close()
     
     @staticmethod
     def make_dict_roboflow_dataset(roboflow_dict):
