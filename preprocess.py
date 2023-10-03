@@ -15,7 +15,9 @@
     # data.import_datasets()
     # data.preprocess()
     # break
-
+    
+import preprocess
+from utils import Constants
 
 # #TODO: step 1: import dataset
 
@@ -24,10 +26,15 @@
 # #     # dataset_dict = Constants.dataset_digital[k]
 # #     # print(dataset_dict)
 # #     print(f"key: {k}, type: {v}")
-import preprocess
-    
-datasetBaseModel = preprocess.DatasetBaseModel()
-datasetBaseModel.conduct_dataset()
+
+# FIXME: import datset from labelsbox
+
+# FIXME: import dataset from roboflow
+
+# FIXME: combine dataset
+datasetCombineModel = preprocess.DatasetCombineModel()
+datasetCombineModel.conduct_dataset()
+datasetCombineModel.visualize_samples(gauge_type=Constants.GaugeType.digital,number_of_samples=0)
 
 
 # #TODO: step 2: combine multiple datasets

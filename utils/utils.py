@@ -8,6 +8,7 @@ import numpy as np
 import albumentations as A
 from pathlib import Path
 from PIL import Image
+import datetime
 
 
 class Utils:
@@ -28,6 +29,30 @@ class Utils:
         os.rename(old_folder_name, new_folder_name_path)
         
         return new_folder_name_path
+    
+    @staticmethod
+    def change_file_name(old_file_name, new_name):
+        
+        extension = old_file_name.suffix
+        
+        new_name_path = old_file_name.with_name(new_name).with_suffix(extension)
+        
+        os.rename(old_file_name, new_name_path)
+        
+        return new_name_path
+    
+    @staticmethod
+    def new_name_with_date(gauge=None, number=None,folder_number=None):
+        current_datetime = datetime.datetime.now()
+        current_date = current_datetime.date().strftime("%Y_%m_%d")
+        new_name = current_date
+        if gauge is not None:
+            new_name = new_name + f"_{gauge}"
+        if folder_number is not None:
+            new_name = new_name + f"_{folder_number}"
+        if number is not None:
+            new_name = new_name + f"_{number}"
+        return new_name
 
     @staticmethod
     def deleted_folder(folder_path):
@@ -563,3 +588,5 @@ class Utils:
         #         "image_size": [1280, 1280],
         #     }
         # },
+    
+    
