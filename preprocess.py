@@ -19,24 +19,16 @@
 import preprocess
 from utils import Constants
 
-# #TODO: step 1: import dataset
-
-# # print(f"--- PASSED ---")
-# # for k,v in Constants.dataset_digital.items(): 
-# #     # dataset_dict = Constants.dataset_digital[k]
-# #     # print(dataset_dict)
-# #     print(f"key: {k}, type: {v}")
+#TODO: step 1: import dataset
 
 # FIXME: import datset from labelsbox
 
 # FIXME: import dataset from roboflow
 
-# FIXME: combine dataset
+# #TODO: step 2: combine multiple datasets
 datasetCombineModel = preprocess.DatasetCombineModel()
-datasetCombineModel.conduct_dataset()
+datasetCombineModel.conduct_dataset(delete_dataset_for_train=False)
 datasetCombineModel.visualize_samples(gauge_type=Constants.GaugeType.digital,number_of_samples=0)
 
-
-# #TODO: step 2: combine multiple datasets
-
 # #TODO: step 3: preprocess dataset
+

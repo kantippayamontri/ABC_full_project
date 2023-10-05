@@ -17,9 +17,9 @@ class DatasetCombineModel:
         }
 
     def conduct_dataset(
-        self,
+        self,delete_dataset_for_train=True
     ):
-        self.check_folder()
+        self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
         print()
         print("-" * 100)
         print()
@@ -27,13 +27,13 @@ class DatasetCombineModel:
         print()
         print("-" * 100)
         print()
-        self.preprocess()
+        # self.preprocess()
         print()
         print("-" * 100)
         print()
         self.augmented()
 
-    def check_folder(self):
+    def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
             print(f"[/] CHECK {key} GAUGE")
             if Utils.check_folder_exists(value):
@@ -41,7 +41,7 @@ class DatasetCombineModel:
                 # TODO: create dataset folder in datasets_for_train/digital ...
                 Utils.delete_folder_mkdir(
                     PreprocessConstants.train_folder_dict[key],
-                    remove=False,  # FIXME: change to True
+                    remove=delete_dataset_for_train,
                 )
                 # TODO: create train,val,test folder
                 train_folder_path = (
@@ -356,10 +356,10 @@ class DatasetCombineModel:
         self,
     ):  # use for crop images
         from preprocess.preprocess_constants import PreprocessConstants
-
+        from preprocess.preprocess_model import ProprocessGaugeModel
         print(f"[-] Preprocess Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
-            print(f"key: {key}, value: {value}")
+            # print(f"key: {key}, value: {value}")
             
             source_folder = PreprocessConstants.train_dataset_folder / key / Constants.train_folder
             source_image_folder = source_folder / Constants.image_folder
@@ -376,9 +376,9 @@ class DatasetCombineModel:
                 source_folder=source_folder,
             )
             
-            if key == Constants.GaugeType.digital.value:
-                pass
-            
+            # TODO: preprocess data
+            preprocessmodel = ProprocessGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
+            preprocessmodel.preprocess()
 
             
         return
@@ -386,5 +386,33 @@ class DatasetCombineModel:
     def augmented(
         self,
     ):
+        from preprocess.preprocess_constants import PreprocessConstants
+        from preprocess.augment_model import AugmentedGaugeModel
+        
         print(f"[-] augmented Dataset")
-        return
+        for key, value in PreprocessConstants.train_folder_dict.items():
+            # print(f"key: {key}, value: {value}")
+            
+            source_folder = PreprocessConstants.train_dataset_folder / key / Constants.train_folder
+            source_image_folder = source_folder / Constants.image_folder
+            source_label_folder = source_folder / Constants.label_folder
+            
+            if not Utils.check_folder_exists(source_folder):
+                continue
+            else:
+                print(f"\t[-] augmented at {key}")
+                
+            match_images_labels = Utils.get_filename_bb_folder(
+                img_path=source_image_folder,
+                bb_path=source_label_folder,
+                source_folder=source_folder,
+            )
+            
+            # TODO: augmented data
+            
+            augmentedmodel = AugmentedGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
+            augmentedmodel.augmented()
+            
+            # TODO: preprocess data
+            # preprocessmodel = ProprocessGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
+            # preprocessmodel.preprocess()
