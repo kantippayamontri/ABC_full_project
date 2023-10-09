@@ -83,7 +83,7 @@ class AugmentedGaugeModel:
     ):
         from utils.constants import Constants
 
-        print(f"\t\t[-] AUGMENTED DIGITAL : {start_index}")
+        # print(f"\t\t[-] AUGMENTED DIGITAL : {start_index}")
 
         transform = Utils.albu_augmented_digital(
             target_size=target_size, format=Constants.BoundingBoxFormat.YOLOV8

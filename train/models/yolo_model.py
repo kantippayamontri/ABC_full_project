@@ -78,7 +78,7 @@ class YOLOModel:
             workers=parameters.get_workers(),
             resume=parameters.get_resume(),
         )
-        return
+        
 
     def set_up_comet_ml(
         self,

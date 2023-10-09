@@ -27,7 +27,7 @@ class DatasetCombineModel:
         print()
         print("-" * 100)
         print()
-        # self.preprocess()
+        self.preprocess()
         print()
         print("-" * 100)
         print()
@@ -36,13 +36,14 @@ class DatasetCombineModel:
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
             print(f"[/] CHECK {key} GAUGE")
-            if Utils.check_folder_exists(value):
+            if Utils.check_folder_exists(value) or (key == "digital"): #FIXME: remove key==
                 print(f"\t[/] FOLDER FOUND at {value}")
                 # TODO: create dataset folder in datasets_for_train/digital ...
                 Utils.delete_folder_mkdir(
                     PreprocessConstants.train_folder_dict[key],
                     remove=delete_dataset_for_train,
                 )
+                print(f"delete at {PreprocessConstants.train_folder_dict[key]}, remove: {delete_dataset_for_train}")
                 # TODO: create train,val,test folder
                 train_folder_path = (
                     PreprocessConstants.train_folder_dict[key] / Constants.train_folder
@@ -171,6 +172,7 @@ class DatasetCombineModel:
         # TODO: check train , valid and test folder has images and labels
 
         for k, _ in check_folder_dict.items():
+            # print(str(source_folder / k))
             if (
                 not Utils.check_folder_exists(str(source_folder / k))
                 or not any(check_folder_dict[k][Constants.image_folder].iterdir())
@@ -207,6 +209,9 @@ class DatasetCombineModel:
         data_yaml_file_target = Utils.read_yaml_file(
             PreprocessConstants.train_folder_dict[key] / Constants.data_yaml_file
         )
+        
+        # print(f"data_yaml_file_source: {data_yaml_file_source}")
+        # print(f"data_yaml_file_target: {data_yaml_file_target}")
 
         if Utils.check_2_dataset_classe_index_ismatch(
             dataset_dict1=data_yaml_file_source,
@@ -226,10 +231,10 @@ class DatasetCombineModel:
                     source_folder=source_folder / _train_val_test,
                     bb_before_dict=data_yaml_file_source,
                     bb_after_dict=data_yaml_file_target,
+                    target_yaml_path=data_yaml_path,
+                    target_yaml_data = data_yaml_file_target
                 )
             print(f"\t\t\t\t\t[/] RECLASSES SUCCESSFUL")
-
-        # reclasse and move images and labels
 
         # TODO: move images and labels file to datasets_for_train
         for _train_val_test, _is_found in found_dict.items():
@@ -244,9 +249,9 @@ class DatasetCombineModel:
                 folder_number=index,  # folder number for rename
             )  # ! FIXME: move to dataset_for_train/digital/train
 
-            Utils.deleted_folder(source_folder.parent)  # deleted folder after
+        #     Utils.deleted_folder(source_folder.parent)  # deleted folder after # FIXME: use this
 
-    def reclasses(self, source_folder, bb_before_dict, bb_after_dict):
+    def reclasses(self, source_folder, bb_before_dict, bb_after_dict, target_yaml_path,target_yaml_data,):
         bb_before = Utils.make_list_to_dict_index_value(bb_before_dict["names"])
         bb_after = Utils.make_list_to_dict_index_value(bb_after_dict["names"])
 
@@ -266,6 +271,7 @@ class DatasetCombineModel:
                 bb_dict_after=bb_after,
             )
             Utils.overwrite_label(txt_file_path=bb_path, bb=new_bb)
+            Utils.write_yaml(data=target_yaml_data, filepath=target_yaml_path)
 
     def move_images_and_labels(
         self, source_folder, target_folder, gauge=None, folder_number=None
@@ -356,7 +362,7 @@ class DatasetCombineModel:
         self,
     ):  # use for crop images
         from preprocess.preprocess_constants import PreprocessConstants
-        from preprocess.preprocess_model import ProprocessGaugeModel
+        from preprocess.preprocess_model import PreprocessGaugeModel
         print(f"[-] Preprocess Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
             # print(f"key: {key}, value: {value}")
@@ -377,7 +383,7 @@ class DatasetCombineModel:
             )
             
             # TODO: preprocess data
-            preprocessmodel = ProprocessGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
+            preprocessmodel = PreprocessGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
             preprocessmodel.preprocess()
 
             

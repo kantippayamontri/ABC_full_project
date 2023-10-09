@@ -47,4 +47,7 @@ class TrainParameters:
     
     def get_resume(self):
         return self.resume
+    
+    def comet_parameters(self,):
+        return
 

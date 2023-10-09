@@ -52,9 +52,9 @@ class Constants:
         VAL = auto()
         TEST = auto()
 
-    class DatasetSource(Enum):
-        FOLDER = auto()
-        ROBOFLOW = auto()
+    # class DatasetSource(Enum):
+    #     FOLDER = auto()
+    #     ROBOFLOW = auto()
 
     # Define an enumeration for colors
     colors = {

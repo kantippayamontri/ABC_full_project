@@ -178,9 +178,10 @@ class Utils:
         return {value: index for index, value in enumerate(data)}
 
     @staticmethod
-    def albu_crop_img_bb(img=None, bb_crop=None, format=None):
+    def albu_crop_img_bb(img=None, bb_crop=None, format=None, add_pixels=0):
         from utils.constants import Constants
-
+        max_x = img.shape[1] - 1
+        max_y = img.shape[0] - 1 
         if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
             xyxy_crop = Utils.change_format_yolo2xyxy(
                 img_size=img.shape, bb=bb_crop, with_class=True
@@ -188,10 +189,10 @@ class Utils:
             transform = A.Compose(
                 [
                     A.Crop(
-                        x_min=xyxy_crop[0][0],
-                        y_min=xyxy_crop[0][1],
-                        x_max=xyxy_crop[1][0],
-                        y_max=xyxy_crop[1][1],
+                        x_min=max(0, xyxy_crop[0][0] - add_pixels),
+                        y_min=max(0, xyxy_crop[0][1] - add_pixels),
+                        x_max=min(max_x, xyxy_crop[1][0] + add_pixels),
+                        y_max=min(max_y, xyxy_crop[1][1] + add_pixels),
                     ),
                 ],
                 bbox_params={
@@ -278,6 +279,7 @@ class Utils:
                     A.MultiplicativeNoise(
                         multiplier=[0.4, 1.0], elementwise=True, p=0.5
                     ),
+                    A.Blur(blur_limit=(7,7), p=0.5),
                     # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
                     A.Flip(p=0.7,), # ! flip verical or horizontal
                     A.Rotate(limit=[-15,15], border_mode=cv2.BORDER_CONSTANT,p=0.7),
@@ -350,7 +352,7 @@ class Utils:
 
     @staticmethod
     def crop_img(
-        img=None, bb=None, class_crop=None, need_resize=True, target_size=None
+        img=None, bb=None, class_crop=None, need_resize=True, target_size=None,add_pixels=0,class_ignore=None
     ):
         from utils.constants import Constants
 
@@ -363,16 +365,17 @@ class Utils:
         for index, _bb in enumerate(bb_temp):
             if int(_bb[0]) == int(class_crop):
                 bb_crop.append(bb_temp[index])
-            else:
-                bb.append(bb_temp[index])
+                
+            bb.append(bb_temp[index])
 
         bb = np.array(bb)
 
         # crop the images
         crop_images_bb_list = []
-        for _bb_crop in bb_crop:
+        for index_bb_crop, _bb_crop in enumerate(bb_crop):
             bb_use = []
-            img = full_img.copy()
+            img = full_img.copy() 
+                
             for _bb in bb:
                 box1 = Utils.change_format_yolo2xyxy(
                     img_size=img.shape, bb=_bb_crop, with_class=True
@@ -391,7 +394,7 @@ class Utils:
                 # Utils.visualize_img_bb(img=img, bb=bb, with_class=True)
                 # print(f"bb_use: {bb_use}")
                 transform_crop_image = Utils.albu_crop_img_bb(
-                    img=img, bb_crop=_bb_crop, format=Constants.BoundingBoxFormat.YOLOV8
+                    img=img, bb_crop=_bb_crop, format=Constants.BoundingBoxFormat.YOLOV8, add_pixels=add_pixels
                 )
 
                 # format for albumentation yolo = [cx,cy,w,h,class]
@@ -419,6 +422,9 @@ class Utils:
                 if len(bb_use) != 0:
                     inversePermutation = [4, 0, 1, 2, 3]
                     bb_use = bb_use[:, inversePermutation]
+                    
+                if class_ignore is not None:
+                    bb_use = np.array([bb for bb in bb_use if int(bb[0]) != class_ignore])
 
                 crop_images_bb_list.append((img, bb_use))
             else:

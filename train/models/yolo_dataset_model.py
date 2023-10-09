@@ -8,56 +8,56 @@ import yaml
 class YOLODataset(Dataset):
     def __init__(self, dataset_dict, remove_exists=False):
         super().__init__()
-        self.remove_exists = remove_exists
-        self.dataset_dict = dataset_dict["dataset dict"]
-        self.key = dataset_dict["key"]
-        self.type = dataset_dict["type"]
-        self.target_folder_path = Constants.train_dataset_folder
-        self.target_folder_path_with_folder_name = (
-            Constants.train_dataset_folder / self.key
-            # Constants.train_dataset_folder / "dataset"
-        )
-        # self.target_folder_path_with_folder_name = Constants.train_dataset_folder / "dataset"
-        self.dataset = DatasetFromRoboflow(
-            version=self.dataset_dict["version"],
-            api_key=self.dataset_dict["api_key"],
-            project_name=self.dataset_dict["project_name"],
-            model_format=self.dataset_dict["model_format"],
-            dataset_folder=self.dataset_dict["dataset_folder"],
-            type=self.type,
-            key=self.key,
-            remove_exist=self.remove_exists,
-            parameters=dataset_dict['parameters']
-        )
-        self.dataset.import_datasets()
-        self.dataset.preprocess()
+        # self.remove_exists = remove_exists
+        # self.dataset_dict = dataset_dict["dataset dict"]
+        # self.key = dataset_dict["key"]
+        # self.type = dataset_dict["type"]
+        # self.target_folder_path = Constants.train_dataset_folder
+        # self.target_folder_path_with_folder_name = (
+        #     Constants.train_dataset_folder / self.key
+        #     # Constants.train_dataset_folder / "dataset"
+        # )
+        # # self.target_folder_path_with_folder_name = Constants.train_dataset_folder / "dataset"
+        # self.dataset = DatasetFromRoboflow(
+        #     version=self.dataset_dict["version"],
+        #     api_key=self.dataset_dict["api_key"],
+        #     project_name=self.dataset_dict["project_name"],
+        #     model_format=self.dataset_dict["model_format"],
+        #     dataset_folder=self.dataset_dict["dataset_folder"],
+        #     type=self.type,
+        #     key=self.key,
+        #     remove_exist=self.remove_exists,
+        #     parameters=dataset_dict['parameters']
+        # )
+        # self.dataset.import_datasets()
+        # self.dataset.preprocess()
         
-        self.target_folder_path_with_folder_name = self.prepare_train()
-        self.data_yaml_path = self.target_folder_path_with_folder_name / "data.yaml"
+        # self.target_folder_path_with_folder_name = self.prepare_train()
+        # self.data_yaml_path = self.target_folder_path_with_folder_name / "data.yaml"
         
-        self.train_img_bb_filenames = self.get_all_files_bb(
-            source_folder=self.target_folder_path_with_folder_name
-            / Constants.train_folder
-        )
-        self.val_img_bb_filenames = self.get_all_files_bb(
-            source_folder=self.target_folder_path_with_folder_name
-            / Constants.val_folder
-        )
+        # self.train_img_bb_filenames = self.get_all_files_bb(
+        #     source_folder=self.target_folder_path_with_folder_name
+        #     / Constants.train_folder
+        # )
+        # self.val_img_bb_filenames = self.get_all_files_bb(
+        #     source_folder=self.target_folder_path_with_folder_name
+        #     / Constants.val_folder
+        # )
 
-        self.test_img_bb_filenames = self.get_all_files_bb(
-            source_folder=self.target_folder_path_with_folder_name
-            / Constants.test_folder
-        )
+        # self.test_img_bb_filenames = self.get_all_files_bb(
+        #     source_folder=self.target_folder_path_with_folder_name
+        #     / Constants.test_folder
+        # )
         
-        print(f"self.data_yaml_path: {self.data_yaml_path}")
-        self.target_labels = list(
-            self.dataset.map_class_yaml(
-                yaml_path=self.data_yaml_path,
-                map_dict=Constants.map_data_dict[self.type][self.key],
-            )["target"].keys()
-        )
+        # print(f"self.data_yaml_path: {self.data_yaml_path}")
+        # self.target_labels = list(
+        #     self.dataset.map_class_yaml(
+        #         yaml_path=self.data_yaml_path,
+        #         map_dict=Constants.map_data_dict[self.type][self.key],
+        #     )["target"].keys()
+        # )
         
-        self.change_settings_dataset()
+        # self.change_settings_dataset()
         
         # self.prepare_train()
         # self.data_yaml_path = self.target_folder_path_with_folder_name / "data.yaml"

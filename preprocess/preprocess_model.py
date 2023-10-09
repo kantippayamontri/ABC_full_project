@@ -1,7 +1,8 @@
 from utils import Constants, Utils
+import random
 
 
-class ProprocessGaugeModel:
+class PreprocessGaugeModel:
     def __init__(
         self,
         match_img_bb_path=None,
@@ -49,9 +50,9 @@ class ProprocessGaugeModel:
         number_crop_gauge = 0
         number_crop_display = 0
         for index, (img_path, bb_path) in enumerate(self.match_img_bb_path):
-            print(f"image index: {index}")
-            # if index > 5:
-            #     return
+            
+            if index % 100 == 0:
+                print(f"image index: {index}")
 
             img = Utils.load_img_cv2(filepath=img_path)
             bb = Utils.load_bb(filepath=bb_path)
@@ -66,14 +67,18 @@ class ProprocessGaugeModel:
             labels = list(target_dict.keys())
             img_bb_crop_gauge = []
             img_bb_crop_display = []
+            
+            # Utils.visualize_img_bb(img=img, bb=bb, with_class=True, labels=labels)
 
             # TODO: crop gauge class
             img_bb_crop_gauge = Utils.crop_img(
                 img=img,
                 bb=bb,
                 class_crop=target_dict["gauge"],
+                class_ignore=None,
                 need_resize=True,
                 target_size=target_size,
+                add_pixels=random.randint(0, 50)
             )
             # TODO: save image and label crop gauge
             for index, (_img, _bb) in enumerate(img_bb_crop_gauge):
@@ -85,6 +90,9 @@ class ProprocessGaugeModel:
                 )
                 
                 number_crop_gauge += 1
+                
+                # FIXME: just visulize to check crop images
+                # Utils.visualize_img_bb(img=_img, bb=_bb, with_class=True, labels=labels)
                 
                 # print(f"new name: {new_name}")
                 # TODO: save image
@@ -104,6 +112,8 @@ class ProprocessGaugeModel:
                 class_crop=target_dict["display"],
                 need_resize=True,
                 target_size=target_size,
+                class_ignore=target_dict["gauge"],
+                add_pixels=random.randint(0, 50)
             )
             # TODO: save image and label crop display
             for index, (_img, _bb) in enumerate(img_bb_crop_display):
@@ -115,6 +125,9 @@ class ProprocessGaugeModel:
                 )
                 
                 number_crop_display += 1
+                
+                # FIXME: just visulize to check crop images
+                # Utils.visualize_img_bb(img=_img, bb=_bb, with_class=True, labels=labels)
                 
                 # TODO: save image
                 # print(f"new name: {new_name}")
