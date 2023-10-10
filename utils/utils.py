@@ -139,6 +139,21 @@ class Utils:
             # Parse the YAML data
             yaml_data = yaml.safe_load(yaml_file)
         return yaml_data
+    
+    @staticmethod
+    def check_yaml(yaml_path=None,yaml_file=None): # TODO: you can pass yaml file or yaml path
+        if (yaml_path is None and yaml_file is None) or (yaml_path is not None and yaml_file is not None):
+            print(f"Please pass yaml file or yaml path or one of these argument")
+        
+        if yaml_path is not None:
+            yaml_file = Utils.read_yaml_file(yaml_file_path=yaml_path)
+        
+        check_list = ['names', 'nc', 'test', 'train', 'val']
+        
+        for check in check_list:
+            if check not in yaml_file:
+                return False
+        return True
 
     @staticmethod
     def write_yaml(data, filepath):

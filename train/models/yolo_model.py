@@ -4,7 +4,7 @@ from train import YOLODataset
 from train.models.train_parameters import TrainParameters
 import typing
 from comet_ml import Experiment
-from train import Comet
+from train.train_constants import Comet
 
 class YOLOModel:
     def __init__(
