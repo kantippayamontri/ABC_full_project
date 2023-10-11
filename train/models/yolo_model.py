@@ -3,70 +3,71 @@ from ultralytics import YOLO
 from train import YOLODataset
 from train.models.train_parameters import TrainParameters
 import typing
-from comet_ml import Experiment
+import comet_ml
 from train.train_constants import Comet
+from icecream import ic
+
 
 class YOLOModel:
     def __init__(
         self,
         model_type,
         use_comet=False,
-        dataset_type: Constants.DatasetType = None,
-        dataset_use: Constants.DatasetUse = None,
+        gauge_type: Constants.GaugeType = None,
     ):
         self.model_type = model_type
         self.model = self.loadModels(model_type)
-        self.set_up_comet_ml()
-        self.use_comet = use_comet #comet
-        self.dataset_type = dataset_type #comet
-        self.dataset_use = dataset_use #comet
-        self.experiment = self.set_up_comet_ml() #comet
+        self.use_comet = use_comet
+        self.gauge_type = gauge_type
 
     def loadModels(self, model_type):
         model = None
         if model_type == Constants.ModelType.NANO:
-            print(f"--- MODEL NANO ---")
+            print(f"\t--- MODEL NANO ---")
             model = YOLO("yolov8n.yaml")  # build a new model from scratch
             model = YOLO(
                 "yolov8n.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8n.yaml").load("yolov8n.pt")
-            print(f"--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 Load Success ---")
         elif model_type == Constants.ModelType.SMALL:
-            print(f"--- MODEL small ---")
+            print(f"\t--- MODEL small ---")
             model = YOLO("yolov8s.yaml")  # build a new model from scratch
             model = YOLO(
                 "yolov8s.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8s.yaml").load("yolov8s.pt")
-            print(f"--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 Load Success ---")
         elif model_type == Constants.ModelType.MEDIUM:
-            print(f"--- MODEL MEDIUM ---")
+            print(f"\t--- MODEL MEDIUM ---")
             model = YOLO("yolov8m.yaml")  # build a new model from scratch
             model = YOLO(
                 "yolov8m.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8m.yaml").load("yolov8m.pt")
-            print(f"--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 Load Success ---")
         elif model_type == Constants.ModelType.LARGE:
-            print(f"--- MODEL LARGE ---")
+            print(f"\t--- MODEL LARGE ---")
             model = YOLO("yolov8l.yaml")  # build a new model from scratch
             model = YOLO(
                 "yolov8l.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8l.yaml").load("yolov8l.pt")
-            print(f"--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 Load Success ---")
         elif model_type == Constants.ModelType.EXTRA_LARGE:
-            print(f"--- MODEL EXTRA LARGE ---")
+            print(f"\t--- MODEL EXTRA LARGE ---")
             model = YOLO("yolov8x.yaml")  # build a new model from scratch
             model = YOLO(
                 "yolov8x.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8x.yaml").load("yolov8x.pt")
-            print(f"--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 Load Success ---")
         return model
 
     def train(self, parameters: TrainParameters):
+        if self.use_comet:
+            self.init_comet()
+
         self.model.train(
             data=parameters.get_data_yaml_path(),
             epochs=parameters.get_epochs(),
@@ -79,23 +80,47 @@ class YOLOModel:
             resume=parameters.get_resume(),
         )
         
+        if self.use_comet:
+            self.end_comet()
 
-    def set_up_comet_ml(
+    def init_comet(
         self,
     ):
-        if self.use_comet:
-            if self.dataset_type is not None and self.dataset_use is not None:
-                print(f"--- use comet ML ---")
-                experiment_parameters = Comet.parameters[Constants.DatasetType.TYPE_3][Constants.DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME]
-                return Experiment(
-                    api_key=experiment_parameters['api_key'],
-                    project_name=experiment_parameters['project_name'],
-                    workspace=experiment_parameters['workspace'],
-                )
-            else:
-                print(f"--- Can not use Comet ML cuz you need to add dataset_type or dataset_use parameters---")
-        else:
-            print(f"--- Don't use comet ML ---")
-            return None
+        comet_ml.init()
 
-        return None
+        comet_parameter = Comet.parameters[self.gauge_type.value]
+
+        # ic(comet_parameter)
+
+        # Initialize Comet ML with API key
+        comet_ml.Experiment(
+            api_key=comet_parameter["api_key"],
+            project_name=comet_parameter["project_name"],
+            workspace=comet_parameter["workspace"],
+        )
+    
+    def end_comet(self,):
+        # comet_ml.Experiment.end() # end the experiment
+        return
+        
+        
+
+    # def set_up_comet_ml(
+    #     self,
+    # ):
+    #     if self.use_comet:
+    #         if self.dataset_type is not None and self.dataset_use is not None:
+    #             print(f"--- use comet ML ---")
+    #             experiment_parameters = Comet.parameters[Constants.DatasetType.TYPE_3][Constants.DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME]
+    #             return Experiment(
+    #                 api_key=experiment_parameters['api_key'],
+    #                 project_name=experiment_parameters['project_name'],
+    #                 workspace=experiment_parameters['workspace'],
+    #             )
+    #         else:
+    #             print(f"--- Can not use Comet ML cuz you need to add dataset_type or dataset_use parameters---")
+    #     else:
+    #         print(f"--- Don't use comet ML ---")
+    #         return None
+
+    #     return None

@@ -74,6 +74,12 @@ class Utils:
     @staticmethod
     def move_folder(source_folder, target_folder):
         shutil.move(str(source_folder), str(target_folder))
+        
+    @staticmethod
+    def move_file(source_file_path, target_file_path):
+        # print(f"source path: {source_file_path} \ntarget path: {target_file_path}")
+        shutil.move(str(source_file_path), str(target_file_path))
+        return
 
     @staticmethod
     def copy_folder(source_folder, target_folder):

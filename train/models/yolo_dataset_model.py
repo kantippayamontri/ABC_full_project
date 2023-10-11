@@ -25,8 +25,6 @@ class YOLODataset(Dataset):
         else:
             print(f"\t\t[X] Check Dataset Folder Fail")
 
-       
-
         print(f"---- preprocess part success ----")
 
     def check_folder(
@@ -109,9 +107,12 @@ class YOLODataset(Dataset):
                     TrainConstants.train_dataset_path_dict[self.dataset_type]
                     / Constants.data_yaml_file
                 )
+
                 if Utils.check_yaml(yaml_path=yaml_path):
                     print(f"\t\t\t\t[/] YAML file is OK")
-                    self.target_labels = Utils.read_yaml_file(yaml_file_path=yaml_path)["names"]
+                    self.target_labels = Utils.read_yaml_file(yaml_file_path=yaml_path)[
+                        "names"
+                    ]
                     self.data_yaml_path = yaml_path
                 else:
                     print(f"\t\t\t\t[X] YAML file not OK")
@@ -137,11 +138,11 @@ class YOLODataset(Dataset):
         n_train = len(self.train_img_bb)
         n_val = len(self.val_img_bb)
         n_test = len(self.test_img_bb)
-        
+
         print(f"number of train: {n_train}")
         print(f"number of val: {n_val}")
         print(f"number of test: {n_test}")
-        
+
         return n_train + n_val + n_test
 
     def change_folder_name4train(self, old_folder_name, new_folder_name):
@@ -179,7 +180,9 @@ class YOLODataset(Dataset):
     def get_data_yaml4train(
         self,
     ):
-        return self.data_yaml_path
+        # print(self.data_yaml_path)
+        _data_yaml = self.data_yaml_path
+        return _data_yaml
 
     # def get_all_files_bb(self, source_folder):
     #     if not Utils.check_folder_exists(source_folder):
@@ -214,9 +217,7 @@ class YOLODataset(Dataset):
                         for _ in range(number_of_samples)
                     ]
                 )
-                data = list(
-                    [self.train_img_bb[index] for index in random_index]
-                )
+                data = list([self.train_img_bb[index] for index in random_index])
 
         elif datasetTrainValTest == Constants.DatasetTrainValTest.VAL:
             print("show validation")
@@ -231,9 +232,7 @@ class YOLODataset(Dataset):
                         for _ in range(number_of_samples)
                     ]
                 )
-                data = list(
-                    [self.val_img_bb[index] for index in random_index]
-                )
+                data = list([self.val_img_bb[index] for index in random_index])
         elif datasetTrainValTest == Constants.DatasetTrainValTest.TEST:
             print("show test")
             if number_of_samples > len(self.test_img_bb):
@@ -247,9 +246,7 @@ class YOLODataset(Dataset):
                         for _ in range(number_of_samples)
                     ]
                 )
-                data = list(
-                    [self.test_img_bb[index] for index in random_index]
-                )
+                data = list([self.test_img_bb[index] for index in random_index])
 
         # visualize the images
         for index, (img_path, bb_path) in enumerate(data):

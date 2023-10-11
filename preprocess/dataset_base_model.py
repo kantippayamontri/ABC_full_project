@@ -16,18 +16,20 @@ class DatasetCombineModel:
             Constants.GaugeType.level.value: False,
         }
 
-    def conduct_dataset(
-        self,delete_dataset_for_train=True
-    ):
+    def conduct_dataset(self, delete_dataset_for_train=True):
         self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
         print()
         print("-" * 100)
         print()
-        self.import_datasets_roboflow()
+        self.import_datasets_roboflow() #TODO: download dataset from roboflow
         print()
         print("-" * 100)
         print()
         self.combine_datasets()
+        print()
+        print("-" * 100)
+        print()
+        self.divide_datasets(train_ratio=PreprocessConstants.train_ratio) # TODO: divide into train set and validation set
         print()
         print("-" * 100)
         print()
@@ -40,14 +42,18 @@ class DatasetCombineModel:
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
             print(f"[/] CHECK {key} GAUGE")
-            if Utils.check_folder_exists(value) or (key == "digital"): #FIXME: remove key==
+            if Utils.check_folder_exists(value) or (
+                key == "digital"
+            ):  # FIXME: remove key==
                 print(f"\t[/] FOLDER FOUND at {value}")
                 # TODO: create dataset folder in datasets_for_train/digital ...
                 Utils.delete_folder_mkdir(
                     PreprocessConstants.train_folder_dict[key],
                     remove=delete_dataset_for_train,
                 )
-                print(f"delete at {PreprocessConstants.train_folder_dict[key]}, remove: {delete_dataset_for_train}")
+                print(
+                    f"delete at {PreprocessConstants.train_folder_dict[key]}, remove: {delete_dataset_for_train}"
+                )
                 # TODO: create train,val,test folder
                 train_folder_path = (
                     PreprocessConstants.train_folder_dict[key] / Constants.train_folder
@@ -99,9 +105,66 @@ class DatasetCombineModel:
             else:
                 print(f"\t[/] FOLDER NOT FOUND at {value}")
                 self.found_folder_dict[key] = False
-                
-    def import_datasets_roboflow(self, ):
+
+    def import_datasets_roboflow(
+        self,
+    ):
         print(f"--- IMPORT DATASETS FROM ROBOFLOW ---")
+        return
+
+    def divide_datasets(
+        self,
+        train_ratio=0.8,
+    ):
+        # print(f"train ratio: {train_ratio}")
+        # print(f"val ratio: {1 - train_ratio}")
+        
+        for key, value in PreprocessConstants.base_folder_dict.items():
+            # if not self.found_folder_dict[key]: # FIXME: uncomment this statements
+            #     continue
+            # else:
+            #     print(f"[-] DIVIDE {key} DATASET")
+
+            if key != Constants.GaugeType.digital.value:
+                continue
+
+            target_source_folder = PreprocessConstants.train_folder_dict[key]
+            target_train_folder = (
+                PreprocessConstants.train_folder_dict[key] / Constants.train_folder
+            )
+            target_val_folder = (
+                PreprocessConstants.train_folder_dict[key] / Constants.val_folder
+            )
+            
+            target_val_image_folder = target_val_folder / Constants.image_folder
+            target_val_label_folder = target_val_folder / Constants.label_folder
+
+            # print(target_source_folder)
+            # print(target_train_folder)
+            # print(target_val_folder)
+
+            # TODO: get all images and labels file
+            train_img_bb = Utils.get_filename_bb_folder(
+                img_path=target_train_folder / Constants.image_folder,
+                bb_path=target_train_folder / Constants.label_folder,
+                source_folder=None,
+            )
+            
+            random.shuffle(train_img_bb) #TODO: shuffle the list
+            index_divide_val = int((len(train_img_bb)-1) * (1-train_ratio))
+            
+            val_img_bb = train_img_bb[:index_divide_val]
+            
+            # TODO: move image and labe from train to val
+            for idx, (img_path, lb_path) in enumerate(val_img_bb):
+                # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
+
+                # TODO: move images
+                Utils.move_file(source_file_path= img_path, target_file_path= target_val_image_folder / img_path.name)
+            
+                # TODO: move labels
+                Utils.move_file(source_file_path= lb_path, target_file_path= target_val_label_folder / lb_path.name)
+
         return
 
     def combine_datasets(
@@ -217,7 +280,7 @@ class DatasetCombineModel:
         data_yaml_file_target = Utils.read_yaml_file(
             PreprocessConstants.train_folder_dict[key] / Constants.data_yaml_file
         )
-        
+
         # print(f"data_yaml_file_source: {data_yaml_file_source}")
         # print(f"data_yaml_file_target: {data_yaml_file_target}")
 
@@ -240,7 +303,7 @@ class DatasetCombineModel:
                     bb_before_dict=data_yaml_file_source,
                     bb_after_dict=data_yaml_file_target,
                     target_yaml_path=data_yaml_path,
-                    target_yaml_data = data_yaml_file_target
+                    target_yaml_data=data_yaml_file_target,
                 )
             print(f"\t\t\t\t\t[/] RECLASSES SUCCESSFUL")
 
@@ -259,7 +322,14 @@ class DatasetCombineModel:
 
         #     Utils.deleted_folder(source_folder.parent)  # deleted folder after # FIXME: use this
 
-    def reclasses(self, source_folder, bb_before_dict, bb_after_dict, target_yaml_path,target_yaml_data,):
+    def reclasses(
+        self,
+        source_folder,
+        bb_before_dict,
+        bb_after_dict,
+        target_yaml_path,
+        target_yaml_data,
+    ):
         bb_before = Utils.make_list_to_dict_index_value(bb_before_dict["names"])
         bb_after = Utils.make_list_to_dict_index_value(bb_after_dict["names"])
 
@@ -371,30 +441,36 @@ class DatasetCombineModel:
     ):  # use for crop images
         from preprocess.preprocess_constants import PreprocessConstants
         from preprocess.preprocess_model import PreprocessGaugeModel
+
         print(f"[-] Preprocess Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
             # print(f"key: {key}, value: {value}")
-            
-            source_folder = PreprocessConstants.train_dataset_folder / key / Constants.train_folder
+
+            source_folder = (
+                PreprocessConstants.train_dataset_folder / key / Constants.train_folder
+            )
             source_image_folder = source_folder / Constants.image_folder
             source_label_folder = source_folder / Constants.label_folder
-            
+
             if not Utils.check_folder_exists(source_folder):
                 continue
             else:
                 print(f"\t[-] preprocess at {key}")
-                
+
             match_images_labels = Utils.get_filename_bb_folder(
                 img_path=source_image_folder,
                 bb_path=source_label_folder,
                 source_folder=source_folder,
             )
-            
+
             # TODO: preprocess data
-            preprocessmodel = PreprocessGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
+            preprocessmodel = PreprocessGaugeModel(
+                match_img_bb_path=match_images_labels,
+                gauge_type=key,
+                source_folder=source_folder,
+            )
             preprocessmodel.preprocess()
 
-            
         return
 
     def augmented(
@@ -402,31 +478,37 @@ class DatasetCombineModel:
     ):
         from preprocess.preprocess_constants import PreprocessConstants
         from preprocess.augment_model import AugmentedGaugeModel
-        
+
         print(f"[-] augmented Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
             # print(f"key: {key}, value: {value}")
-            
-            source_folder = PreprocessConstants.train_dataset_folder / key / Constants.train_folder
+
+            source_folder = (
+                PreprocessConstants.train_dataset_folder / key / Constants.train_folder
+            )
             source_image_folder = source_folder / Constants.image_folder
             source_label_folder = source_folder / Constants.label_folder
-            
+
             if not Utils.check_folder_exists(source_folder):
                 continue
             else:
                 print(f"\t[-] augmented at {key}")
-                
+
             match_images_labels = Utils.get_filename_bb_folder(
                 img_path=source_image_folder,
                 bb_path=source_label_folder,
                 source_folder=source_folder,
             )
-            
+
             # TODO: augmented data
-            
-            augmentedmodel = AugmentedGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
+
+            augmentedmodel = AugmentedGaugeModel(
+                match_img_bb_path=match_images_labels,
+                gauge_type=key,
+                source_folder=source_folder,
+            )
             augmentedmodel.augmented()
-            
+
             # TODO: preprocess data
             # preprocessmodel = ProprocessGaugeModel(match_img_bb_path=match_images_labels,gauge_type=key,source_folder=source_folder)
             # preprocessmodel.preprocess()

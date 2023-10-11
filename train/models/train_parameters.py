@@ -1,6 +1,7 @@
 class TrainParameters:
     def __init__(
         self,
+        model_type=None,
         data_yaml_path=None,
         epochs=None,
         imgsz=None,
@@ -11,6 +12,7 @@ class TrainParameters:
         workers=None,
         resume=False,
     ):
+        self.model_type = model_type
         self.data_yaml_path = data_yaml_path
         self.epochs = epochs
         self.imgsz = imgsz
@@ -20,6 +22,9 @@ class TrainParameters:
         self.device = device
         self.workers = workers
         self.resume = resume
+    
+    def get_model_type(self):
+        return self.model_type
     
     def get_data_yaml_path(self):
         return self.data_yaml_path
