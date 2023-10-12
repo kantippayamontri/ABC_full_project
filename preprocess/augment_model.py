@@ -109,7 +109,8 @@ class AugmentedGaugeModel:
             
             Utils.overwrite_label(txt_file_path=new_label_path, bb=bb) # FIXME: uncomment this
             
-            # Utils.visualize_img_bb(img=Utils.load_img_cv2(filepath=new_img_path), bb=Utils.load_bb(filepath=new_label_path), with_class=True, labels=labels)
+            # if index < 30:
+            #     Utils.visualize_img_bb(img=Utils.load_img_cv2(filepath=new_img_path), bb=Utils.load_bb(filepath=new_label_path), with_class=True, labels=labels)
             
         return start_index + len(aug_img_bb)
 

@@ -6,6 +6,7 @@ print(f"--- Initial Train Parameters ---")
 dataset_type = Constants.GaugeType.digital
 model_type = Constants.ModelType.NANO
 train_parameters = TrainParameters(
+    gauge_type=dataset_type,
     model_type = model_type,
     data_yaml_path=None,
     epochs=2,
@@ -16,8 +17,8 @@ train_parameters = TrainParameters(
     device="mps",
     workers=8,
     resume=True,
-    # learning_rate=0.001,
-    # final_learning_rate=0.001,
+    learning_rate=0.001,
+    final_learning_rate=0.01,
 )
 
 print(f"--- Prepare Data ---")

@@ -176,10 +176,10 @@ class Constants:
     }
 
     class ModelType(Enum):
-        NANO = auto()
-        SMALL = auto()
-        MEDIUM = auto()
-        LARGE = auto()
-        EXTRA_LARGE = auto()
+        NANO = "NANO"
+        SMALL = "SMALL"
+        MEDIUM = "MEDIUM"
+        LARGE = "LARGE"
+        EXTRA_LARGE = "EXTRA_LARGE"
 
     dataset_dial = {}

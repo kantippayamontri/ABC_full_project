@@ -82,6 +82,11 @@ class Utils:
         return
 
     @staticmethod
+    def copy_file(source_file_path, target_file_path):
+        shutil.copy2(str(source_file_path),str(target_file_path))
+        return
+
+    @staticmethod
     def copy_folder(source_folder, target_folder):
         shutil.copytree(str(source_folder), str(target_folder))
 
@@ -302,8 +307,10 @@ class Utils:
                     ),
                     A.Blur(blur_limit=(7,7), p=0.5),
                     # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
-                    A.Flip(p=0.7,), # ! flip verical or horizontal
-                    A.Rotate(limit=[-15,15], border_mode=cv2.BORDER_CONSTANT,p=0.7),
+                    # A.HorizontalFlip( p=0,), #horizontal
+                    # A.VerticalFlip(p=1),
+                    A.Rotate(limit=[-180,180],border_mode=cv2.BORDER_CONSTANT,p=0.7),
+                    # A.Rotate(limit=[-20,20], border_mode=cv2.BORDER_CONSTANT,p=0.7),
                     A.ColorJitter(p=0.7),
                     
                     # TODO: resize and padding images if needed
