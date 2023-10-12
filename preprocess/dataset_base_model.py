@@ -373,9 +373,10 @@ class DatasetCombineModel:
             target_image = (
                 target_folder / Constants.image_folder / new_source_image_path.name
             )
-            Utils.move_folder(
-                source_folder=new_source_image_path, target_folder=target_image
-            )
+            # Utils.move_folder(
+            #     source_folder=new_source_image_path, target_folder=target_image
+            # )
+            Utils.copy_file(source_file_path=new_source_image_path, target_file_path=target_image) #TODO: use copy file instead of move
 
             # TODO: move labels
             new_source_label_path = Utils.change_file_name(
@@ -384,9 +385,10 @@ class DatasetCombineModel:
             target_label = (
                 target_folder / Constants.label_folder / new_source_label_path.name
             )
-            Utils.move_folder(
-                source_folder=new_source_label_path, target_folder=target_label
-            )
+            # Utils.move_folder(
+            #     source_folder=new_source_label_path, target_folder=target_label
+            # )
+            Utils.copy_file(source_file_path=new_source_label_path, target_file_path=target_label) #TODO: use copy file instead of move
 
     def check_yaml_is_ok(self, data_yaml_path):
         yaml_file = Utils.read_yaml_file(str(data_yaml_path))

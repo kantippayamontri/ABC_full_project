@@ -66,7 +66,7 @@ class YOLOModel:
 
     def train(self, parameters: TrainParameters):
         if self.use_comet:
-            self.init_comet()
+            self.init_comet(train_parameters=parameters)
 
         self.model.train(
             data=parameters.get_data_yaml_path(),
@@ -78,6 +78,8 @@ class YOLOModel:
             device=parameters.get_device(),
             workers=parameters.get_workers(),
             resume=parameters.get_resume(),
+            lr0=parameters.get_learning_rate(),
+            lrf=parameters.get_final_learning_rate(),
         )
         
         if self.use_comet:
@@ -85,6 +87,7 @@ class YOLOModel:
 
     def init_comet(
         self,
+        train_parameters:TrainParameters=None
     ):
         comet_ml.init()
 
@@ -93,11 +96,14 @@ class YOLOModel:
         # ic(comet_parameter)
 
         # Initialize Comet ML with API key
-        comet_ml.Experiment(
+        experiment = comet_ml.Experiment(
             api_key=comet_parameter["api_key"],
             project_name=comet_parameter["project_name"],
             workspace=comet_parameter["workspace"],
         )
+        
+        # Log parameters
+        experiment.log_parameters(parameters=train_parameters.comet_parameters())
     
     def end_comet(self,):
         # comet_ml.Experiment.end() # end the experiment

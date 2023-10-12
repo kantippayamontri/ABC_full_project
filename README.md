@@ -8,3 +8,6 @@ For preprocess
         ex. python preprocess.py
     3. the dataset will appear in datasets_for_train/{name dataset}
         ex. ./datasets_for_train/digital/
+
+-> commend to train
+python train.py -gt="digital" 
