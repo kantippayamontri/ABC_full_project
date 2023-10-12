@@ -36,7 +36,6 @@ yolo_model = YOLOModel(
 
 
 print(f"--- Training Model ---")
-
 yolo_model.train(parameters=train_parameters)
 
 print(f"--- Export Model ---")
@@ -46,6 +45,7 @@ print(f"--- Validate Model ---")
 
 
 print(f"--- Testing Model ---")
+
 
 # dataset.show_samples(
 #     number_of_samples=15, datasetTrainValTest=Constants.DatasetTrainValTest.VAL
