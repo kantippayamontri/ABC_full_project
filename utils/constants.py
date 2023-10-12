@@ -5,10 +5,11 @@ from enum import Enum, auto
 
 class Constants:
     from utils.utils import Utils
+
     # from utils.dataset_roboflow_dict import DatasetRoboflowDict
     root_path = Path("./")
     dataset_folder = root_path / "dataset"
-    train_dataset_folder = root_path / "dataset" / "train_dataset" # "train_dataset"
+    train_dataset_folder = root_path / "dataset" / "train_dataset"  # "train_dataset"
     # api_key = "aBYrVyIssugbbtJgvuCl"
     model_format = "yolov8"
     # project_name = "gauges-detection"
@@ -18,16 +19,20 @@ class Constants:
     image_folder = "images"
     label_folder = "labels"
     data_yaml_file = "data.yaml"
-    setting_yaml = Path("/Users/kantip/Library/Application Support/Ultralytics/settings.yaml")
-    dataset_dir_setting = Path("/Users/kantip/Desktop/work/ABC_training") #/dataset/train_dataset/dataset/datasets
-    
+    setting_yaml = Path(
+        "/Users/kantip/Library/Application Support/Ultralytics/settings.yaml"
+    )
+    dataset_dir_setting = Path(
+        "/Users/kantip/Desktop/work/ABC_training"
+    )  # /dataset/train_dataset/dataset/datasets
+
     class GaugeType(Enum):
         digital = "digital"
         dial = "dial"
         clock = "clock"
         level = "level"
         number = "number"
-    
+
     # Define the format of data
     class BoundingBoxFormat(Enum):
         YOLOV8 = auto()
@@ -41,15 +46,15 @@ class Constants:
 
     class DatasetType(Enum):
         TYPE_3 = "type3"
-    
+
     class DatasetTrainValTest(Enum):
         TRAIN = auto()
         VAL = auto()
         TEST = auto()
-    
-    class DatasetSource(Enum):
-        FOLDER = auto()
-        ROBOFLOW = auto()
+
+    # class DatasetSource(Enum):
+    #     FOLDER = auto()
+    #     ROBOFLOW = auto()
 
     # Define an enumeration for colors
     colors = {
@@ -76,50 +81,54 @@ class Constants:
     }
 
     map_data_dict = {
-        "type3": {
-            # "gauge": {
-            #     "source": ["gauge", "display", "frame"],
-            #     "target": ["gauge", "display"],
-            # },
-            # "frame": {"source": ["display", "frame"], "target": ["display", "frame"], "final_target": ["frame"]},
-            DatasetUse.TYPE_3_NUMBER.value: {
-                "source": [
-                    "dot",
-                    "eight",
-                    "five",
-                    "four",
-                    "frame",
-                    "nine",
-                    "none",
-                    "one",
-                    "seven",
-                    "six",
-                    "three",
-                    "two",
-                    "undefined",
-                    "zero",
-                ],
-                "target": [
-                    "dot",
-                    "eight",
-                    "five",
-                    "four",
-                    "nine",
-                    "none",
-                    "one",
-                    "seven",
-                    "six",
-                    "three",
-                    "two",
-                    "undefined",
-                    "zero",
-                ],
-            },  # remove frame
-            DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: {
-                "source": ["gauge", "display", "frame"],
-                "target": ["gauge", "display", "frame"],
-            },
+        GaugeType.digital.value: {
+            "source": ["gauge", "display", "frame"],
+            "target": ["gauge", "display", "frame"],
         }
+        # "type3": {
+        #     # "gauge": {
+        #     #     "source": ["gauge", "display", "frame"],
+        #     #     "target": ["gauge", "display"],
+        #     # },
+        #     # "frame": {"source": ["display", "frame"], "target": ["display", "frame"], "final_target": ["frame"]},
+        #     DatasetUse.TYPE_3_NUMBER.value: {
+        #         "source": [
+        #             "dot",
+        #             "eight",
+        #             "five",
+        #             "four",
+        #             "frame",
+        #             "nine",
+        #             "none",
+        #             "one",
+        #             "seven",
+        #             "six",
+        #             "three",
+        #             "two",
+        #             "undefined",
+        #             "zero",
+        #         ],
+        #         "target": [
+        #             "dot",
+        #             "eight",
+        #             "five",
+        #             "four",
+        #             "nine",
+        #             "none",
+        #             "one",
+        #             "seven",
+        #             "six",
+        #             "three",
+        #             "two",
+        #             "undefined",
+        #             "zero",
+        #         ],
+        #     },  # remove frame
+        #     DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: {
+        #         "source": ["gauge", "display", "frame"],
+        #         "target": ["gauge", "display", "frame"],
+        #     },
+        # }
     }
 
     dataset_digital = {
@@ -165,7 +174,7 @@ class Constants:
         # },
         DatasetUse.TYPE_3_GAUGE_DISPLAY_FRAME.value: None
     }
-    
+
     class ModelType(Enum):
         NANO = auto()
         SMALL = auto()

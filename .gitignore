@@ -3,10 +3,10 @@
 
 ### Project file ###
 # Folder
-dataset
-datasets
-dataset_
-datasets_*
+dataset*
+datasets*
+dataset_*
+.DS_Store
 runs
 # File
 *.pt

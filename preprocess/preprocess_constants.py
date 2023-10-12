@@ -3,6 +3,10 @@ from utils import Constants
 class PreprocessConstants:
     base_dataset_folder = Path("./datasets")
     
+    # TODO: ration of training set and validation set
+    train_ratio = 0.9
+    val_ratio = 1 - train_ratio
+    
     base_folder_dict = {
         Constants.GaugeType.digital.value : base_dataset_folder / Constants.GaugeType.digital.value,
         Constants.GaugeType.dial.value: base_dataset_folder / Constants.GaugeType.dial.value,

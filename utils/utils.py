@@ -8,6 +8,7 @@ import numpy as np
 import albumentations as A
 from pathlib import Path
 from PIL import Image
+import datetime
 
 
 class Utils:
@@ -16,18 +17,55 @@ class Utils:
         if os.path.exists(folder_path):
             return True
         return False
-    
+
     @staticmethod
     def change_folder_name(old_folder_name, new_folder_name):
         # print(f"old_folder_name: {old_folder_name}")
         # print(f"new_folder_name: {new_folder_name}")
         # print(f"old_folder_name parent: {old_folder_name.parent}")
-        
+
         new_folder_name_path = old_folder_name.parent / new_folder_name
         # print(f"new_folder_name_path: {new_folder_name_path}")
         os.rename(old_folder_name, new_folder_name_path)
-        
+
         return new_folder_name_path
+
+    @staticmethod
+    def change_file_name(old_file_name, new_name, isrename=True):
+        extension = old_file_name.suffix
+
+        new_name_path = old_file_name.with_name(new_name).with_suffix(extension)
+
+        if isrename:
+            os.rename(old_file_name, new_name_path)
+
+        return new_name_path
+
+    @staticmethod
+    def new_name_with_date(gauge=None, number=None, folder_number=None):
+        current_datetime = datetime.datetime.now()
+        current_date = current_datetime.date().strftime("%Y_%m_%d")
+        new_name = current_date
+        if gauge is not None:
+            new_name = new_name + f"_{gauge}"
+        if folder_number is not None:
+            new_name = new_name + f"_{folder_number}"
+        if number is not None:
+            new_name = new_name + f"_{number}"
+        return new_name
+
+    @staticmethod
+    def new_name_crop_with_date(
+        gauge=None, number=None, class_crop=None, image_number=None
+    ):
+        from utils.utils import Utils
+
+        main_name = Utils.new_name_with_date(
+            gauge=gauge, number=number, folder_number=class_crop
+        )
+        if image_number is not None:
+            main_name += f"_{image_number}"
+        return main_name
 
     @staticmethod
     def deleted_folder(folder_path):
@@ -36,6 +74,12 @@ class Utils:
     @staticmethod
     def move_folder(source_folder, target_folder):
         shutil.move(str(source_folder), str(target_folder))
+        
+    @staticmethod
+    def move_file(source_file_path, target_file_path):
+        # print(f"source path: {source_file_path} \ntarget path: {target_file_path}")
+        shutil.move(str(source_file_path), str(target_file_path))
+        return
 
     @staticmethod
     def copy_folder(source_folder, target_folder):
@@ -53,11 +97,13 @@ class Utils:
         ]
 
     @staticmethod
-    def get_filename_bb_folder(img_path=None, bb_path=None,source_folder=None):
+    def get_filename_bb_folder(img_path=None, bb_path=None, source_folder=None):
         img_filenames = Utils.get_filenames_folder(img_path)
         bb_filenames = Utils.get_filenames_folder(bb_path)
         match_files = Utils.match_img_bb_filename(
-            img_filenames_list=img_filenames, bb_filenames_list=bb_filenames , source_folder=source_folder
+            img_filenames_list=img_filenames,
+            bb_filenames_list=bb_filenames,
+            source_folder=source_folder,
         )
         return match_files
 
@@ -89,7 +135,7 @@ class Utils:
             "project_name": project_name,
             "dataset_folder": dataset_folder,
             "workspace": workspace,
-            "user_name": user_name
+            "user_name": user_name,
         }
 
     @staticmethod
@@ -101,14 +147,62 @@ class Utils:
         return yaml_data
     
     @staticmethod
-    def write_yaml(data, filepath):
-        with open(str(filepath), "w") as file:
-            yaml.dump(data,file)
+    def check_yaml(yaml_path=None,yaml_file=None): # TODO: you can pass yaml file or yaml path
+        if (yaml_path is None and yaml_file is None) or (yaml_path is not None and yaml_file is not None):
+            print(f"Please pass yaml file or yaml path or one of these argument")
+        
+        if yaml_path is not None:
+            yaml_file = Utils.read_yaml_file(yaml_file_path=yaml_path)
+        
+        check_list = ['names', 'nc', 'test', 'train', 'val']
+        
+        for check in check_list:
+            if check not in yaml_file:
+                return False
+        return True
 
     @staticmethod
-    def albu_crop_img_bb(img=None, bb_crop=None, format=None):
-        from utils.constants import Constants
+    def write_yaml(data, filepath):
+        with open(str(filepath), "w") as file:
+            yaml.dump(data, file)
 
+    @staticmethod
+    def make_data_yaml_dict(nc, names):
+        data_yaml_dict = {
+            "train": "../train/images",
+            "val": "../valid/images",
+            "test": "../test/images",
+            "nc": nc,
+            "names": names,
+        }
+        return data_yaml_dict
+
+    @staticmethod
+    def check_2_dataset_classe_index_ismatch(dataset_dict1, dataset_dict2):
+        dict_check = {"nc": None, "names": None}
+
+        dict1_check = dict_check.copy()
+        dict1_check["nc"] = dataset_dict1["nc"]
+        dict1_check["names"] = dataset_dict1["names"]
+
+        dict2_check = dict_check.copy()
+        dict2_check["nc"] = dataset_dict2["nc"]
+        dict2_check["names"] = dataset_dict2["names"]
+
+        if dict1_check != dict2_check:
+            return False
+
+        return True
+
+    @staticmethod
+    def make_list_to_dict_index_value(data: list):
+        return {value: index for index, value in enumerate(data)}
+
+    @staticmethod
+    def albu_crop_img_bb(img=None, bb_crop=None, format=None, add_pixels=0):
+        from utils.constants import Constants
+        max_x = img.shape[1] - 1
+        max_y = img.shape[0] - 1 
         if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
             xyxy_crop = Utils.change_format_yolo2xyxy(
                 img_size=img.shape, bb=bb_crop, with_class=True
@@ -116,10 +210,10 @@ class Utils:
             transform = A.Compose(
                 [
                     A.Crop(
-                        x_min=xyxy_crop[0][0],
-                        y_min=xyxy_crop[0][1],
-                        x_max=xyxy_crop[1][0],
-                        y_max=xyxy_crop[1][1],
+                        x_min=max(0, xyxy_crop[0][0] - add_pixels),
+                        y_min=max(0, xyxy_crop[0][1] - add_pixels),
+                        x_max=min(max_x, xyxy_crop[1][0] + add_pixels),
+                        y_max=min(max_y, xyxy_crop[1][1] + add_pixels),
                     ),
                 ],
                 bbox_params={
@@ -147,6 +241,79 @@ class Utils:
                     A.Resize(
                         height=target_height, width=target_width, always_apply=True
                     ),
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+
+        return transform
+
+    @staticmethod
+    def get_output_from_transform(transform=None, img=None, bb=None, number_samples=1):
+        if (transform is None) or (img is None) or (bb is None):
+            print(f"*** CANNOT AUGMENTED IMAGE SOME PARAMETER IS NONE***")
+            return None
+
+        aug_images_bb_list = []
+
+        for i in range(number_samples):
+            # TODO: reformat from yolo to albumentation for transformation
+            permutation = [1, 2, 3, 4, 0]
+            bb_albu = bb[:, permutation]
+
+            # TODO: transform image
+            img_bb_trans = transform(image=img, bboxes=bb_albu)  # transform images
+
+            # TODO: get image and bb after transform
+            img_trans = img_bb_trans["image"]  # image after transformation
+            bb_trans = img_bb_trans["bboxes"]  # bb after transformation
+            bb_trans = np.array([list(_bb) for _bb in bb_trans])
+
+            # TODO: reformat from albumentation to yolo
+            if len(bb_trans) != 0:
+                inversePermutation = [4, 0, 1, 2, 3]
+                bb_trans = bb_trans[:, inversePermutation]
+
+                aug_images_bb_list.append((img_trans, bb_trans))
+
+            else:
+                aug_images_bb_list.append(img_trans, np.array([]))
+
+        return aug_images_bb_list
+
+    # TODO: albu for augment digital
+    @staticmethod
+    def albu_augmented_digital(target_size, format=None):
+        from utils.constants import Constants
+
+        target_width = target_size[0]
+        target_height = target_size[1]
+
+        if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
+            transform = A.Compose(
+                [
+                    # TODO: augmentation images
+                    A.ChannelShuffle(
+                        p=0.7,
+                    ),  # ! channel shuffle
+                    A.MultiplicativeNoise(
+                        multiplier=[0.4, 1.0], elementwise=True, p=0.5
+                    ),
+                    A.Blur(blur_limit=(7,7), p=0.5),
+                    # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
+                    A.Flip(p=0.7,), # ! flip verical or horizontal
+                    A.Rotate(limit=[-15,15], border_mode=cv2.BORDER_CONSTANT,p=0.7),
+                    A.ColorJitter(p=0.7),
+                    
+                    # TODO: resize and padding images if needed
+                    A.LongestMaxSize(max_size=max(target_size)),
+                    A.PadIfNeeded(
+                        min_height=target_height,
+                        min_width=target_width,
+                        border_mode=cv2.BORDER_CONSTANT,
+                    ),
+                    A.Resize(height=target_height, width=target_width),
                 ],
                 bbox_params={
                     "format": "yolo",
@@ -206,7 +373,7 @@ class Utils:
 
     @staticmethod
     def crop_img(
-        img=None, bb=None, class_crop=None, need_resize=True, target_size=None
+        img=None, bb=None, class_crop=None, need_resize=True, target_size=None,add_pixels=0,class_ignore=None
     ):
         from utils.constants import Constants
 
@@ -219,16 +386,17 @@ class Utils:
         for index, _bb in enumerate(bb_temp):
             if int(_bb[0]) == int(class_crop):
                 bb_crop.append(bb_temp[index])
-            else:
-                bb.append(bb_temp[index])
+                
+            bb.append(bb_temp[index])
 
         bb = np.array(bb)
 
         # crop the images
         crop_images_bb_list = []
-        for _bb_crop in bb_crop:
+        for index_bb_crop, _bb_crop in enumerate(bb_crop):
             bb_use = []
-            img = full_img.copy()
+            img = full_img.copy() 
+                
             for _bb in bb:
                 box1 = Utils.change_format_yolo2xyxy(
                     img_size=img.shape, bb=_bb_crop, with_class=True
@@ -247,7 +415,7 @@ class Utils:
                 # Utils.visualize_img_bb(img=img, bb=bb, with_class=True)
                 # print(f"bb_use: {bb_use}")
                 transform_crop_image = Utils.albu_crop_img_bb(
-                    img=img, bb_crop=_bb_crop, format=Constants.BoundingBoxFormat.YOLOV8
+                    img=img, bb_crop=_bb_crop, format=Constants.BoundingBoxFormat.YOLOV8, add_pixels=add_pixels
                 )
 
                 # format for albumentation yolo = [cx,cy,w,h,class]
@@ -275,6 +443,9 @@ class Utils:
                 if len(bb_use) != 0:
                     inversePermutation = [4, 0, 1, 2, 3]
                     bb_use = bb_use[:, inversePermutation]
+                    
+                if class_ignore is not None:
+                    bb_use = np.array([bb for bb in bb_use if int(bb[0]) != class_ignore])
 
                 crop_images_bb_list.append((img, bb_use))
             else:
@@ -331,9 +502,11 @@ class Utils:
     #     return bb
 
     @staticmethod
-    def reclass_bb_from_dict(bb=None, bb_dict_before=None, bb_dict_after=None, class_crop=None):
+    def reclass_bb_from_dict(
+        bb=None, bb_dict_before=None, bb_dict_after=None, class_crop=None
+    ):
         value_to_key_before = {value: key for key, value in bb_dict_before.items()}
-        
+
         # print(f"bb_dict_before: {bb_dict_before}")
         # print(f"bb_dict_after: {bb_dict_after}")
         # print(f"value_to_key_before: {value_to_key_before}")
@@ -348,7 +521,7 @@ class Utils:
                     # print(f'use -> class_crop: {class_crop}, new_value: {new_value}')
                     # minus_for_crop -=1
                     pass
-                bb[index][0] = int(new_value ) # + minus_for_crop
+                bb[index][0] = int(new_value)  # + minus_for_crop
                 bb_temp.append(bb[index])
 
         return bb_temp
@@ -452,16 +625,19 @@ class Utils:
                 return filepath.parent / filename_with_extension
 
     @staticmethod
-    def match_img_bb_filename(img_filenames_list=None, bb_filenames_list=None,source_folder=None):
+    def match_img_bb_filename(
+        img_filenames_list=None, bb_filenames_list=None, source_folder=None
+    ):
         from utils.constants import Constants
+
         match_img_bb = []
         bb_folder_path = ""
-        
+
         if source_folder != None:
             bb_folder_path = source_folder / Constants.label_folder
         else:
             bb_folder_path = bb_filenames_list[0].parent
-            
+
         for index, img_filename in enumerate(img_filenames_list):
             # find match bounding box
             filename = Path(img_filename)
@@ -469,7 +645,7 @@ class Utils:
                 filepath=filename, filename=None, index=0, extension=".txt"
             ).name
             label_full_path = bb_folder_path / filename
-            
+
             if label_full_path.is_file():
                 match_img_bb.append((img_filename, label_full_path))
 
@@ -484,7 +660,7 @@ class Utils:
             os.remove(filepath)
         # Save the image
         pil_image.save(filepath)
-    
+
     @staticmethod
     def load_img_cv2(filepath):
         img = cv2.imread(str(filepath))
@@ -499,9 +675,19 @@ class Utils:
         for c, line in enumerate(fp):
             bb.append(list(float(n) for n in line.split(" ")))
 
-        bb = np.array(bb) 
+        bb = np.array(bb)
         return bb
-    
+
+    @staticmethod
+    def overwrite_label(txt_file_path, bb):
+        file = open(txt_file_path, "w")
+        # Write new content to the file
+        str_save = ""
+        for _bb in bb:
+            str_save += f"{int(_bb[0])} {_bb[1]} {_bb[2]} {_bb[3]} {_bb[4]}\n"
+        file.write(str_save)
+        file.close()
+
     @staticmethod
     def make_dict_roboflow_dataset(roboflow_dict):
         # from utils.constants import Constants
