@@ -6,9 +6,11 @@
 dataset
 datasets
 dataset_
+datasets_*
 runs
 # File
 *.pt
+.DS_Store
 
 ### Flask ###
 instance/*
