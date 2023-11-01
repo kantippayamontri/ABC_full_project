@@ -14,6 +14,8 @@ class TrainParameters:
         resume=False,
         learning_rate=None,
         final_learning_rate=None,
+        project_name=None, #TODO: the main folder of experiment
+        name=None, # TODO: name of the experiment
     ):
         self.gauge_type = gauge_type
         self.model_type = model_type
@@ -28,6 +30,8 @@ class TrainParameters:
         self.resume = resume
         self.learning_rate = learning_rate
         self.final_learning_rate = final_learning_rate
+        self.project_name = project_name,
+        self.name = name, 
     
     def get_gauge_type(self):
         return self.gauge_type.value
@@ -68,6 +72,12 @@ class TrainParameters:
     def get_final_learning_rate(self):
         return self.final_learning_rate
     
+    def get_project_name(self, ):
+        return self.project_name
+
+    def get_name(self,):
+        return self.name
+    
     def comet_parameters(self,):
         return {
             "gauge_type": self.get_gauge_type(),
@@ -82,5 +92,7 @@ class TrainParameters:
             "resume": self.get_resume(),
             "learning_rate": self.get_learning_rate(),
             "final_learning_rate": self.get_final_learning_rate(),
+            "project_name": self.get_project_name(),
+            "name": self.get_name(),
         }
 

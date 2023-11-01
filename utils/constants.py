@@ -25,7 +25,7 @@ class Constants:
     dataset_dir_setting = Path(
         "/Users/kantip/Desktop/work/ABC_training"
     )  # /dataset/train_dataset/dataset/datasets
-
+    experiment_path = Path("./experiment")
     class GaugeType(Enum):
         digital = "digital"
         dial = "dial"

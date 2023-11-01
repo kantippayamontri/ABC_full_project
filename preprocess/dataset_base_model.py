@@ -2,11 +2,14 @@ from utils import Utils
 from utils import Constants
 from preprocess.preprocess_constants import PreprocessConstants
 import random
+from icecream import ic
+from pathlib import Path
 
 
 class DatasetCombineModel:
     def __init__(
         self,
+        make_frame=False,
     ):
         self.found_folder_dict = {
             Constants.GaugeType.digital.value: False,
@@ -16,20 +19,29 @@ class DatasetCombineModel:
             Constants.GaugeType.level.value: False,
         }
 
+        self.make_frame = make_frame
+
     def conduct_dataset(self, delete_dataset_for_train=True):
-        self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
-        print()
-        print("-" * 100)
-        print()
-        self.import_datasets_roboflow() #TODO: download dataset from roboflow
-        print()
-        print("-" * 100)
-        print()
-        self.combine_datasets()
-        print()
-        print("-" * 100)
-        print()
-        self.divide_datasets(train_ratio=PreprocessConstants.train_ratio) # TODO: divide into train set and validation set
+        # self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
+        # print()
+        # print("-" * 100)
+        # print()
+        # self.import_datasets_roboflow()  # TODO: download dataset from roboflow
+        # print()
+        # print("-" * 100)
+        # print()
+        # self.combine_datasets()
+        # print()
+        # print("-" * 100)
+        # print()
+        if self.make_frame:
+            self.make_frame_dataset()
+            print()
+            print("-" * 100)
+            print()
+        self.divide_datasets(
+            train_ratio=PreprocessConstants.train_ratio
+        )  # TODO: divide into train set and validation set
         print()
         print("-" * 100)
         print()
@@ -51,9 +63,9 @@ class DatasetCombineModel:
                     PreprocessConstants.train_folder_dict[key],
                     remove=delete_dataset_for_train,
                 )
-                print(
-                    f"delete at {PreprocessConstants.train_folder_dict[key]}, remove: {delete_dataset_for_train}"
-                )
+                # print(
+                #     f"delete at {PreprocessConstants.train_folder_dict[key]}, remove: {delete_dataset_for_train}"
+                # )
                 # TODO: create train,val,test folder
                 train_folder_path = (
                     PreprocessConstants.train_folder_dict[key] / Constants.train_folder
@@ -112,13 +124,72 @@ class DatasetCombineModel:
         print(f"--- IMPORT DATASETS FROM ROBOFLOW ---")
         return
 
+    def make_frame_dataset(
+        self,
+    ):
+        print(f"--- in function make_frame_dataset ---")
+        # TODO: define dataset that use for crop images
+        make_frame_dataset_path = [
+            PreprocessConstants.train_folder_dict[Constants.GaugeType.digital.value]
+        ]
+
+        # TODO: check make_frame dataset
+        dataset_frame_path = Path("./dataset_frame")
+        Utils.delete_folder_mkdir(folder_path=dataset_frame_path, remove=True)
+
+        for path in make_frame_dataset_path:
+            yaml_path = path / Constants.data_yaml_file
+            data_yaml = Utils.read_yaml_file(yaml_file_path=yaml_path)
+            # ic(data_yaml)
+
+            if "frame" not in data_yaml["names"]:
+                continue
+
+            frame_index = data_yaml["names"].index("frame")
+
+            root_path = path / Constants.train_folder
+            images_path = root_path / Constants.image_folder
+            labels_path = root_path / Constants.label_folder
+
+            img_bb_match = Utils.get_filename_bb_folder(
+                img_path=images_path,
+                bb_path=labels_path,
+            )
+
+            for idx, (img_path, bb_path) in enumerate(img_bb_match):
+                img = Utils.load_img_cv2(filepath=img_path)
+                bb = Utils.load_bb(filepath=bb_path)
+
+                if idx % 300 ==0:
+                    print(f"---> make frame : {idx+1}/{len(img_bb_match)}")
+                
+                frame_img = Utils.crop_one_class(
+                    img=img,
+                    bb=bb,
+                    need_resize=True,
+                    target_size=[img.shape[0], img.shape[1]],
+                    add_pixels=random.randint(0, 10),
+                    class_crop=frame_index,
+                )  # TODO: return onlu frame img
+                
+
+                for index, img in enumerate(frame_img):
+                    new_name = Utils.generate_random_string(25) + f"_{index}" + ".jpg"
+                    # TODO: save images
+                    Utils.save_image(img=img, filepath=dataset_frame_path / new_name)
+                
+                # if idx == 10:
+                #     return
+
+        return
+
     def divide_datasets(
         self,
         train_ratio=0.8,
     ):
         # print(f"train ratio: {train_ratio}")
         # print(f"val ratio: {1 - train_ratio}")
-        
+
         for key, value in PreprocessConstants.base_folder_dict.items():
             # if not self.found_folder_dict[key]: # FIXME: uncomment this statements
             #     continue
@@ -135,7 +206,7 @@ class DatasetCombineModel:
             target_val_folder = (
                 PreprocessConstants.train_folder_dict[key] / Constants.val_folder
             )
-            
+
             target_val_image_folder = target_val_folder / Constants.image_folder
             target_val_label_folder = target_val_folder / Constants.label_folder
 
@@ -149,21 +220,27 @@ class DatasetCombineModel:
                 bb_path=target_train_folder / Constants.label_folder,
                 source_folder=None,
             )
-            
-            random.shuffle(train_img_bb) #TODO: shuffle the list
-            index_divide_val = int((len(train_img_bb)-1) * (1-train_ratio))
-            
+
+            random.shuffle(train_img_bb)  # TODO: shuffle the list
+            index_divide_val = int((len(train_img_bb) - 1) * (1 - train_ratio))
+
             val_img_bb = train_img_bb[:index_divide_val]
-            
+
             # TODO: move image and labe from train to val
             for idx, (img_path, lb_path) in enumerate(val_img_bb):
                 # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
 
                 # TODO: move images
-                Utils.move_file(source_file_path= img_path, target_file_path= target_val_image_folder / img_path.name)
-            
+                Utils.move_file(
+                    source_file_path=img_path,
+                    target_file_path=target_val_image_folder / img_path.name,
+                )
+
                 # TODO: move labels
-                Utils.move_file(source_file_path= lb_path, target_file_path= target_val_label_folder / lb_path.name)
+                Utils.move_file(
+                    source_file_path=lb_path,
+                    target_file_path=target_val_label_folder / lb_path.name,
+                )
 
         return
 
@@ -370,17 +447,23 @@ class DatasetCombineModel:
             new_source_image_path = Utils.change_file_name(
                 old_file_name=_img, new_name=new_name
             )
+
+            print(f"new_source_image_path: {str(new_source_image_path)}")
+
             target_image = (
                 target_folder / Constants.image_folder / new_source_image_path.name
             )
+
             # Utils.move_folder(
             #     source_folder=new_source_image_path, target_folder=target_image
             # )
-            Utils.copy_file(source_file_path=new_source_image_path, target_file_path=target_image) #TODO: use copy file instead of move
+            Utils.copy_file(
+                source_file_path=new_source_image_path, target_file_path=target_image
+            )  # TODO: use copy file instead of move
 
             # TODO: move labels
             new_source_label_path = Utils.change_file_name(
-                old_file_name=_bb, new_name=new_name
+                old_file_name=_bb, new_name=new_source_image_path.stem
             )
             target_label = (
                 target_folder / Constants.label_folder / new_source_label_path.name
@@ -388,7 +471,9 @@ class DatasetCombineModel:
             # Utils.move_folder(
             #     source_folder=new_source_label_path, target_folder=target_label
             # )
-            Utils.copy_file(source_file_path=new_source_label_path, target_file_path=target_label) #TODO: use copy file instead of move
+            Utils.copy_file(
+                source_file_path=new_source_label_path, target_file_path=target_label
+            )  # TODO: use copy file instead of move
 
     def check_yaml_is_ok(self, data_yaml_path):
         yaml_file = Utils.read_yaml_file(str(data_yaml_path))
