@@ -9,6 +9,8 @@ import albumentations as A
 from pathlib import Path
 from PIL import Image
 import datetime
+import random
+import string
 
 
 class Utils:
@@ -35,6 +37,13 @@ class Utils:
         extension = old_file_name.suffix
 
         new_name_path = old_file_name.with_name(new_name).with_suffix(extension)
+
+        if Utils.check_folder_exists(folder_path=new_name_path):
+            # print(f"--- file exists: {new_name_path}")
+            # print(f"new_name : {old_file_name.with_name(new_name + Utils.generate_random_string(5, with_under=True)).with_suffix(extension)}")
+            new_name_path = old_file_name.with_name(
+                new_name + Utils.generate_random_string(5, with_under=True)
+            ).with_suffix(extension)
 
         if isrename:
             os.rename(old_file_name, new_name_path)
@@ -74,7 +83,7 @@ class Utils:
     @staticmethod
     def move_folder(source_folder, target_folder):
         shutil.move(str(source_folder), str(target_folder))
-        
+
     @staticmethod
     def move_file(source_file_path, target_file_path):
         # print(f"source path: {source_file_path} \ntarget path: {target_file_path}")
@@ -83,7 +92,7 @@ class Utils:
 
     @staticmethod
     def copy_file(source_file_path, target_file_path):
-        shutil.copy2(str(source_file_path),str(target_file_path))
+        shutil.copy2(str(source_file_path), str(target_file_path))
         return
 
     @staticmethod
@@ -150,17 +159,21 @@ class Utils:
             # Parse the YAML data
             yaml_data = yaml.safe_load(yaml_file)
         return yaml_data
-    
+
     @staticmethod
-    def check_yaml(yaml_path=None,yaml_file=None): # TODO: you can pass yaml file or yaml path
-        if (yaml_path is None and yaml_file is None) or (yaml_path is not None and yaml_file is not None):
+    def check_yaml(
+        yaml_path=None, yaml_file=None
+    ):  # TODO: you can pass yaml file or yaml path
+        if (yaml_path is None and yaml_file is None) or (
+            yaml_path is not None and yaml_file is not None
+        ):
             print(f"Please pass yaml file or yaml path or one of these argument")
-        
+
         if yaml_path is not None:
             yaml_file = Utils.read_yaml_file(yaml_file_path=yaml_path)
-        
-        check_list = ['names', 'nc', 'test', 'train', 'val']
-        
+
+        check_list = ["names", "nc", "test", "train", "val"]
+
         for check in check_list:
             if check not in yaml_file:
                 return False
@@ -206,8 +219,9 @@ class Utils:
     @staticmethod
     def albu_crop_img_bb(img=None, bb_crop=None, format=None, add_pixels=0):
         from utils.constants import Constants
+
         max_x = img.shape[1] - 1
-        max_y = img.shape[0] - 1 
+        max_y = img.shape[0] - 1
         if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
             xyxy_crop = Utils.change_format_yolo2xyxy(
                 img_size=img.shape, bb=bb_crop, with_class=True
@@ -305,14 +319,13 @@ class Utils:
                     A.MultiplicativeNoise(
                         multiplier=[0.4, 1.0], elementwise=True, p=0.5
                     ),
-                    A.Blur(blur_limit=(7,7), p=0.5),
+                    A.Blur(blur_limit=(7, 7), p=0.5),
                     # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
                     # A.HorizontalFlip( p=0,), #horizontal
                     # A.VerticalFlip(p=1),
-                    A.Rotate(limit=[-180,180],border_mode=cv2.BORDER_CONSTANT,p=0.7),
+                    A.Rotate(limit=[-180, 180], border_mode=cv2.BORDER_CONSTANT, p=0.7),
                     # A.Rotate(limit=[-20,20], border_mode=cv2.BORDER_CONSTANT,p=0.7),
                     A.ColorJitter(p=0.7),
-                    
                     # TODO: resize and padding images if needed
                     A.LongestMaxSize(max_size=max(target_size)),
                     A.PadIfNeeded(
@@ -379,8 +392,73 @@ class Utils:
             return False  # No intersection
 
     @staticmethod
+    def crop_one_class(
+        img=None,
+        bb=None,
+        need_resize=True,
+        target_size=None,
+        add_pixels=0,
+        class_crop=None,
+    ):
+        from utils.constants import Constants
+
+        crop_img_list = []
+        img_ori = img.copy()
+        bb = bb.copy()
+
+        bb_crop = []
+        for _bb in bb:
+            if int(_bb[0]) == class_crop:
+                bb_crop.append(_bb)
+
+        bb_crop = np.array(bb_crop)
+
+        if len(bb_crop) != 0:
+            for _bb_crop in bb_crop:
+                img = img_ori.copy()
+                
+                try:
+                    transform_crop_image = Utils.albu_crop_img_bb(
+                        img=img,
+                        bb_crop=_bb_crop,
+                        format=Constants.BoundingBoxFormat.YOLOV8,
+                        add_pixels=add_pixels,
+                    )
+                    transformed = transform_crop_image(image=img, bboxes=[])
+                    img = transformed["image"]
+                except:
+                    
+                    continue
+                
+                if need_resize:
+                
+                    if target_size == None:
+                        print(f"--- cannot resize image ---")
+                    else:
+                        transform_resize_image = Utils.albu_resize_img_bb(
+                            target_size=[640,640],
+                        )
+                        transformed = transform_resize_image(image=img, bboxes=[])
+                        img = transformed["image"]
+                
+                # sharp_transform = A.Compose([A.Sharpen(alpha=1, lightness=0.0)])
+                # img = sharp_transform(image=img)["image"]
+                
+                # img = cv2.addWeighted(src1=img, alpha=7.5 ,src2=cv2.GaussianBlur(img, (3,3),0), beta=-6.5, gamma=0)
+
+                crop_img_list.append(img)
+
+        return crop_img_list
+
+    @staticmethod
     def crop_img(
-        img=None, bb=None, class_crop=None, need_resize=True, target_size=None,add_pixels=0,class_ignore=None
+        img=None,
+        bb=None,
+        class_crop=None,
+        need_resize=True,
+        target_size=None,
+        add_pixels=0,
+        class_ignore=None,
     ):
         from utils.constants import Constants
 
@@ -393,17 +471,17 @@ class Utils:
         for index, _bb in enumerate(bb_temp):
             if int(_bb[0]) == int(class_crop):
                 bb_crop.append(bb_temp[index])
-                
+
             bb.append(bb_temp[index])
 
         bb = np.array(bb)
 
         # crop the images
         crop_images_bb_list = []
-        for index_bb_crop, _bb_crop in enumerate(bb_crop):
+        for _, _bb_crop in enumerate(bb_crop):
             bb_use = []
-            img = full_img.copy() 
-                
+            img = full_img.copy()
+
             for _bb in bb:
                 box1 = Utils.change_format_yolo2xyxy(
                     img_size=img.shape, bb=_bb_crop, with_class=True
@@ -422,7 +500,10 @@ class Utils:
                 # Utils.visualize_img_bb(img=img, bb=bb, with_class=True)
                 # print(f"bb_use: {bb_use}")
                 transform_crop_image = Utils.albu_crop_img_bb(
-                    img=img, bb_crop=_bb_crop, format=Constants.BoundingBoxFormat.YOLOV8, add_pixels=add_pixels
+                    img=img,
+                    bb_crop=_bb_crop,
+                    format=Constants.BoundingBoxFormat.YOLOV8,
+                    add_pixels=add_pixels,
                 )
 
                 # format for albumentation yolo = [cx,cy,w,h,class]
@@ -450,9 +531,11 @@ class Utils:
                 if len(bb_use) != 0:
                     inversePermutation = [4, 0, 1, 2, 3]
                     bb_use = bb_use[:, inversePermutation]
-                    
+
                 if class_ignore is not None:
-                    bb_use = np.array([bb for bb in bb_use if int(bb[0]) != class_ignore])
+                    bb_use = np.array(
+                        [bb for bb in bb_use if int(bb[0]) != class_ignore]
+                    )
 
                 crop_images_bb_list.append((img, bb_use))
             else:
@@ -643,6 +726,7 @@ class Utils:
         if source_folder != None:
             bb_folder_path = source_folder / Constants.label_folder
         else:
+            # print(f"bb_filenames_list: {bb_filenames_list}")
             bb_folder_path = bb_filenames_list[0].parent
 
         for index, img_filename in enumerate(img_filenames_list):
@@ -714,3 +798,13 @@ class Utils:
         #         "image_size": [1280, 1280],
         #     }
         # },
+
+    @staticmethod
+    def generate_random_string(length, with_under=False):
+        characters = (
+            string.ascii_letters + string.digits
+        )  # You can customize this as per your requirements
+        random_string = "".join(random.choice(characters) for _ in range(length))
+        if with_under:
+            random_string = "_" + random_string
+        return str(random_string)

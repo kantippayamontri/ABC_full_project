@@ -6,6 +6,7 @@ import typing
 import comet_ml
 from train.train_constants import Comet
 from icecream import ic
+from pathlib import Path
 
 
 class YOLOModel:
@@ -65,9 +66,16 @@ class YOLOModel:
         return model
 
     def train(self, parameters: TrainParameters):
-        if self.use_comet:
-            self.init_comet(train_parameters=parameters)
-
+        # if self.use_comet:
+        #     self.init_comet(train_parameters=parameters)
+            
+        print(f"train parameters: {parameters.comet_parameters()}")
+        # TODO: check experiment folder
+        
+        # TODO: create name of the experiment
+        
+        ic(str(parameters.get_project_name()[0]))
+        
         self.model.train(
             data=parameters.get_data_yaml_path(),
             epochs=parameters.get_epochs(),
@@ -80,10 +88,12 @@ class YOLOModel:
             resume=parameters.get_resume(),
             lr0=parameters.get_learning_rate(),
             lrf=parameters.get_final_learning_rate(),
+            project=f"{str(parameters.get_project_name()[0])}", #TODO: path for experimental_project folder
+            name=f"{str(parameters.get_name()[0])}" # TODO: name of the experiment
         )
         
-        if self.use_comet:
-            self.end_comet()
+        # if self.use_comet:
+        #     self.end_comet()
 
     def init_comet(
         self,
