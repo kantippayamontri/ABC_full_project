@@ -22,18 +22,18 @@ class DatasetCombineModel:
         self.make_frame = make_frame
 
     def conduct_dataset(self, delete_dataset_for_train=True):
-        # self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
-        # print()
-        # print("-" * 100)
-        # print()
-        # self.import_datasets_roboflow()  # TODO: download dataset from roboflow
-        # print()
-        # print("-" * 100)
-        # print()
-        # self.combine_datasets()
-        # print()
-        # print("-" * 100)
-        # print()
+        self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
+        print()
+        print("-" * 100)
+        print()
+        self.import_datasets_roboflow()  # TODO: download dataset from roboflow
+        print()
+        print("-" * 100)
+        print()
+        self.combine_datasets()
+        print()
+        print("-" * 100)
+        print()
         if self.make_frame:
             self.make_frame_dataset()
             print()

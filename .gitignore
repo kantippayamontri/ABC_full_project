@@ -11,6 +11,7 @@ runs
 # File
 *.pt
 .DS_Store
+.ipynb
 
 ### Flask ###
 instance/*
