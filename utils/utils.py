@@ -323,7 +323,7 @@ class Utils:
                     # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
                     # A.HorizontalFlip( p=0,), #horizontal
                     # A.VerticalFlip(p=1),
-                    A.Rotate(limit=[-180, 180], border_mode=cv2.BORDER_CONSTANT, p=0.7),
+                    A.Rotate(limit=[-90, 90], border_mode=cv2.BORDER_CONSTANT, p=0.7),
                     # A.Rotate(limit=[-20,20], border_mode=cv2.BORDER_CONSTANT,p=0.7),
                     A.ColorJitter(p=0.7),
                     # TODO: resize and padding images if needed
