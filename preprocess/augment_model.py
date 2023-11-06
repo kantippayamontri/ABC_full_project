@@ -40,6 +40,9 @@ class AugmentedGaugeModel:
         labels = list(target_dict.keys())
 
         for index, (img_path, bb_path) in enumerate(self.match_img_bb_path):
+            
+            if ((index+1) % 300 ==0):
+                print(f"--- augmeent image: {index +1} ---")
 
             img = Utils.load_img_cv2(filepath=img_path)
             bb = Utils.load_bb(filepath=bb_path)

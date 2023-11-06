@@ -448,7 +448,7 @@ class DatasetCombineModel:
                 old_file_name=_img, new_name=new_name
             )
 
-            print(f"new_source_image_path: {str(new_source_image_path)}")
+            # print(f"new_source_image_path: {str(new_source_image_path)}")
 
             target_image = (
                 target_folder / Constants.image_folder / new_source_image_path.name

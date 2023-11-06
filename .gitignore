@@ -6,6 +6,7 @@
 dataset*
 datasets*
 dataset_*
+experiment*
 .DS_Store
 runs
 # File
