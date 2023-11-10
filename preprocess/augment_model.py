@@ -1,5 +1,5 @@
 from utils import Constants, Utils
-
+from icecream import ic
 
 class AugmentedGaugeModel:
     def __init__(
@@ -30,11 +30,11 @@ class AugmentedGaugeModel:
             print(f"\t\t[X] PLEASE PASS IMAGE PATH AND LABELS PATH")
             return
 
-        # TODO: augment images
+        # TODO: augment 
         target_dict = {
             value: index
             for index, value in enumerate(
-                Constants.map_data_dict[Constants.GaugeType.digital.value]["target"]
+                Constants.map_data_dict[self.gauge_type]["target"]
             )
         }
         labels = list(target_dict.keys())
@@ -65,7 +65,19 @@ class AugmentedGaugeModel:
                 self.augmented_dial(gauge_name=Constants.GaugeType.dial.value)
 
             if self.gauge_type == Constants.GaugeType.number.value:
-                self.augmented_number(gauge_name=Constants.GaugeType.number.value)
+                # self.num_number_aug += self.augmented_number(gauge_name=Constants.GaugeType.number.value)
+                # TODO: same augment with digital
+                self.num_number_aug += self.augmented_digital(
+                    gauge_name=Constants.GaugeType.number.value,
+                    start_index=self.num_number_aug,
+                    target_size=target_size,
+                    img=img,
+                    bb=bb,
+                    labels=labels,
+                    original_image_path=img_path,
+                    original_label_path=bb_path
+                )
+                
 
             if self.gauge_type == Constants.GaugeType.level.value:
                 self.augmented_level(gauge_name=Constants.GaugeType.level.value)

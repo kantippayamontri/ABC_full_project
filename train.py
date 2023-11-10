@@ -46,7 +46,7 @@ def experiment_name(dataset_type=None, model_type=None, project_path=None):
 
 print(f"--- Initial Train Parameters ---")
 # TODO: Initial parameters
-dataset_type = Constants.GaugeType.digital
+dataset_type = Constants.GaugeType.number
 model_type = Constants.ModelType.NANO
 project_name = ic(Constants.experiment_path)
 # create experiment folder
