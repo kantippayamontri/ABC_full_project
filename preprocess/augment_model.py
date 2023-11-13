@@ -50,16 +50,19 @@ class AugmentedGaugeModel:
             target_size = [img.shape[0], img.shape[1]]
 
             if self.gauge_type == Constants.GaugeType.digital.value:
-                self.num_digital_aug += self.augmented_digital(
-                    gauge_name=Constants.GaugeType.digital.value,
-                    start_index=self.num_digital_aug,
-                    target_size=target_size,
-                    img=img,
-                    bb=bb,
-                    labels=labels,
-                    original_image_path=img_path,
-                    original_label_path=bb_path,
-                )
+                try:
+                    self.num_digital_aug += self.augmented_digital(
+                        gauge_name=Constants.GaugeType.digital.value,
+                        start_index=self.num_digital_aug,
+                        target_size=target_size,
+                        img=img,
+                        bb=bb,
+                        labels=labels,
+                        original_image_path=img_path,
+                        original_label_path=bb_path,
+                    )
+                except:
+                    print(f"\t--> can not augment {img_path}")
 
             if self.gauge_type == Constants.GaugeType.dial.value:
                 self.augmented_dial(gauge_name=Constants.GaugeType.dial.value)

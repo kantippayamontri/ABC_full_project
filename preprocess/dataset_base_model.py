@@ -34,11 +34,11 @@ class DatasetCombineModel:
         print()
         print("-" * 100)
         print()
-        # if self.make_frame:
-        #     self.make_frame_dataset()
-        #     print()
-        #     print("-" * 100)
-        #     print()
+        if self.make_frame:
+            self.make_frame_dataset()
+            print()
+            print("-" * 100)
+            print()
         self.divide_datasets(
             train_ratio=PreprocessConstants.train_ratio
         )  # TODO: divide into train set and validation set

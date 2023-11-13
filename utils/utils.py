@@ -768,8 +768,8 @@ class Utils:
             bb_l = list(float(n) for n in line.split(" "))
             if len(bb_l) == 5:
                 bb.append(bb_l)
-            else:
-                ic(bb_l)
+            # else:
+            #     ic(bb_l)
         # ic(bb_l)
         # ic(filepath)
         bb = np.array(bb)
