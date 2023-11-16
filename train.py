@@ -93,7 +93,6 @@ train_parameters = TrainParameters(
     gauge_type=dataset_type,
     model_type = model_type,
     data_yaml_path=None,
-<<<<<<< HEAD
     epochs=epochs,
     imgsz=image_size,
     batch=batch_size,
@@ -104,17 +103,6 @@ train_parameters = TrainParameters(
     resume=resume,
     learning_rate=learning_rate,
     final_learning_rate=final_learning_rate,
-=======
-    epochs=300,
-    imgsz=1024,
-    batch=36,
-    cache=True,
-    device="0",
-    workers=24,
-    resume=True,
-    learning_rate=0.001,
-    final_learning_rate=0.01,
->>>>>>> f367bae (add some file for train in erawn)
     project_name=project_name,
     name=experiment_name
 )
