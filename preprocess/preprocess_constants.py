@@ -4,7 +4,7 @@ class PreprocessConstants:
     base_dataset_folder = Path("./datasets")
     
     # TODO: ration of training set and validation set
-    train_ratio = 0.9
+    train_ratio = 0.95
     val_ratio = 1 - train_ratio
     
     base_folder_dict = {

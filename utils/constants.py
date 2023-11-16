@@ -85,6 +85,10 @@ class Constants:
         GaugeType.digital.value: {
             "source": ["gauge", "display", "frame"],
             "target": ["gauge", "display", "frame"],
+        },
+        GaugeType.number.value: {
+            "source": ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'colon', 'dot', 'float', 'minus', 'slash'],
+            "target": ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'colon', 'dot', 'float', 'minus', 'slash']
         }
         # "type3": {
         #     # "gauge": {

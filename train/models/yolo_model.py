@@ -118,8 +118,12 @@ class YOLOModel:
     def end_comet(self,):
         comet_ml.Experiment.end() # end the experiment
         return
-        
-        
+    
+    def export_model(self, ):
+        self.model
+        return
+    
+    
 
     # def set_up_comet_ml(
     #     self,

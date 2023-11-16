@@ -54,9 +54,7 @@ class DatasetCombineModel:
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
             print(f"[/] CHECK {key} GAUGE")
-            if Utils.check_folder_exists(value) or (
-                key == "digital"
-            ):  # FIXME: remove key==
+            if Utils.check_folder_exists(value) :  # FIXME: remove key==
                 print(f"\t[/] FOLDER FOUND at {value}")
                 # TODO: create dataset folder in datasets_for_train/digital ...
                 Utils.delete_folder_mkdir(
@@ -191,13 +189,13 @@ class DatasetCombineModel:
         # print(f"val ratio: {1 - train_ratio}")
 
         for key, value in PreprocessConstants.base_folder_dict.items():
-            # if not self.found_folder_dict[key]: # FIXME: uncomment this statements
-            #     continue
-            # else:
-            #     print(f"[-] DIVIDE {key} DATASET")
-
-            if key != Constants.GaugeType.digital.value:
+            if not self.found_folder_dict[key]: # FIXME: uncomment this statements
                 continue
+            else:
+                print(f"[-] DIVIDE {key} DATASET")
+
+            # if key != Constants.GaugeType.digital.value:
+            #     continue
 
             target_source_folder = PreprocessConstants.train_folder_dict[key]
             target_train_folder = (
@@ -491,12 +489,13 @@ class DatasetCombineModel:
 
     def visualize_samples(self, gauge_type, number_of_samples=1):
         from preprocess.preprocess_constants import PreprocessConstants
-
+        
         # TODO: get filenames and bb and labels
         source_folder = (
-            PreprocessConstants.train_folder_dict[Constants.GaugeType.digital.value]
+            PreprocessConstants.train_folder_dict[gauge_type.value]
             / Constants.train_folder
         )
+        ic(source_folder)
         img_path = source_folder / Constants.image_folder
         bb_path = source_folder / Constants.label_folder
         match_filename_bb = Utils.get_filename_bb_folder(
@@ -511,7 +510,7 @@ class DatasetCombineModel:
             random_index_list.append(index)
 
         # TODO: visulize image and bb
-        labels = Constants.map_data_dict[Constants.GaugeType.digital.value]["target"]
+        labels = Constants.map_data_dict[gauge_type.value]["target"]
         for index in random_index_list:
             _img_path = match_filename_bb[index][0]
             _bb_path = match_filename_bb[index][1]
@@ -568,10 +567,12 @@ class DatasetCombineModel:
 
         print(f"[-] augmented Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
-            # print(f"key: {key}, value: {value}")
+            
+            if not Utils.check_folder_exists(value):
+                continue
 
             source_folder = (
-                PreprocessConstants.train_dataset_folder / key / Constants.train_folder
+                Path(value) / Constants.train_folder
             )
             source_image_folder = source_folder / Constants.image_folder
             source_label_folder = source_folder / Constants.label_folder

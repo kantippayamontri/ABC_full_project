@@ -11,6 +11,7 @@ from PIL import Image
 import datetime
 import random
 import string
+from icecream import ic
 
 
 class Utils:
@@ -104,6 +105,7 @@ class Utils:
         source_folder,
     ):
         # print(f"source folder: {str(source_folder)}")
+        # ic(source_folder)
         return [
             source_folder / file.name
             for file in source_folder.iterdir()
@@ -112,6 +114,7 @@ class Utils:
 
     @staticmethod
     def get_filename_bb_folder(img_path=None, bb_path=None, source_folder=None):
+        # ic(img_path)
         img_filenames = Utils.get_filenames_folder(img_path)
         bb_filenames = Utils.get_filenames_folder(bb_path)
         match_files = Utils.match_img_bb_filename(
@@ -416,7 +419,7 @@ class Utils:
         if len(bb_crop) != 0:
             for _bb_crop in bb_crop:
                 img = img_ori.copy()
-                
+
                 try:
                     transform_crop_image = Utils.albu_crop_img_bb(
                         img=img,
@@ -427,23 +430,21 @@ class Utils:
                     transformed = transform_crop_image(image=img, bboxes=[])
                     img = transformed["image"]
                 except:
-                    
                     continue
-                
+
                 if need_resize:
-                
                     if target_size == None:
                         print(f"--- cannot resize image ---")
                     else:
                         transform_resize_image = Utils.albu_resize_img_bb(
-                            target_size=[640,640],
+                            target_size=[640, 640],
                         )
                         transformed = transform_resize_image(image=img, bboxes=[])
                         img = transformed["image"]
-                
+
                 # sharp_transform = A.Compose([A.Sharpen(alpha=1, lightness=0.0)])
                 # img = sharp_transform(image=img)["image"]
-                
+
                 # img = cv2.addWeighted(src1=img, alpha=7.5 ,src2=cv2.GaussianBlur(img, (3,3),0), beta=-6.5, gamma=0)
 
                 crop_img_list.append(img)
@@ -767,7 +768,6 @@ class Utils:
             bb_l = list(float(n) for n in line.split(" "))
             if len(bb_l) == 5:
                 bb.append(bb_l)
-
         bb = np.array(bb)
         return bb
 

@@ -31,16 +31,16 @@ class PreprocessGaugeModel:
             self.preprocess_digital(gauge_name=Constants.GaugeType.digital.value)
 
         if self.gauge_type == Constants.GaugeType.dial.value:
-            self.preprocess_dial(gauge_name = Constants.GaugeType.dial.value)
+            self.preprocess_dial(gauge_name=Constants.GaugeType.dial.value)
 
         if self.gauge_type == Constants.GaugeType.number.value:
-            self.preprocess_number(gauge_name = Constants.GaugeType.number.value)
+            self.preprocess_number(gauge_name=Constants.GaugeType.number.value)
 
         if self.gauge_type == Constants.GaugeType.level.value:
-            self.preprocess_level(gauge_name = Constants.GaugeType.level.value)
+            self.preprocess_level(gauge_name=Constants.GaugeType.level.value)
 
         if self.gauge_type == Constants.GaugeType.clock.value:
-            self.preprocess_clock(gauge_name = Constants.GaugeType.clock.value)
+            self.preprocess_clock(gauge_name=Constants.GaugeType.clock.value)
 
         return
 
@@ -50,7 +50,6 @@ class PreprocessGaugeModel:
         number_crop_gauge = 0
         number_crop_display = 0
         for index, (img_path, bb_path) in enumerate(self.match_img_bb_path):
-            
             if index % 100 == 0:
                 print(f"image index: {index}")
 
@@ -63,12 +62,12 @@ class PreprocessGaugeModel:
                     Constants.map_data_dict[Constants.GaugeType.digital.value]["target"]
                 )
             }
-            
+
             target_size = [img.shape[0], img.shape[1]]
             labels = list(target_dict.keys())
             img_bb_crop_gauge = []
             img_bb_crop_display = []
-            
+
             # Utils.visualize_img_bb(img=img, bb=bb, with_class=True, labels=labels)
 
             # TODO: crop gauge class
@@ -79,7 +78,7 @@ class PreprocessGaugeModel:
                 class_ignore=None,
                 need_resize=True,
                 target_size=target_size,
-                add_pixels=random.randint(0, 50)
+                add_pixels=random.randint(0, 50),
             )
             # TODO: save image and label crop gauge
             for index, (_img, _bb) in enumerate(img_bb_crop_gauge):
@@ -89,23 +88,26 @@ class PreprocessGaugeModel:
                     class_crop="gauge",
                     image_number=number_crop_gauge,
                 )
-                
+
                 number_crop_gauge += 1
-                
+
                 # FIXME: just visulize to check crop images
                 # Utils.visualize_img_bb(img=_img, bb=_bb, with_class=True, labels=labels)
-                
+
                 # print(f"new name: {new_name}")
                 # TODO: save image
-                new_name_path_image = Utils.change_file_name(old_file_name=img_path, new_name=new_name, isrename=False)
+                new_name_path_image = Utils.change_file_name(
+                    old_file_name=img_path, new_name=new_name, isrename=False
+                )
                 Utils.save_image(img=_img, filepath=new_name_path_image)
                 # print(f"new_name_path_image: {new_name_path_image}")
                 # TODO: save label
-                new_name_path_label = Utils.change_file_name(old_file_name=bb_path, new_name=new_name, isrename=False)
+                new_name_path_label = Utils.change_file_name(
+                    old_file_name=bb_path, new_name=new_name, isrename=False
+                )
                 Utils.overwrite_label(txt_file_path=new_name_path_label, bb=_bb)
                 # print(f"new_name_path_label: {new_name_path_label}")
-                
-                
+
             # TODO: crop display class
             img_bb_crop_display = Utils.crop_img(
                 img=img,
@@ -114,7 +116,7 @@ class PreprocessGaugeModel:
                 need_resize=True,
                 target_size=target_size,
                 class_ignore=target_dict["gauge"],
-                add_pixels=random.randint(0, 50)
+                add_pixels=random.randint(0, 50),
             )
             # TODO: save image and label crop display
             for index, (_img, _bb) in enumerate(img_bb_crop_display):
@@ -124,23 +126,26 @@ class PreprocessGaugeModel:
                     class_crop="display",
                     image_number=number_crop_display,
                 )
-                
+
                 number_crop_display += 1
-                
+
                 # FIXME: just visulize to check crop images
                 # Utils.visualize_img_bb(img=_img, bb=_bb, with_class=True, labels=labels)
-                
+
                 # TODO: save image
                 # print(f"new name: {new_name}")
-                new_name_path_image = Utils.change_file_name(old_file_name=img_path, new_name=new_name,isrename=False)
+                new_name_path_image = Utils.change_file_name(
+                    old_file_name=img_path, new_name=new_name, isrename=False
+                )
                 Utils.save_image(img=_img, filepath=new_name_path_image)
                 # print(f"new_name_path_image: {new_name_path_image}")
-                
+
                 # TODO: save label
-                new_name_path_label = Utils.change_file_name(old_file_name=bb_path, new_name=new_name,isrename=False)
+                new_name_path_label = Utils.change_file_name(
+                    old_file_name=bb_path, new_name=new_name, isrename=False
+                )
                 Utils.overwrite_label(txt_file_path=new_name_path_label, bb=_bb)
                 # print(f"new_name_path_label: {new_name_path_label}")
-
 
     def preprocess_dial(
         self,
@@ -148,10 +153,8 @@ class PreprocessGaugeModel:
         print(f"\t\t[-] PREPROCESS DIAL")
         return
 
-    def preprocess_number(
-        self,
-    ):
-        print(f"\t\t[-] PREPROCESS NUMBER")
+    def preprocess_number(self, gauge_name=None):
+        print(f"\t\t[-] PREPROCESS NUMBER -- Autually nothing (no crop)")
         return
 
     def preprocess_level(
