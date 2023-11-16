@@ -66,8 +66,8 @@ class YOLOModel:
         return model
 
     def train(self, parameters: TrainParameters):
-        # if self.use_comet:
-        #     self.init_comet(train_parameters=parameters)
+        if self.use_comet:
+            self.init_comet(train_parameters=parameters)
             
         print(f"train parameters: {parameters.comet_parameters()}")
         # TODO: check experiment folder
@@ -92,8 +92,8 @@ class YOLOModel:
             name=f"{str(parameters.get_name()[0])}" # TODO: name of the experiment
         )
         
-        # if self.use_comet:
-        #     self.end_comet()
+        if self.use_comet:
+            self.end_comet()
 
     def init_comet(
         self,
@@ -116,7 +116,7 @@ class YOLOModel:
         experiment.log_parameters(parameters=train_parameters.comet_parameters())
     
     def end_comet(self,):
-        # comet_ml.Experiment.end() # end the experiment
+        comet_ml.Experiment.end() # end the experiment
         return
         
         

@@ -12,7 +12,7 @@ runs
 # File
 *.pt
 .DS_Store
-.ipynb
+*.ipynb
 
 ### Flask ###
 instance/*

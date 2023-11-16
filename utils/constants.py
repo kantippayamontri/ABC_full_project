@@ -20,7 +20,8 @@ class Constants:
     label_folder = "labels"
     data_yaml_file = "data.yaml"
     setting_yaml = Path(
-        "/Users/kantip/Library/Application Support/Ultralytics/settings.yaml"
+#         "/Users/kantip/Library/Application Support/Ultralytics/settings.yaml"
+        "/home/jupyter-g630631145/.config/Ultralytics/settings.yaml"
     )
     dataset_dir_setting = Path(
         "/Users/kantip/Desktop/work/ABC_training"

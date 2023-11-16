@@ -764,7 +764,9 @@ class Utils:
 
         fp = open(filepath, "r")  # read the bounding box
         for c, line in enumerate(fp):
-            bb.append(list(float(n) for n in line.split(" ")))
+            bb_l = list(float(n) for n in line.split(" "))
+            if len(bb_l) == 5:
+                bb.append(bb_l)
 
         bb = np.array(bb)
         return bb
