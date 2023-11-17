@@ -103,7 +103,7 @@ class YOLOModel:
 
         comet_parameter = Comet.parameters[self.gauge_type.value]
 
-        # ic(comet_parameter)
+        ic(comet_parameter)
 
         # Initialize Comet ML with API key
         experiment = comet_ml.Experiment(

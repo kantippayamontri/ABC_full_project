@@ -62,19 +62,12 @@ class AugmentedGaugeModel:
                         original_label_path=bb_path,
                     )
                 except:
-<<<<<<< HEAD
-                    print(f" --> {img_path} can not augment")
-=======
                     print(f"\t--> can not augment {img_path}")
->>>>>>> b0eb6162e4b34122e32b69496889333004a62a48
 
             if self.gauge_type == Constants.GaugeType.dial.value:
                 self.augmented_dial(gauge_name=Constants.GaugeType.dial.value)
 
             if self.gauge_type == Constants.GaugeType.number.value:
-<<<<<<< HEAD
-                self.augmented_number(gauge_name=Constants.GaugeType.number.value)
-=======
                 # self.num_number_aug += self.augmented_number(gauge_name=Constants.GaugeType.number.value)
                 # TODO: same augment with digital
                 self.num_number_aug += self.augmented_digital(
@@ -88,7 +81,6 @@ class AugmentedGaugeModel:
                     original_label_path=bb_path
                 )
                 
->>>>>>> b0eb6162e4b34122e32b69496889333004a62a48
 
             if self.gauge_type == Constants.GaugeType.level.value:
                 self.augmented_level(gauge_name=Constants.GaugeType.level.value)

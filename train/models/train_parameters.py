@@ -92,7 +92,7 @@ class TrainParameters:
             "resume": self.get_resume(),
             "learning_rate": self.get_learning_rate(),
             "final_learning_rate": self.get_final_learning_rate(),
-            "project_name": self.get_project_name(),
+            "project_name": str(self.get_project_name()),
             "name": self.get_name(),
         }
 

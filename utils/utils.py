@@ -810,3 +810,10 @@ class Utils:
         if with_under:
             random_string = "_" + random_string
         return str(random_string)
+    
+    @staticmethod
+    def get_enum_by_value(value,enum):
+        for member in enum.__members__.values():
+            if member.value == value:
+                return member
+        raise ValueError(f"No member with value {value} in the enum.")
