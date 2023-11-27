@@ -1,5 +1,6 @@
 from utils import Constants, Utils
 import random
+from icecream import ic
 
 
 class PreprocessGaugeModel:
@@ -154,8 +155,26 @@ class PreprocessGaugeModel:
         return
 
     def preprocess_number(self, gauge_name=None):
-        print(f"\t\t[-] PREPROCESS NUMBER -- Autually nothing (no crop)")
+        print(f"\t\t[-] PREPROCESS NUMBER -- Resize to 640")
         return
+        for index, (img_path, bb_path) in enumerate(self.match_img_bb_path):
+            if index % 100 == 0:
+                print(f"image index: {index}")
+
+            img = Utils.load_img_cv2(filepath=img_path)
+            bb = Utils.load_bb(filepath=bb_path)
+
+            target_dict = {
+                value: index
+                for index, value in enumerate(
+                    Constants.map_data_dict[Constants.GaugeType.number.value]["target"]
+                )
+            }
+            ic(target_dict)
+            
+
+            if index > 5:
+                break
 
     def preprocess_level(
         self,

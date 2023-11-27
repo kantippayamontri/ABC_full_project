@@ -52,7 +52,7 @@ class DatasetCombineModel:
         print()
         print("-" * 100)
         print()
-        self.augmented()
+        # self.augmented()
 
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
