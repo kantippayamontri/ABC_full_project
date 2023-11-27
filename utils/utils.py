@@ -304,6 +304,49 @@ class Utils:
 
         return aug_images_bb_list
 
+
+    @staticmethod
+    def albu_augmented_number(target_size, format=None):
+        from utils.constants import Constants
+        
+        target_width = target_size[0]
+        target_height = target_size[1]
+
+        
+        if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
+            transform = A.Compose(
+                [
+                    # TODO: augmentation images
+                    A.ChannelShuffle(
+                        p=0.7,
+                    ),  # ! channel shuffle
+                    A.MultiplicativeNoise(
+                        multiplier=[0.4, 1.0], elementwise=True, p=0.5
+                    ),
+                    A.Blur(blur_limit=(4, 4), p=0.5),
+                    # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
+                    # A.HorizontalFlip( p=0,), #horizontal
+                    # A.VerticalFlip(p=1),
+                    # A.Rotate(limit=[-45, 45], border_mode=cv2.BORDER_CONSTANT, p=0.7),
+                    A.Rotate(limit=[-20,20], border_mode=cv2.BORDER_CONSTANT,p=0.7),
+                    A.ColorJitter(p=0.7),
+                    # TODO: resize and padding images if needed
+                    A.LongestMaxSize(max_size=max(target_size)),
+                    A.PadIfNeeded(
+                        min_height=target_height,
+                        min_width=target_width,
+                        border_mode=cv2.BORDER_CONSTANT,
+                    ),
+                    A.Resize(height=target_height, width=target_width),
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+
+        return transform
+        
+
     # TODO: albu for augment digital
     @staticmethod
     def albu_augmented_digital(target_size, format=None):
@@ -326,7 +369,7 @@ class Utils:
                     # A.GaussNoise(var_limit=(0,0.075), mean=0, p=1.0), # FIXME: not work
                     # A.HorizontalFlip( p=0,), #horizontal
                     # A.VerticalFlip(p=1),
-                    A.Rotate(limit=[-90, 90], border_mode=cv2.BORDER_CONSTANT, p=0.7),
+                    A.Rotate(limit=[-45, 45], border_mode=cv2.BORDER_CONSTANT, p=0.7),
                     # A.Rotate(limit=[-20,20], border_mode=cv2.BORDER_CONSTANT,p=0.7),
                     A.ColorJitter(p=0.7),
                     # TODO: resize and padding images if needed
@@ -622,11 +665,12 @@ class Utils:
         # print(img_size, bb)
         img_w = img_size[1]
         img_h = img_size[0]
-        nx = int(float(bb[1] * img_w))
-        ny = int(float(bb[2] * img_h))
-        nw = int(float(bb[3] * img_w))
-        nh = int(float(bb[4] * img_h))
         if with_class:
+            nx = int(float(bb[1] * img_w))
+            ny = int(float(bb[2] * img_h))
+            nw = int(float(bb[3] * img_w))
+            nh = int(float(bb[4] * img_h))
+
             return {
                 "class": bb[0],
                 "bb": [
@@ -635,6 +679,11 @@ class Utils:
                 ],
             }
         else:
+            nx = int(float(bb[0] * img_w))
+            ny = int(float(bb[1] * img_h))
+            nw = int(float(bb[2] * img_w))
+            nh = int(float(bb[3] * img_h))
+
             return {
                 "class": None,
                 "bb": [
@@ -657,11 +706,14 @@ class Utils:
                 )
                 for _bb in bb
             ]
+        else:
+            xyxy_bb = bb
 
         plt.imshow(img)
         plt.axis("off")  # Turn off axes numbers and ticks
 
         for xyxy in xyxy_bb:
+            # ic(xyxy)
             color_index = 0
             top_left = (0, 0)
             bottom_right = (0, 0)
@@ -817,3 +869,12 @@ class Utils:
             if member.value == value:
                 return member
         raise ValueError(f"No member with value {value} in the enum.")
+
+    
+    def count_files(folder):
+        folder = str(folder)
+        count = 0
+        for filename in os.listdir(folder):
+            if os.path.isfile(os.path.join(folder, filename)):
+                count += 1
+        return count

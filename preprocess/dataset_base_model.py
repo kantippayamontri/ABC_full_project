@@ -4,12 +4,14 @@ from preprocess.preprocess_constants import PreprocessConstants
 import random
 from icecream import ic
 from pathlib import Path
+import typing
 
 
 class DatasetCombineModel:
     def __init__(
         self,
         make_frame=False,
+        dataset_choose:Constants.GaugeType=None
     ):
         self.found_folder_dict = {
             Constants.GaugeType.digital.value: False,
@@ -20,6 +22,7 @@ class DatasetCombineModel:
         }
 
         self.make_frame = make_frame
+        self.dataset_choose = dataset_choose
 
     def conduct_dataset(self, delete_dataset_for_train=True):
         self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
@@ -53,6 +56,10 @@ class DatasetCombineModel:
 
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
+            ic(f"in for loop check folder, key: {key}")
+            if self.dataset_choose != None and self.dataset_choose.value != key:
+                continue
+            ic(f"pass")
             print(f"[/] CHECK {key} GAUGE")
             if Utils.check_folder_exists(value) :  # FIXME: remove key==
                 print(f"\t[/] FOLDER FOUND at {value}")
@@ -189,6 +196,9 @@ class DatasetCombineModel:
         # print(f"val ratio: {1 - train_ratio}")
 
         for key, value in PreprocessConstants.base_folder_dict.items():
+            if self.dataset_choose != None and self.dataset_choose.value != key:
+                continue
+
             if not self.found_folder_dict[key]: # FIXME: uncomment this statements
                 continue
             else:
@@ -246,6 +256,9 @@ class DatasetCombineModel:
         self,
     ):
         for key, value in PreprocessConstants.base_folder_dict.items():
+            if self.dataset_choose != None and self.dataset_choose.value != key:
+                continue
+
             if not self.found_folder_dict[key]:
                 continue
             else:
@@ -531,6 +544,8 @@ class DatasetCombineModel:
         print(f"[-] Preprocess Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
             # print(f"key: {key}, value: {value}")
+            if self.dataset_choose != None and self.dataset_choose.value != key:
+                continue
 
             source_folder = (
                 PreprocessConstants.train_dataset_folder / key / Constants.train_folder
@@ -567,6 +582,9 @@ class DatasetCombineModel:
 
         print(f"[-] augmented Dataset")
         for key, value in PreprocessConstants.train_folder_dict.items():
+            
+            if self.dataset_choose != None and self.dataset_choose.value != key:
+                continue
             
             if not Utils.check_folder_exists(value):
                 continue

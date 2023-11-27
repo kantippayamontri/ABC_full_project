@@ -137,6 +137,9 @@ class AugmentedGaugeModel:
 
     def augmented_number(self, gauge_name):
         print(f"\t\t[-] AUGMENTED NUMBER")
+        from utils.constants import Constants
+        
+        
 
     def augmented_level(
         self,

@@ -9,6 +9,9 @@ dataset_*
 experiment*
 .DS_Store
 runs
+test_image*
+model*
+
 # File
 *.pt
 .DS_Store
