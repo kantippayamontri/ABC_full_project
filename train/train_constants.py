@@ -35,7 +35,9 @@ class Comet:
             
         },
         Constants.GaugeType.number.value: {
-            
+            "api_key": "GrkgXtu7qg8v5K6kgx6Epn8t6", #TODO: the same as all project
+            "project_name": "number",
+            "workspace": "abc-gauge-detection",
         },
         Constants.GaugeType.clock.value: {
             
