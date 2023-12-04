@@ -57,6 +57,10 @@ class InferenceUtils:
         target_width = img.shape[0] -1
         target_height = img.shape[1] -1
 
+        target_resize_width = target_size[0]
+        target_resize_height = target_size[1]
+
+
         transform = A.Compose(
             [
                 A.Crop(
@@ -73,7 +77,7 @@ class InferenceUtils:
                     border_mode=cv2.BORDER_CONSTANT,
                 ),
                 A.Resize(
-                    height=target_height, width=target_width, always_apply=True
+                    height=target_resize_height, width=target_resize_width, always_apply=True
                 ),
                 ToTensorV2(),
             ],

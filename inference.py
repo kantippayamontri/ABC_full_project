@@ -1,6 +1,13 @@
 # TODO: this file use to predict the model
 from utils import Utils, Constants
-from inference import InferenceConstants, InferenceModel, Boxes, InferenceUtils
+from inference import (
+    InferenceConstants,
+    InferenceModel,
+    Boxes,
+    InferenceUtils,
+    DigitalBoxes,
+    NumberBoxes,
+)
 from ultralytics import YOLO
 import torch
 import torchvision.transforms as transforms
@@ -8,6 +15,7 @@ from PIL import Image
 from icecream import ic
 import cv2
 from PIL import Image
+import time
 
 gauge_use = Constants.GaugeType.digital
 
@@ -68,28 +76,44 @@ if Utils.count_files(InferenceConstants.test_image_path_dict[gauge_use]) == 0:
 
 if gauge_use == Constants.GaugeType.digital:
     model_gauge = InferenceModel(
-        model_path=InferenceConstants.model_file_use_dict[gauge_use]["gauge"]
+        model_path=InferenceConstants.model_file_use_dict[gauge_use]["gauge"],
+        img_target_predict= InferenceConstants.predict_parameters[Constants.GaugeType.digital]["image size"],
+        conf=InferenceConstants.predict_parameters[Constants.GaugeType.digital]["conf"]
+
     )
     number_gauge = InferenceModel(
-        model_path=InferenceConstants.model_file_use_dict[gauge_use]["gauge"]
+        model_path=InferenceConstants.model_file_use_dict[gauge_use]["number"],
+        img_target_predict=InferenceConstants.predict_parameters[Constants.GaugeType.number]["image size"],
+        conf=InferenceConstants.predict_parameters[Constants.GaugeType.number]["conf"]
+    )
+    start_time = time.time()
+    number_samples = len(
+        Utils.get_filenames_folder(
+            source_folder=InferenceConstants.test_image_path_dict[gauge_use]
+        )
     )
     for index, input_filename in enumerate(
         Utils.get_filenames_folder(
             source_folder=InferenceConstants.test_image_path_dict[gauge_use]
         )
     ):
-        gauge_display_frame_shape = (1024, 1024)
+        gauge_display_frame_shape = InferenceConstants.predict_parameters[
+            Constants.GaugeType.digital
+        ]["image size"]
         image = cv2.imread(str(input_filename))
-        trans = InferenceUtils.albu_resize_pad_zero(target_size=gauge_display_frame_shape, )
+        trans = InferenceUtils.albu_resize_pad_zero(
+            target_size=gauge_display_frame_shape,
+        )
 
         image_tensor = trans(image=image)["image"]
         image_tensor = torch.div(image_tensor, 255.0)
         image_tensor = torch.unsqueeze(image_tensor, 0)
-        
+
         gauge_display_frames = model_gauge.inference_data(input_img=image_tensor)
+        ic(f"image index: {index}")
         for gauge_display_frame in gauge_display_frames:
             gdf = gauge_display_frame.boxes.cpu().numpy()
-            boxes = Boxes(
+            boxes = DigitalBoxes(
                 boxes=gdf.boxes,
                 cls=gdf.cls,
                 conf=gdf.conf,
@@ -104,33 +128,68 @@ if gauge_use == Constants.GaugeType.digital:
                 xyxyn=gdf.xyxyn,
             )
 
-            ic(f"number gauge: {boxes.nGauges}")
-            ic(f"number display: {boxes.nDisplays}")
-            ic(f"number frame: {boxes.nFrames}")
-            ic(f"number frame in gauge: {len(boxes.frameInGauge)}")
-            ic(f"number frame in display: {len(boxes.frameInDisplay)}")
+        ic(f"number gauge: {boxes.nGauges}")
+        ic(f"number display: {boxes.nDisplays}")
+        ic(f"number frame: {boxes.nFrames}")
+        ic(f"number frame in gauge: {len(boxes.frameInGauge)}")
+        ic(f"number frame in display: {len(boxes.frameInDisplay)}")
 
-            ic(f"loop frame")
-            # loop frame images
-            for frame in boxes.frameList:
-                frame_shape = (640, 640)
-                # get position in real image
-                ori_frame_coor = boxes.getCoordinatesRealImage(ori_shape=gauge_display_frame_shape, want_shape=image.shape, box_coor=frame.xyxy) 
-                frame_transform = InferenceUtils.albu_make_frame(img=image, frame_coor=ori_frame_coor, target_size=frame_shape)
-                crop_frame_image = frame_transform(image=image)['image']
-                
-                Utils.visualize_img_bb(
-                    img=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0),
-                    # bb=[[pos / 1024.0 for pos in box.xyxy] for box in boxes.frameInGauge],
-                    bb=[],
-                    with_class=False,
-                    labels=None,
-                    format=None,
+        # ic(f"loop frame")
+        # loop frame images
+        ic(f"image index: {index}")
+        for frame_index, frame in enumerate(boxes.makeFrameForPredict()):
+            ic(f"\tframe index: {frame_index}")
+            frame_shape = InferenceConstants.predict_parameters[
+                Constants.GaugeType.number
+            ]["image size"]
+            # get position in real image
+            ori_frame_coor = boxes.getCoordinatesRealImage(
+                ori_shape=gauge_display_frame_shape,
+                want_shape=image.shape,
+                box_coor=frame.xyxy,
+            )
+            frame_transform = InferenceUtils.albu_make_frame(
+                img=image, frame_coor=ori_frame_coor, target_size=frame_shape
+            )
+            crop_frame_image = frame_transform(image=image)["image"]  # tensor
+            crop_frame_image = torch.div(crop_frame_image, 255.0)
+            crop_frame_image = torch.unsqueeze(crop_frame_image, 0)
+
+            number_predicts = number_gauge.inference_data(input_img=crop_frame_image)
+            for number_predict in number_predicts:
+                # ic(number_predict)
+                nbp = number_predict.boxes.cpu().numpy()
+                boxes = NumberBoxes(
+                    boxes=nbp.boxes,
+                    cls=nbp.cls,
+                    conf=nbp.conf,
+                    data=nbp.data,
+                    id=nbp.id,
+                    is_track=nbp.is_track,
+                    orig_shape=nbp.orig_shape,
+                    shape=nbp.shape,
+                    xywh=nbp.xywh,
+                    xywhn=nbp.xywhn,
+                    xyxy=nbp.xyxy,
+                    xyxyn=nbp.xyxyn,
                 )
-                
-                # predict number
-                
-            # print(torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0).shape)
+                # [ box.printBox()for box in boxes.boxes_list]
+                ic(boxes.predict_number())
+        Utils.visualize_img_bb(
+            img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+            bb=[],
+            with_class=False,
+            labels=None,
+            format=None,
+        )
 
-        if index == 3:
+        # predict number
+
+        # print(torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0).shape)
+
+        if index == 2:
             break
+        # if index == 3:
+        #     break
+    end_time = time.time()
+    ic(f"use time : {(end_time - start_time ) / number_samples}")

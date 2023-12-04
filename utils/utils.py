@@ -870,7 +870,7 @@ class Utils:
                 return member
         raise ValueError(f"No member with value {value} in the enum.")
 
-    
+    @staticmethod 
     def count_files(folder):
         folder = str(folder)
         count = 0
@@ -878,3 +878,28 @@ class Utils:
             if os.path.isfile(os.path.join(folder, filename)):
                 count += 1
         return count
+
+    @staticmethod
+    def change_xyxy_to_yolo(xyxy_format, image_width, image_height, class_bb=None):
+        # ic(image_width)
+        # ic(image_height)
+        x_min, y_min, x_max, y_max = xyxy_format
+
+        # Calculate box center coordinates
+        x_center = (x_min + x_max) / 2.0
+        y_center = (y_min + y_max) / 2.0
+
+        # Calculate box width and height
+        box_width = x_max - x_min
+        box_height = y_max - y_min
+
+        # Normalize coordinates to be in the range [0, 1]
+        x_center /= image_width
+        y_center /= image_height
+        box_width /= image_width
+        box_height /= image_height
+        
+        if class_bb != None:
+            return [class_bb, x_center, y_center, box_width, box_height]
+
+        return [x_center, y_center, box_width, box_height]

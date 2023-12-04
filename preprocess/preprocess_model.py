@@ -1,6 +1,7 @@
 from utils import Constants, Utils
 import random
 from icecream import ic
+import cv2
 
 
 class PreprocessGaugeModel:
