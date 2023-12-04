@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description="for training arguments parser")
 # Add positional argument
 parser.add_argument("input_file",type=str, help = "your python file to run")
 parser.add_argument("dataset_type", type=str, help="type of dataset to train")
-
+parser.add_argument("model_type", type=str, help="type of model to train")
 
 # Add optional argument with a default value
 parser.add_argument("-ep", "--epochs", type=int, default=300, help="a number of epochs")

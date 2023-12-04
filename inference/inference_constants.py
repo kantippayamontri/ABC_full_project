@@ -48,3 +48,32 @@ class InferenceConstants:
         "display": 1,
         "frame": 2,
     }
+
+    inference_number_convert = {
+        0: "0",
+        1: "1",
+        2: "2",
+        3: "3",
+        4: "4",
+        5: "5",
+        6: "6",
+        7: "7",
+        8: "8",
+        9: "9",
+        10: ":",
+        11: ".",
+        12: "", # float
+        13: "-",
+        14: "/",
+    }
+
+    predict_parameters = {
+        Constants.GaugeType.digital: {
+            "image size": (640, 640),
+            "conf": 0.3, # 0.342
+        },
+        Constants.GaugeType.number: {
+            "image size": (640, 640),
+            "conf": 0.2,
+        },
+    }
