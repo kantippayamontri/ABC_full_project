@@ -4,8 +4,9 @@ class PreprocessConstants:
     base_dataset_folder = Path("./datasets")
     
     # TODO: ration of training set and validation set
-    train_ratio = 0.95
-    val_ratio = 1 - train_ratio
+    train_ratio = 0.90
+    val_ratio = 0.05
+    test_ratio = 0.05
     
     base_folder_dict = {
         Constants.GaugeType.digital.value : base_dataset_folder / Constants.GaugeType.digital.value,

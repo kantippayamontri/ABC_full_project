@@ -43,16 +43,18 @@ class DatasetCombineModel:
             print("-" * 100)
             print()
         self.divide_datasets(
-            train_ratio=PreprocessConstants.train_ratio
+            train_ratio=PreprocessConstants.train_ratio,
+            val_ratio= PreprocessConstants.val_ratio,
+            test_ratio= PreprocessConstants.test_ratio,
         )  # TODO: divide into train set and validation set
         print()
         print("-" * 100)
         print()
-        self.preprocess()
-        print()
-        print("-" * 100)
-        print()
-        self.augmented()
+        # self.preprocess()
+        # print()
+        # print("-" * 100)
+        # print()
+        # self.augmented()
 
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
@@ -190,7 +192,9 @@ class DatasetCombineModel:
 
     def divide_datasets(
         self,
-        train_ratio=0.8,
+        train_ratio=0.9,
+        val_ratio=0.05,
+        test_ratio=0.05,
     ):
         # print(f"train ratio: {train_ratio}")
         # print(f"val ratio: {1 - train_ratio}")
@@ -214,9 +218,16 @@ class DatasetCombineModel:
             target_val_folder = (
                 PreprocessConstants.train_folder_dict[key] / Constants.val_folder
             )
+            target_test_folder = (
+                PreprocessConstants.train_folder_dict[key] / Constants.test_folder
+            )
 
             target_val_image_folder = target_val_folder / Constants.image_folder
             target_val_label_folder = target_val_folder / Constants.label_folder
+
+            
+            target_test_image_folder = target_test_folder / Constants.image_folder
+            target_test_label_folder = target_test_folder / Constants.label_folder
 
             # print(target_source_folder)
             # print(target_train_folder)
@@ -230,11 +241,17 @@ class DatasetCombineModel:
             )
 
             random.shuffle(train_img_bb)  # TODO: shuffle the list
-            index_divide_val = int((len(train_img_bb) - 1) * (1 - train_ratio))
 
-            val_img_bb = train_img_bb[:index_divide_val]
+            dataset_size = len(train_img_bb)
+            train_size =  int(dataset_size * train_ratio)
+            val_size = int(dataset_size * val_ratio)
+            test_size = int(dataset_size * test_ratio)
+            
+            val_img_bb = train_img_bb[train_size:train_size + val_size]
+            test_img_bb = train_img_bb[train_size + val_size:]
+            
+            #TODO: move val
 
-            # TODO: move image and labe from train to val
             for idx, (img_path, lb_path) in enumerate(val_img_bb):
                 # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
 
@@ -249,6 +266,44 @@ class DatasetCombineModel:
                     source_file_path=lb_path,
                     target_file_path=target_val_label_folder / lb_path.name,
                 )
+
+            
+            #TODO: move test
+            ic("--- move test ---")
+            for idx, (img_path, lb_path) in enumerate(test_img_bb):
+                # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
+
+                # TODO: move images
+                Utils.move_file(
+                    source_file_path=img_path,
+                    target_file_path=target_test_image_folder / img_path.name,
+                )
+
+                # TODO: move labels
+                Utils.move_file(
+                    source_file_path=lb_path,
+                    target_file_path=target_test_label_folder / lb_path.name,
+                )
+
+            # index_divide_val = int((len(train_img_bb) - 1) * (1 - train_ratio))
+
+            # val_img_bb = train_img_bb[:index_divide_val]
+
+            # # TODO: move image and labe from train to val
+            # for idx, (img_path, lb_path) in enumerate(val_img_bb):
+            #     # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
+
+            #     # TODO: move images
+            #     Utils.move_file(
+            #         source_file_path=img_path,
+            #         target_file_path=target_val_image_folder / img_path.name,
+            #     )
+
+            #     # TODO: move labels
+            #     Utils.move_file(
+            #         source_file_path=lb_path,
+            #         target_file_path=target_val_label_folder / lb_path.name,
+            #     )
 
     def combine_datasets(
         self,
