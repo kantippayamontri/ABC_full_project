@@ -17,7 +17,9 @@ predict_dataset*
 *.pt
 .DS_Store
 *.ipynb
-
+*.out
+*.err
+mm_optimization*
 ### Flask ###
 instance/*
 !instance/.gitignore
