@@ -304,15 +304,13 @@ class Utils:
 
         return aug_images_bb_list
 
-
     @staticmethod
     def albu_augmented_number(target_size, format=None):
         from utils.constants import Constants
-        
+
         target_width = target_size[0]
         target_height = target_size[1]
 
-        
         if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
             transform = A.Compose(
                 [
@@ -328,7 +326,7 @@ class Utils:
                     # A.HorizontalFlip( p=0,), #horizontal
                     # A.VerticalFlip(p=1),
                     # A.Rotate(limit=[-45, 45], border_mode=cv2.BORDER_CONSTANT, p=0.7),
-                    A.Rotate(limit=[-20,20], border_mode=cv2.BORDER_CONSTANT,p=0.7),
+                    A.Rotate(limit=[-20, 20], border_mode=cv2.BORDER_CONSTANT, p=0.7),
                     A.ColorJitter(p=0.7),
                     # TODO: resize and padding images if needed
                     A.LongestMaxSize(max_size=max(target_size)),
@@ -345,7 +343,6 @@ class Utils:
             )
 
         return transform
-        
 
     # TODO: albu for augment digital
     @staticmethod
@@ -796,9 +793,12 @@ class Utils:
         return match_img_bb
 
     @staticmethod
-    def save_image(img, filepath):
+    def save_image(img, filepath, mode=None):
         # Convert the NumPy array to a PIL Image
-        pil_image = Image.fromarray(img)
+        if mode != None:
+            pil_image = Image.fromarray(img, mode=mode)
+        else:
+            pil_image = Image.fromarray(img)
 
         if filepath.is_file():
             os.remove(filepath)
@@ -862,15 +862,15 @@ class Utils:
         if with_under:
             random_string = "_" + random_string
         return str(random_string)
-    
+
     @staticmethod
-    def get_enum_by_value(value,enum):
+    def get_enum_by_value(value, enum):
         for member in enum.__members__.values():
             if member.value == value:
                 return member
         raise ValueError(f"No member with value {value} in the enum.")
 
-    @staticmethod 
+    @staticmethod
     def count_files(folder):
         folder = str(folder)
         count = 0
@@ -898,8 +898,47 @@ class Utils:
         y_center /= image_height
         box_width /= image_width
         box_height /= image_height
-        
+
         if class_bb != None:
             return [class_bb, x_center, y_center, box_width, box_height]
 
         return [x_center, y_center, box_width, box_height]
+
+    @staticmethod
+    def save_image_bb_separate_folder(
+        image_np, bb_list, image_path, bb_path, bb_class, yaml_path
+    ):
+        # Utils.visualize_img_bb(
+        #     img=image_np,
+        #     bb=bb_list,
+        #     with_class=True,
+        #     labels=["gauge", "display", "frame"],
+        #     format=None,
+        # )
+        # TODO: step 1 : save image
+        cv2.imwrite(
+            filename=str(image_path),
+            img=cv2.cvtColor(image_np * 255.0, cv2.COLOR_RGB2BGR),
+        )  # save image
+
+        # TODO: step 2 :  save text file
+        with open(bb_path, "w") as fp:
+            for item in bb_list:
+                for bb in item:
+                    fp.write("%s " % bb)
+                # write each item on a new line
+                fp.write("\n")
+
+        # TODO: step 3 : write yaml file
+        if Utils.check_folder_exists(yaml_path):
+            return
+
+        yaml_list = []
+        yaml_list.append(
+            {"names": bb_class},
+        )
+        yaml_list.append({"nc": len(bb_class)})
+        yaml_list.append(
+            {"train": "../train/images"}
+        )
+        Utils.write_yaml(data=yaml_list, filepath=yaml_path)

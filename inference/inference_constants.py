@@ -43,6 +43,20 @@ class InferenceConstants:
         Constants.GaugeType.level: Path("test_image/level"),
     }
 
+    img_bb_predict_root_path = Path("predict_dataset/")
+    img_bb_predict_dict = {
+        Constants.GaugeType.digital: {
+            "image path": img_bb_predict_root_path / "digital" / "train" / "images",
+            "label path": img_bb_predict_root_path / "digital" / "train" /  "labels",
+            "yaml path": img_bb_predict_root_path / "digital",
+            "bb class": ["gauge", "display", "frame"]
+        },
+        Constants.GaugeType.number: {
+            "image path": img_bb_predict_root_path / "number" / "train" / "images",
+            "label path": img_bb_predict_root_path / "number" / "train" / "labels",
+        },
+    }
+
     inference_class_dict = {
         "gauge": 0,
         "display": 1,
@@ -62,7 +76,7 @@ class InferenceConstants:
         9: "9",
         10: ":",
         11: ".",
-        12: "", # float
+        12: "",  # float
         13: "-",
         14: "/",
     }
@@ -70,7 +84,7 @@ class InferenceConstants:
     predict_parameters = {
         Constants.GaugeType.digital: {
             "image size": (640, 640),
-            "conf": 0.3, # 0.342
+            "conf": 0.3,  # 0.342
         },
         Constants.GaugeType.number: {
             "image size": (640, 640),

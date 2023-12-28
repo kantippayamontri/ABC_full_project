@@ -1,8 +1,14 @@
 # FIXME: Inference and Predict share the same Inference module
-# TODO: this file use to predict the model
+# TODO: this file use to predict the model -> for each model
 
 from utils import Utils, Constants
-from inference import InferenceConstants, InferenceModel, Boxes, InferenceUtils, DigitalBoxes
+from inference import (
+    InferenceConstants,
+    InferenceModel,
+    Boxes,
+    InferenceUtils,
+    DigitalBoxes,
+)
 from ultralytics import YOLO
 import torch
 import torchvision.transforms as transforms
@@ -31,16 +37,21 @@ for key, folder in InferenceConstants.model_folder_path_dict.items():
             print(f"\t---> [/] found model")
         else:
             print(f"\t---> [X] not found model")
+
 print()
 print(f"Model use for {gauge_use.value}")
 # check model folder path
 
 can_inference = True
 if not Utils.check_folder_exists(InferenceConstants.model_file_path_dict[gauge_use]):
-    print(f"---> [X] model {str(InferenceConstants.model_file_path_dict[gauge_use])} not found ---")
+    print(
+        f"---> [X] model {str(InferenceConstants.model_file_path_dict[gauge_use])} not found ---"
+    )
     can_inference = False
 else:
-    print(f"---> [/] model {str(InferenceConstants.model_file_path_dict[gauge_use])} found ---")
+    print(
+        f"---> [/] model {str(InferenceConstants.model_file_path_dict[gauge_use])} found ---"
+    )
 
 if not can_inference:
     exit()
@@ -71,32 +82,67 @@ if Utils.count_files(InferenceConstants.test_image_path_dict[gauge_use]) == 0:
     exit()
 
 
-# TODO: predict load model 
+# TODO: predict load model
 
 model_gauge = InferenceModel(
-    model_path=InferenceConstants.model_file_path_dict[gauge_use]
+    model_path=InferenceConstants.model_file_path_dict[gauge_use],
+    img_target_predict=InferenceConstants.predict_parameters[
+        Constants.GaugeType.digital
+    ]["image size"],
+    conf=InferenceConstants.predict_parameters[Constants.GaugeType.digital]["conf"],
 )
 
+number_gauge = InferenceModel(
+    model_path=InferenceConstants.model_file_path_dict[gauge_use],
+    img_target_predict=InferenceConstants.predict_parameters[
+        Constants.GaugeType.number
+    ]["image size"],
+    conf=InferenceConstants.predict_parameters[Constants.GaugeType.number]["conf"],
+)
+
+# TODO: check folder to save image and bb
+if Utils.delete_folder_mkdir(
+    folder_path=InferenceConstants.img_bb_predict_root_path, remove=True
+):
+    if Utils.delete_folder_mkdir(
+        folder_path=InferenceConstants.img_bb_predict_dict[gauge_use]["image path"], remove=True
+    ):
+        print(
+            f"--- image path: {InferenceConstants.img_bb_predict_dict[gauge_use]['image path']} has deleted and create ---"
+        )
+    if Utils.delete_folder_mkdir(
+        folder_path=InferenceConstants.img_bb_predict_dict[gauge_use]["label path"], remove=True
+    ):
+        print(
+            f"--- image path: {InferenceConstants.img_bb_predict_dict[gauge_use]['label path']} has deleted and create ---"
+        )
+
+start_time = time.time()
 for index, input_filename in enumerate(
     Utils.get_filenames_folder(
         source_folder=InferenceConstants.test_image_path_dict[gauge_use]
     )
 ):
     ic(f"image index: {index}")
-    gauge_display_frame_shape = InferenceConstants.predict_parameters[gauge_use]["image size"]
+    gauge_display_frame_shape = InferenceConstants.predict_parameters[gauge_use][
+        "image size"
+    ]
     image = cv2.imread(str(input_filename))
-    trans = InferenceUtils.albu_resize_pad_zero(target_size=gauge_display_frame_shape, )
+    trans = InferenceUtils.albu_resize_pad_zero(
+        target_size=gauge_display_frame_shape,
+    )
 
     image_tensor = trans(image=image)["image"]
     image_tensor = torch.div(image_tensor, 255.0)
+
     image_tensor = torch.unsqueeze(image_tensor, 0)
-    
     output_boxes_model = model_gauge.inference_data(input_img=image_tensor)
 
-    image_input_np = torch.squeeze(image_tensor,0).numpy().transpose(1,2,0)
+    # output_boxes_model = number_gauge.inference_data(input_img=image_tensor)
+    image_input_np = torch.squeeze(image_tensor, 0).numpy().transpose(1,2,0)[:,:, [2,1,0]] # convert bgr to rgb format
 
     if gauge_use == Constants.GaugeType.digital:
-        for output_bb in  output_boxes_model:
+        for output_bb in output_boxes_model:
             output_bb_boxes_numpy = output_bb.boxes.cpu().numpy()
             # ic(output_bb_boxes_numpy)
             boxes = DigitalBoxes(
@@ -113,23 +159,41 @@ for index, input_filename in enumerate(
                 xyxy=output_bb_boxes_numpy.xyxy,
                 xyxyn=output_bb_boxes_numpy.xyxyn,
             )
-            ic(boxes.makeBBForSave())
-            # exit()
+            # ic(boxes.makeBBForSave())
 
     if save_img_bb:
         ic(f"Process save image and bounding box")
 
     if save_result:
         ic(f"Process save result")
-    
-    Utils.visualize_img_bb(
-        img=image_input_np,
-        # bb=[[pos / 1024.0 for pos in box.xyxy] for box in boxes.frameInGauge],
-        bb=boxes.makeBBForSave(),
-        with_class=True,
-        labels=["gauge", "displau", "frame"],
-        format=None,
+
+    # Utils.visualize_img_bb(
+    #     img=image_input_np,
+    #     bb=boxes.makeBBForSave(),
+    #     with_class=True,
+    #     labels=["gauge", "display", "frame"],
+    #     format=None,
+    # )
+
+    Utils.save_image_bb_separate_folder(
+        image_np=image_input_np,
+        bb_list=boxes.makeBBForSave(),
+        image_path=InferenceConstants.img_bb_predict_dict[gauge_use]["image path"] / input_filename.name,
+        bb_path=InferenceConstants.img_bb_predict_dict[gauge_use]["label path"] / f"{str(input_filename.stem)}.txt",
+        bb_class=InferenceConstants.img_bb_predict_dict[gauge_use]["bb class"],
+        yaml_path=InferenceConstants.img_bb_predict_dict[gauge_use]["yaml path"] / f"data.yaml",
     )
-    
-    # if index == 0:
-    #     break
+
+end_time = time.time()
+number_of_img = len(
+    Utils.get_filenames_folder(
+        source_folder=InferenceConstants.test_image_path_dict[gauge_use]
+    )
+)
+print(f"number of image: {number_of_img}")
+print(
+    f"average time: {(end_time-start_time) / len(Utils.get_filenames_folder( source_folder=InferenceConstants.test_image_path_dict[gauge_use]))}"
+)
+
+# if index == 0:
+#     break

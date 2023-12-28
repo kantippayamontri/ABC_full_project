@@ -11,6 +11,7 @@ experiment*
 runs
 test_image*
 model*
+predict_dataset*
 
 # File
 *.pt

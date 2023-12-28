@@ -210,7 +210,7 @@ class DigitalBoxes(Boxes):
                 
                 if not is_overlap:
                     for frame_index, frame in enumerate(self.frameList):
-                        if InferenceUtils.is_overlap(bbox1= gauge.xyxy, bbox2=frame.xyxy):
+                        if InferenceUtils.is_overlapping(bbox1= gauge.xyxy, bbox2=frame.xyxy):
                             predict_frame_index.append(frame_index)
         
         """

@@ -79,19 +79,18 @@ if gauge_use == Constants.GaugeType.digital:
         model_path=InferenceConstants.model_file_use_dict[gauge_use]["gauge"],
         img_target_predict= InferenceConstants.predict_parameters[Constants.GaugeType.digital]["image size"],
         conf=InferenceConstants.predict_parameters[Constants.GaugeType.digital]["conf"]
-
     )
     number_gauge = InferenceModel(
         model_path=InferenceConstants.model_file_use_dict[gauge_use]["number"],
         img_target_predict=InferenceConstants.predict_parameters[Constants.GaugeType.number]["image size"],
         conf=InferenceConstants.predict_parameters[Constants.GaugeType.number]["conf"]
     )
-    start_time = time.time()
     number_samples = len(
         Utils.get_filenames_folder(
             source_folder=InferenceConstants.test_image_path_dict[gauge_use]
         )
     )
+    start_time = time.time()
     for index, input_filename in enumerate(
         Utils.get_filenames_folder(
             source_folder=InferenceConstants.test_image_path_dict[gauge_use]
@@ -134,9 +133,8 @@ if gauge_use == Constants.GaugeType.digital:
         ic(f"number frame in gauge: {len(boxes.frameInGauge)}")
         ic(f"number frame in display: {len(boxes.frameInDisplay)}")
 
-        # ic(f"loop frame")
         # loop frame images
-        ic(f"image index: {index}")
+        # ic(f"image index: {index}")
         for frame_index, frame in enumerate(boxes.makeFrameForPredict()):
             ic(f"\tframe index: {frame_index}")
             frame_shape = InferenceConstants.predict_parameters[
@@ -183,13 +181,8 @@ if gauge_use == Constants.GaugeType.digital:
             format=None,
         )
 
-        # predict number
-
-        # print(torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0).shape)
-
         if index == 2:
             break
-        # if index == 3:
-        #     break
+
     end_time = time.time()
     ic(f"use time : {(end_time - start_time ) / number_samples}")

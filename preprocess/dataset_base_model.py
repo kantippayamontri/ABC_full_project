@@ -250,8 +250,6 @@ class DatasetCombineModel:
                     target_file_path=target_val_label_folder / lb_path.name,
                 )
 
-        return
-
     def combine_datasets(
         self,
     ):
@@ -377,7 +375,6 @@ class DatasetCombineModel:
             dataset_dict2=data_yaml_file_target,
         ):
             print(f"\t\t\t\t\t[-] NO NEED TO RECLASSES")
-
         else:
             print(f"\t\t\t\t[-] NEED TO RECLASSES")
             # TODO: loop in train, val and test folder
