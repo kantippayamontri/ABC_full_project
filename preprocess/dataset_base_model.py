@@ -42,20 +42,20 @@ class DatasetCombineModel:
             print()
             print("-" * 100)
             print()
-        self.divide_datasets(
-            train_ratio=PreprocessConstants.train_ratio,
-            val_ratio= PreprocessConstants.val_ratio,
-            test_ratio= PreprocessConstants.test_ratio,
-        )  # TODO: divide into train set and validation set
-        print()
-        print("-" * 100)
-        print()
+        # self.divide_datasets(
+        #     train_ratio=PreprocessConstants.train_ratio,
+        #     val_ratio= PreprocessConstants.val_ratio,
+        #     test_ratio= PreprocessConstants.test_ratio,
+        # )  # TODO: divide into train set and validation set
+        # print()
+        # print("-" * 100)
+        # print()
         # self.preprocess()
         # print()
         # print("-" * 100)
         # print()
         # self.augmented()
-
+# 
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
             ic(f"in for loop check folder, key: {key}")
