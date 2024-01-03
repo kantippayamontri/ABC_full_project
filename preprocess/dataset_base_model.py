@@ -46,6 +46,7 @@ class DatasetCombineModel:
             train_ratio=PreprocessConstants.train_ratio,
             val_ratio= PreprocessConstants.val_ratio,
             test_ratio= PreprocessConstants.test_ratio,
+            grayscale=True
         )  # TODO: divide into train set and validation set
         print()
         print("-" * 100)
@@ -195,6 +196,7 @@ class DatasetCombineModel:
         train_ratio=0.9,
         val_ratio=0.05,
         test_ratio=0.05,
+        grayscale=False,
     ):
         # print(f"train ratio: {train_ratio}")
         # print(f"val ratio: {1 - train_ratio}")
@@ -265,7 +267,21 @@ class DatasetCombineModel:
                 Utils.move_file(
                     source_file_path=lb_path,
                     target_file_path=target_val_label_folder / lb_path.name,
+
                 )
+                # TODO: make val image to grayscale
+                if grayscale: # convert to grayscale
+                    img_p = target_val_image_folder / img_path.name
+                    bb_p = target_val_label_folder / lb_path.name
+                    img = Utils.load_img_cv2(img_p)
+                    bb = Utils.load_bb(filepath=bb_p)
+                    transform = Utils.albu_grayscale(format=Constants.BoundingBoxFormat.YOLOV8)
+                    new_img, new_bb = Utils.get_output_from_transform(transform=transform, img=img, bb=bb,number_samples=1)[0]
+                    # delete old images
+                    Utils.delete_file(file_path=img_p)
+                    Utils.save_image(img=new_img, filepath=img_p)
+                    # overwrite label
+                    Utils.overwrite_label(bb=new_bb, txt_file_path=bb_p)
 
             
             #TODO: move test
@@ -285,26 +301,21 @@ class DatasetCombineModel:
                     target_file_path=target_test_label_folder / lb_path.name,
                 )
 
-            # index_divide_val = int((len(train_img_bb) - 1) * (1 - train_ratio))
-
-            # val_img_bb = train_img_bb[:index_divide_val]
-
-            # # TODO: move image and labe from train to val
-            # for idx, (img_path, lb_path) in enumerate(val_img_bb):
-            #     # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
-
-            #     # TODO: move images
-            #     Utils.move_file(
-            #         source_file_path=img_path,
-            #         target_file_path=target_val_image_folder / img_path.name,
-            #     )
-
-            #     # TODO: move labels
-            #     Utils.move_file(
-            #         source_file_path=lb_path,
-            #         target_file_path=target_val_label_folder / lb_path.name,
-            #     )
-
+                if grayscale:
+                    img_p = target_test_image_folder / img_path.name
+                    bb_p = target_test_label_folder / lb_path.name
+                    img = Utils.load_img_cv2(img_p)
+                    bb = Utils.load_bb(filepath=bb_p)
+                    transform = Utils.albu_grayscale(format=Constants.BoundingBoxFormat.YOLOV8)
+                    new_img, new_bb = Utils.get_output_from_transform(transform=transform, img=img, bb=bb,number_samples=1)[0]
+                    # delete old images
+                    Utils.delete_file(file_path=img_p)
+                    Utils.save_image(img=new_img, filepath=img_p)
+                    # overwrite label
+                    Utils.overwrite_label(bb=new_bb, txt_file_path=bb_p) 
+            
+                        
+            
     def combine_datasets(
         self,
     ):
