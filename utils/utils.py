@@ -82,6 +82,10 @@ class Utils:
         shutil.rmtree(folder_path)
 
     @staticmethod
+    def delete_file(file_path):
+        os.remove(str(file_path))
+
+    @staticmethod
     def move_folder(source_folder, target_folder):
         shutil.move(str(source_folder), str(target_folder))
 
@@ -272,6 +276,22 @@ class Utils:
         return transform
 
     @staticmethod
+    def albu_grayscale(format=None):
+        from utils.constants import Constants
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.ToGray(p=1.0)
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+        
+        return transform 
+
+    @staticmethod
     def get_output_from_transform(transform=None, img=None, bb=None, number_samples=1):
         if (transform is None) or (img is None) or (bb is None):
             print(f"*** CANNOT AUGMENTED IMAGE SOME PARAMETER IS NONE***")
@@ -377,6 +397,7 @@ class Utils:
                         border_mode=cv2.BORDER_CONSTANT,
                     ),
                     A.Resize(height=target_height, width=target_width),
+                    A.ToGray(p=1.0),
                 ],
                 bbox_params={
                     "format": "yolo",
