@@ -24,7 +24,7 @@ class DatasetCombineModel:
         self.make_frame = make_frame
         self.dataset_choose = dataset_choose
 
-    def conduct_dataset(self, delete_dataset_for_train=True):
+    def conduct_dataset(self, delete_dataset_for_train=True, grayscale=False):
         self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
         print()
         print("-" * 100)
@@ -46,7 +46,7 @@ class DatasetCombineModel:
             train_ratio=PreprocessConstants.train_ratio,
             val_ratio= PreprocessConstants.val_ratio,
             test_ratio= PreprocessConstants.test_ratio,
-            grayscale=True
+            dataset_choose=self.dataset_choose
         )  # TODO: divide into train set and validation set
         print()
         print("-" * 100)
@@ -196,7 +196,7 @@ class DatasetCombineModel:
         train_ratio=0.9,
         val_ratio=0.05,
         test_ratio=0.05,
-        grayscale=False,
+        dataset_choose=None,
     ):
         # print(f"train ratio: {train_ratio}")
         # print(f"val ratio: {1 - train_ratio}")
@@ -270,7 +270,7 @@ class DatasetCombineModel:
 
                 )
                 # TODO: make val image to grayscale
-                if grayscale: # convert to grayscale
+                if dataset_choose == Constants.GaugeType.digital: # convert to grayscale
                     img_p = target_val_image_folder / img_path.name
                     bb_p = target_val_label_folder / lb_path.name
                     img = Utils.load_img_cv2(img_p)
@@ -301,7 +301,7 @@ class DatasetCombineModel:
                     target_file_path=target_test_label_folder / lb_path.name,
                 )
 
-                if grayscale:
+                if dataset_choose == Constants.GaugeType.digital:
                     img_p = target_test_image_folder / img_path.name
                     bb_p = target_test_label_folder / lb_path.name
                     img = Utils.load_img_cv2(img_p)
