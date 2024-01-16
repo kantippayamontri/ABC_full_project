@@ -19,6 +19,7 @@ predict_dataset*
 *.ipynb
 *.out
 *.err
+*.png
 mm_optimization*
 ### Flask ###
 instance/*

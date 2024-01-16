@@ -2,7 +2,7 @@ import cv2
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from icecream import ic
-
+import math
 
 class InferenceUtils:
     @staticmethod
@@ -74,20 +74,22 @@ class InferenceUtils:
             return transform
 
     @staticmethod
-    def albu_make_frame(img, frame_coor, target_size):
-        target_width = img.shape[0] - 1
-        target_height = img.shape[1] - 1
+    def albu_make_frame(img_shape, frame_coor, target_size):
+        crop_width = img_shape[0] - 1
+        crop_height = img_shape[1] - 1
 
-        target_resize_width = target_size[0]
-        target_resize_height = target_size[1]
-
+        target_resize_width = target_size[1]
+        target_resize_height = target_size[0]
+        
+        ic(f"crop_coor : [{max(0, frame_coor[0])}, {max(0, frame_coor[1])}, {min(crop_width, frame_coor[2])}, {min(crop_height, frame_coor[3])}]") 
+        
         transform = A.Compose(
             [
                 A.Crop(
-                    x_min=max(0, frame_coor[0]),
-                    y_min=max(0, frame_coor[1]),
-                    x_max=min(target_width, frame_coor[2]),
-                    y_max=min(target_height, frame_coor[3]),
+                    x_min=max(0, math.floor(frame_coor[0])),
+                    y_min=max(0, math.floor(frame_coor[1])),
+                    x_max=min(crop_width, math.ceil(frame_coor[2])),
+                    y_max=min(crop_height, math.ceil(frame_coor[3])),
                 ),
                 A.LongestMaxSize(max_size=max(target_size)),
                 A.PadIfNeeded(

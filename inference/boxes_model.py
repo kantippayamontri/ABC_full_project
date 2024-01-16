@@ -3,7 +3,7 @@ from inference.inference_constants import InferenceConstants
 from inference.inference_utils import InferenceUtils
 from enum import Enum, auto
 from utils import Utils
-
+import math
 
 class Boxes:
     def __init__(
@@ -74,10 +74,10 @@ class Boxes:
         want_h = want_shape[0]
 
         box_c = {
-            self.COORDINATES.X1: box_coor[0],
-            self.COORDINATES.Y1: box_coor[1],
-            self.COORDINATES.X2: box_coor[2],
-            self.COORDINATES.Y2: box_coor[3],
+            self.COORDINATES.X1: math.floor(box_coor[0]),
+            self.COORDINATES.Y1: math.floor(box_coor[1]),
+            self.COORDINATES.X2: math.ceil(box_coor[2]),
+            self.COORDINATES.Y2: math.ceil(box_coor[3]),
         }
 
         new_x1 = self.NewRangRatio(

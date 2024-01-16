@@ -18,6 +18,6 @@ class InferenceModel:
     def inference_data(self, input_img, ):
         input_img = input_img.to(self.device) 
         # ic(f"input image shape: {input_img.shape}")
-        output = self.model.predict(input_img, imgsz=self.img_target_size, conf=self.conf,device=self.device)
+        output = self.model.predict(input_img, imgsz=self.img_target_size, conf=self.conf,device=self.device, verbose=False)
 
         return output

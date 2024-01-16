@@ -841,8 +841,8 @@ class Utils:
             bb_l = list(float(n) for n in line.split(" "))
             if len(bb_l) == 5:
                 bb.append(bb_l)
-        bb = np.array(bb)
-        return bb
+                
+        return np.array(bb) if len(bb) > 0 else None
 
     @staticmethod
     def overwrite_label(txt_file_path, bb):

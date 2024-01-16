@@ -23,48 +23,51 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description="for training arguments parser")
 
 # Add positional argument
-parser.add_argument("--input_file",type=str, help = "your python file to run")
+parser.add_argument("--input_file", type=str, help="your python file to run")
 parser.add_argument("--gauge_use", type=str, help="type gauge")
 parser.add_argument("--img_path", type=str, help="image path")
 
 # Parse the command-line arguments
 args = parser.parse_args()
 
-gauge_use = Utils.get_enum_by_value(value=args.gauge_use.lower(),enum=Constants.GaugeType)
+gauge_use = Utils.get_enum_by_value(
+    value=args.gauge_use.lower(), enum=Constants.GaugeType
+)
 img_path = args.img_path
 
 image_size_dict = {
-    Constants.GaugeType.digital: (640,640),
-    Constants.GaugeType.number: (640,640)
+    Constants.GaugeType.digital: (640, 640),
+    Constants.GaugeType.number: (640, 640),
 }
 model_path_dict = {
-    Constants.GaugeType.digital : {
+    Constants.GaugeType.digital: {
         "digital": Path("./models/digital/digital_model.pt"),
-        "number": Path("./models/number/number_model.pt")
+        "number": Path("./models/number/number_model.pt"),
     },
 }
 
 if gauge_use == Constants.GaugeType.digital:
-    
     model_gauge = InferenceModel(
         model_path=model_path_dict[gauge_use]["digital"],
-        img_target_size= image_size_dict[gauge_use],
-        conf=0.25, 
+        img_target_size=image_size_dict[gauge_use],
+        conf=0.25,
     )
     number_gauge = InferenceModel(
         model_path=model_path_dict[gauge_use]["number"],
         img_target_size=image_size_dict[Constants.GaugeType.number],
-        conf= 0.25,
+        conf=0.25,
     )
 
     number_samples = len(
         Utils.get_filenames_folder(
-            source_folder=Path(img_path), 
+            source_folder=Path(img_path),
         )
     )
 
     start_time = time.time()
-    for digital_index , digital_filename in enumerate(Utils.get_filenames_folder(source_folder=Path(img_path))):
+    for digital_index, digital_filename in enumerate(
+        Utils.get_filenames_folder(source_folder=Path(img_path))
+    ):
         ic(f"digital index: {digital_index}, filename: {digital_filename}")
         image = cv2.imread(str(digital_filename))
         trans = InferenceUtils.albu_resize_pad_zero(
@@ -95,34 +98,35 @@ if gauge_use == Constants.GaugeType.digital:
                 xyxyn=gdf.xyxyn,
             )
 
-        ic(f"number gauge: {boxes.nGauges}")
-        ic(f"number display: {boxes.nDisplays}")
-        ic(f"number frame: {boxes.nFrames}")
-        ic(f"number frame in gauge: {len(boxes.frameInGauge)}")
-        ic(f"number frame in display: {len(boxes.frameInDisplay)}")
+        # ic(f"number gauge: {boxes.nGauges}")
+        # ic(f"number display: {boxes.nDisplays}")
+        # ic(f"number frame: {boxes.nFrames}")
+        # ic(f"number frame in gauge: {len(boxes.frameInGauge)}")
+        # ic(f"number frame in display: {len(boxes.frameInDisplay)}")
+        # ic(boxes.boxes)
+        # ic(boxes.makeBBForSave())
+        # ic(gauge_display_frames[0].boxes[0].boxes)
 
         Utils.visualize_img_bb(
-            img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-            bb=[],
-            with_class=False,
-            labels=None,
-            format=None,
+            #img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+            img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0), 
+            bb=[ {"class": bb[5], "bb": [(bb[0],bb[1]),(bb[2],bb[3])] } for bb in boxes.boxes],
+            with_class=True,
+            labels=["gauge", "display", "frame"],
+            format=Constants.BoundingBoxFormat.XYXY,
         )
-        
-        for frame_index, frame in enumerate(boxes.makeFrameForPredict()):
-            ic(f"\tframe index: {frame_index}")
+
+        image_tensor_np = torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0)
+
+        for frame_index, frame in enumerate(boxes.frameList):
+            ic(f"\tframe index: {frame_index}, frame_xyxy: {frame.xyxy}")
             frame_shape = image_size_dict[Constants.GaugeType.number]
-            # get position in real image
-            ori_frame_coor = boxes.getCoordinatesRealImage(
-                ori_shape=image_size_dict[Constants.GaugeType.number],
-                want_shape=image.shape,
-                box_coor=frame.xyxy,
-            )
+            
             frame_transform = InferenceUtils.albu_make_frame(
-                img=image, frame_coor=ori_frame_coor, target_size=frame_shape
+                img_shape=frame_shape, frame_coor=frame.xyxy, target_size=frame_shape
             )
-            crop_frame_image = frame_transform(image=image)["image"]  # tensor
-            crop_frame_image = torch.div(crop_frame_image, 255.0)
+            crop_frame_image = frame_transform(image=image_tensor_np)["image"]  # tensor
+            # crop_frame_image = torch.div(crop_frame_image, 255.0)
             crop_frame_image = torch.unsqueeze(crop_frame_image, 0)
 
             Utils.visualize_img_bb(
@@ -132,9 +136,9 @@ if gauge_use == Constants.GaugeType.digital:
                 labels=None,
                 format=None,
             )
+
             number_predicts = number_gauge.inference_data(input_img=crop_frame_image)
             for number_predict in number_predicts:
-                # ic(number_predict)
                 nbp = number_predict.boxes.cpu().numpy()
                 boxes = NumberBoxes(
                     boxes=nbp.boxes,
@@ -150,11 +154,7 @@ if gauge_use == Constants.GaugeType.digital:
                     xyxy=nbp.xyxy,
                     xyxyn=nbp.xyxyn,
                 )
-                # [ box.printBox()for box in boxes.boxes_list]
                 ic(boxes.predict_number())
-
-        # if digital_index == 2:
-        #     break
 
     end_time = time.time()
     ic(f"use time : {(end_time - start_time ) / number_samples}")
