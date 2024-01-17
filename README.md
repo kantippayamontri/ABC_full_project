@@ -16,3 +16,5 @@ python predict.py --input_file=requirements.txt --gauge_use=digital --model_path
 -> inference.py
 python inference.py --input_file=requirements.txt --gauge_use=digital --img_path="./test_image/digital/" 
 
+-> val.py
+python val.py requirements.txt digital ./models/digital/digital_model.pt ./datasets_for_train/digital/test/ --plot False

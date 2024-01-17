@@ -49,8 +49,8 @@ class DetMetrics(SimpleClass):  # detection metrics
         on_plot=None,
         names=(),
         conf=0.001,
-        #iou_threshold=0.5,
-    ) -> None: 
+        # iou_threshold=0.5,
+    ) -> None:
         """Initialize a DetMetrics instance with a save directory, plot flag, callback function, and class names."""
         self.save_dir = save_dir
         self.plot = plot
@@ -66,13 +66,9 @@ class DetMetrics(SimpleClass):  # detection metrics
         }
         self.task = "detect"
         self.conf = conf
-        # self.iou_threshold = iou_threshold
         self.iou_list = torch.linspace(start=0.5, end=0.95, steps=10)
-        # self.collected_data = torch.tensor([])
-        self.collected_data = [ torch.zeros(1,4) for _ in range(len(self.iou_list))]
+        self.collected_data = [torch.zeros(1, 4) for _ in range(len(self.iou_list))]
         self.all_ap = torch.zeros([self.nc, len(self.iou_list)])
-        # ic(self.collected_data)
-        # ic(self.all_ap)
 
     def collect_results(self, gt_boxes=None, pred_boxes=None, gt_classes=None):
         """
@@ -89,9 +85,11 @@ class DetMetrics(SimpleClass):  # detection metrics
             if gt_classes.size(0) is None:  # check if lable is empty
                 detections = pred_boxes[pred_boxes[:, 4] >= self.conf]
                 for d in detections:
-                    # ic(self.collected_data[iou_idx])
                     self.collected_data[iou_idx] = torch.cat(
-                        (self.collected_data[iou_idx], torch.tensor([[d[4], False, d[5], self.nc]])),
+                        (
+                            self.collected_data[iou_idx],
+                            torch.tensor([[d[4], False, d[5], self.nc]]),
+                        ),
                         dim=0,
                     )  # FP
 
@@ -136,8 +134,6 @@ class DetMetrics(SimpleClass):  # detection metrics
                 j = m0 == i
                 if n and sum(j) == 1:
                     # self.matrix[detection_classes[m1[j]], gc] += 1  # correct -> TP
-                    # ic(self.collected_data[iou_idx], self.collected_data[iou_idx].shape )
-                    # ic(torch.tensor([[detections[m1[j][0]][4], True, gc, gc]]),torch.tensor([[detections[m1[j][0]][4], True, gc, gc]]).shape)
                     self.collected_data[iou_idx] = torch.cat(
                         (
                             self.collected_data[iou_idx],
@@ -145,7 +141,7 @@ class DetMetrics(SimpleClass):  # detection metrics
                         ),
                         dim=0,
                     )
-                  
+
                 else:
                     # self.matrix[self.nc, gc] += 1  # true background -> ไม่เจอ boudngin box ที่ match กับ ground-truth เลย -> FN
                     pass
@@ -161,31 +157,41 @@ class DetMetrics(SimpleClass):  # detection metrics
                             ),
                             dim=0,
                         )
-                        
+
         return
+
+    def post_collected_data(
+        self,
+    ):
+        """
+        remove [0,0,0,0](from init function) in index 0 for self.collected_data
+        """
+        for idx, _ in enumerate(self.collected_data):
+            self.collected_data[idx] = self.collected_data[idx][1:]
+            self.collected_data[idx] = np.array(self.collected_data[idx])
 
     # def process(self, tp, conf, pred_cls, target_cls):
     def process(
         self,
     ):
-        tp = self.collected_data[:, 1]
-        conf = self.collected_data[:, 0]
-        pred_cls = self.collected_data[:, 2]
-        target_cls = self.collected_data[:, 3]
+        tp = [col_data[:, 1] for col_data in self.collected_data]
+        conf = [col_data[:, 0] for col_data in self.collected_data]
+        pred_cls = [col_data[:, 2] for col_data in self.collected_data]
+        target_cls = [col_data[:, 3] for col_data in self.collected_data]
+
         """Process predicted results for object detection and update metrics."""
-    
+
         results = ap_per_class(
-            tp=tp.numpy(),
-            conf=conf.numpy(),
-            pred_cls=pred_cls.numpy(),
-            target_cls=target_cls.numpy(),
+            tp=tp,
+            conf=conf,
+            pred_cls=pred_cls,
+            target_cls=target_cls,
             plot=self.plot,
             save_dir=self.save_dir,
             names=self.names,
             on_plot=self.on_plot,
-            iou_threshold=self.iou_threshold,
         )[2:]
-        self.box.nc = len(self.names) #remove background class
+        self.box.nc = len(self.names)  # remove background class
         self.box.update(results)
 
     @property
@@ -253,7 +259,6 @@ def ap_per_class(
     names=(),
     eps=1e-16,
     prefix="",
-    iou_threshold=0.5,
 ):
     """
     Computes the average precision per class for object detection evaluation.
@@ -262,7 +267,7 @@ def ap_per_class(
         tp (np.ndarray): Binary array indicating whether the detection is correct (True) or not (False).
         conf (np.ndarray): Array of confidence scores of the detections.
         pred_cls (np.ndarray): Array of predicted classes of the detections.
-        target_cls (np.ndarray): Array of true classes of the detections.
+
         plot (bool, optional): Whether to plot PR curves or not. Defaults to False.
         on_plot (func, optional): A callback to pass plots path and data when they are rendered. Defaults to None.
         save_dir (Path, optional): Directory to save the PR curves. Defaults to an empty path.
@@ -285,141 +290,137 @@ def ap_per_class(
             x (np.ndarray): X-axis values for the curves. Shape: (1000,).
             prec_values: Precision values at mAP@0.5 for each class. Shape: (nc, 1000).
     """
-
     # Sort by objectness
-    i = np.argsort(-conf) #sort index from max -> min confidence
-    tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
+    i_list = [np.argsort(-c) for c in conf]
+    for idx, _ in enumerate(tp):
+        tp[idx] = tp[idx][i_list[idx]]
+        conf[idx] = conf[idx][i_list[idx]]
+        pred_cls[idx] = pred_cls[idx][i_list[idx]]
 
     # Find unique classes
-    unique_classes, nt = np.unique(target_cls, return_counts=True)
-    nc = unique_classes.shape[0]  # number of classes, number of detections
+    unique_classes_list = []
+    nt_list = []
+    nc = len(names)
+    for tg_c in target_cls:
+        _unique_class, _nt = np.unique(tg_c, return_counts=True)
+        unique_classes_list.append(_unique_class)
+        nt_list.append(_nt)
 
     # Create Precision-Recall curve and compute AP for each class
     x, prec_values = np.linspace(0, 1, 1000), []
 
     # Average precision, precision and recall curves
-    ap, p_curve, r_curve = (
-        # np.zeros((nc, tp.shape[1])),
-        np.zeros((nc, 1)), #FIXME: delete this line
-        np.zeros((nc, 1000)),
-        np.zeros((nc, 1000)),
+    ap, p_curve, r_curve, f1_curve = (
+        np.zeros((nc, len(tp))),
+        np.zeros((nc, len(tp), 1000)),
+        np.zeros((nc, len(tp), 1000)),
+        np.zeros((nc, len(tp), 1000)),
     )
 
-    for ci, c in enumerate(unique_classes):
-        i = pred_cls == c # boolean list ที่ predict class = c
-        n_l = nt[ci]  # number of labels
-        n_p = i.sum()  # number of predictions
-        if n_p == 0 or n_l == 0:
-            continue
+    f1_curve_list = []
 
-        # Accumulate FPs and TPs
-        fpc = (1 - tp[i]).cumsum(0) #cumulative sum
-        tpc = tp[i].cumsum(0)
-        
+    for iou_idx, _ in enumerate(tp):
+        """
+        Loop for each iou threshold
+        """
+        # ic(f"at iou = {0.5 + iou_idx*0.05}")
+        prec_values = []
+        for c_idx, c in enumerate(unique_classes_list[iou_idx]):
+            i = pred_cls[iou_idx] == c  # boolean list ที่ predict class = c
+            n_l = nt_list[iou_idx][c_idx]  # number of labels
+            n_p = i.sum()  # number of predictions
+            if n_p == 0 or n_l == 0:
+                continue
 
-        # Recall
-        recall = tpc / (n_l + eps)  # recall curve
+            # Accumulate FPs and TPs
+            fpc = (1 - tp[iou_idx][i]).cumsum(0)  # cumulative sum
+            tpc = tp[iou_idx][i].cumsum(0)
 
-        r_curve[ci] = np.interp(
-            -x, -conf[i], recall, left=0
-        )  # negative x, xp because xp decreases
-        
-        # Precision
-        precision = tpc / (tpc + fpc)  # precision curve
-        # p_curve[ci] = np.interp(-x, -conf[i], precision[:, 0], left=1)  # p at pr_score
-        p_curve[ci] = np.interp(-x, -conf[i], precision, left=1)  # p at pr_score
+            # Recall
+            recall = tpc / (n_l + eps)  # recall curve
 
-        # AP from recall-precision curve
-        ap[ci], mpre, mrec = compute_ap(recall.T, precision.T)
+            r_curve[c_idx][iou_idx] = np.interp(
+                -x, -conf[iou_idx][i], recall, left=0
+            )  # negative x, xp because xp decreases
 
+            # Precision
+            precision = tpc / (tpc + fpc)  # precision curve
+            p_curve[c_idx][iou_idx] = np.interp(
+                -x, -conf[iou_idx][i], precision, left=1
+            )  # p at pr_score
+
+            # AP from recall-precision curve
+            ap[c_idx, iou_idx], mpre, mrec = compute_ap(recall.T, precision.T)
+
+            if plot:  # at iou threshold = 0.5
+                prec_values.append(
+                    np.interp(x, mrec, mpre)
+                )  # precision recall at mAP@0.5
+
+        # Compute F1 (harmonic mean of precision and recall)
+        f1_curve = (
+            2
+            * p_curve[:, iou_idx]
+            * r_curve[:, iou_idx]
+            / (p_curve[:, iou_idx] + r_curve[:, iou_idx] + eps)
+        )
+        f1_curve_list.append(smooth(f1_curve.mean(0), 0.1).max())
+        prec_values = np.array(prec_values)  # (nc, 1000)
         if plot:
-            prec_values.append(np.interp(x, mrec, mpre))  # precision at mAP@0.5
+            plot_pr_curve(
+                x,
+                prec_values,
+                ap[:, iou_idx],
+                save_dir
+                / f"{prefix}PR_curve at iou_threshold={(0.5 + 0.05*iou_idx):.2f}.png",
+                names,
+                on_plot=on_plot,
+                iou_threshold=(0.5 + 0.05 * iou_idx),
+            ),
+            plot_mc_curve(
+                x,
+                f1_curve,
+                save_dir
+                / f"{prefix}F1_curve at iou_threshold={(0.5 + 0.05*iou_idx):.2f}.png",
+                names,
+                ylabel="F1",
+                on_plot=on_plot,
+                iou_threshold=(0.5 + 0.05 * iou_idx),
+            )
+            plot_mc_curve(
+                x,
+                p_curve[:, iou_idx],
+                save_dir
+                / f"{prefix}P_curve at iou_threshold={(0.5 + 0.05*iou_idx):.2f}.png",
+                names,
+                ylabel="Precision",
+                on_plot=on_plot,
+                iou_threshold=(0.5 + 0.05 * iou_idx),
+            )
+            plot_mc_curve(
+                x,
+                r_curve[:, iou_idx],
+                save_dir
+                / f"{prefix}R_curve at iou_threshold={(0.5 + 0.05*iou_idx):.2f}.png",
+                names,
+                ylabel="Recall",
+                on_plot=on_plot,
+                iou_threshold=(0.5 + 0.05 * iou_idx),
+            )
+    f1_curve_list = np.array(f1_curve_list)
 
-    prec_values = np.array(prec_values)  # (nc, 1000)
-
-
-    # Compute F1 (harmonic mean of precision and recall)
-    f1_curve = 2 * p_curve * r_curve / (p_curve + r_curve + eps)
-    ap = np.array(list([ _ap  for _ap in ap if float(_ap[0]) > 0]))
-    if plot:
-        plot_pr_curve(
-            x,
-            prec_values,
-            ap,
-            save_dir / f"{prefix}PR_curve.png",
-            names,
-            on_plot=on_plot,
-            iou_threshold=iou_threshold,
-        )
-        plot_mc_curve(
-            x,
-            f1_curve,
-            save_dir / f"{prefix}F1_curve.png",
-            names,
-            ylabel="F1",
-            on_plot=on_plot,
-        )
-        plot_mc_curve(
-            x,
-            p_curve,
-            save_dir / f"{prefix}P_curve.png",
-            names,
-            ylabel="Precision",
-            on_plot=on_plot,
-        )
-        plot_mc_curve(
-            x,
-            r_curve,
-            save_dir / f"{prefix}R_curve.png",
-            names,
-            ylabel="Recall",
-            on_plot=on_plot,
-        )
-
-    i = smooth(f1_curve.mean(0), 0.1).argmax()  # max F1 index
+    i = f1_curve_list.argmax()
     p, r, f1 = (
         p_curve[:, i],
         r_curve[:, i],
         f1_curve[:, i],
     )  # max-F1 precision, recall, F1 values
-    tp = (r * nt).round()  # true positives
-    fp = (tp / (p + eps) - tp).round()  # false positives
-    # ic((
-    #     tp,
-    #     fp,
-    #     p,
-    #     r,
-    #     f1,
-    #     ap,
-    #     # unique_classes.astype(int),
-    #     ic(np.array(list(range(len(names)))).astype(int)),
-    #     p_curve,
-    #     r_curve,
-    #     f1_curve,
-    #     x,
-    #     prec_values,
-    # ))
 
-    # ic((
-    #     tp,
-    #     fp,
-    #     p,
-    #     r,
-    #     f1,
-    #     ap,
-    #     # unique_classes.astype(int),
-    #     ic(np.array(list(range(len(names)))).astype(int)),
-    #     p_curve,
-    #     r_curve,
-    #     f1_curve,
-    #     x,
-    #     prec_values,
-    # )[2:])
-
-    
     return (
-        tp,
-        fp,
+        # tp,
+        # fp,
+        [],
+        [],
         p,
         r,
         f1,
@@ -433,53 +434,62 @@ def ap_per_class(
         prec_values,
     )
 
+
 def compute_ap(recall, precision):
-        """
-        Compute the average precision (AP) given the recall and precision curves.
+    """
+    Compute the average precision (AP) given the recall and precision curves.
 
-        Args:
-            recall (list): The recall curve.
-            precision (list): The precision curve.
+    Args:
+        recall (list): The recall curve.
+        precision (list): The precision curve.
 
-        Returns:
-            (float): Average precision.
-            (np.ndarray): Precision envelope curve.
-            (np.ndarray): Modified recall curve with sentinel values added at the beginning and end.
-        """
+    Returns:
+        (float): Average precision.
+        (np.ndarray): Precision envelope curve.
+        (np.ndarray): Modified recall curve with sentinel values added at the beginning and end.
+    """
 
-        # Append sentinel values to beginning and end
-        mrec = np.concatenate(([0.0], recall, [1.0]))
-        mpre = np.concatenate(([1.0], precision, [0.0]))
+    # Append sentinel values to beginning and end
+    mrec = np.concatenate(([0.0], recall, [1.0]))
+    mpre = np.concatenate(([1.0], precision, [0.0]))
 
-        # Compute the precision envelope
-        mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
+    # Compute the precision envelope
+    mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
 
-        # Integrate area under curve
-        method = "interp"  # methods: 'continuous', 'interp'
-        if method == "interp":
-            x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
-            ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
-        else:  # 'continuous'
-            i = np.where(mrec[1:] != mrec[:-1])[0]  # points where x-axis (recall) changes
-            ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])  # area under curve
+    # Integrate area under curve
+    method = "interp"  # methods: 'continuous', 'interp'
+    if method == "interp":
+        x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
+        ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
+    else:  # 'continuous'
+        i = np.where(mrec[1:] != mrec[:-1])[0]  # points where x-axis (recall) changes
+        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])  # area under curve
 
-        return ap, mpre, mrec
-    
-    
+    return ap, mpre, mrec
+
+
 @plt_settings()
-def plot_pr_curve(px, py, ap, save_dir=Path("pr_curve.png"), names=(), on_plot=None, iou_threshold=0.5):
-    # ic(names)
+def plot_pr_curve(
+    px, py, ap, save_dir=Path("pr_curve.png"), names=(), on_plot=None, iou_threshold=0.5
+):
     """Plots a precision-recall curve."""
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     py = np.stack(py, axis=1)
 
     if 0 < len(names) < 21:  # display per-class legend if < 21 classes
         for i, y in enumerate(py.T):
-            ax.plot(px, y, linewidth=1, label=f"{names[i]} {ap[i, 0]:.3f}")  # plot(recall, precision)
+            ax.plot(
+                px, y, linewidth=1, label=f"{names[i]} {ap[i]:.3f}"
+            )  # plot(recall, precision)
     else:
         ax.plot(px, py, linewidth=1, color="grey")  # plot(recall, precision)
-    # ic(f"plot {ap[:,0]}")
-    ax.plot(px, py.mean(1), linewidth=3, color="blue", label=f"all classes %.3f mAP@{iou_threshold}" % ap[:, 0].mean())
+    ax.plot(
+        px,
+        py.mean(1),
+        linewidth=3,
+        color="blue",
+        label=f"all classes %.3f mAP@{iou_threshold:.2f}" % ap.mean(),
+    )
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
     ax.set_xlim(0, 1)
@@ -499,30 +509,44 @@ def smooth(y, f=0.05):
     yp = np.concatenate((p * y[0], y, p * y[-1]), 0)  # y padded
     return np.convolve(yp, np.ones(nf) / nf, mode="valid")  # y-smoothed
 
+
 @plt_settings()
-def plot_mc_curve(px, py, save_dir=Path("mc_curve.png"), names=(), xlabel="Confidence", ylabel="Metric", on_plot=None):
+def plot_mc_curve(
+    px,
+    py,
+    save_dir=Path("mc_curve.png"),
+    names=(),
+    xlabel="Confidence",
+    ylabel="Metric",
+    on_plot=None,
+    iou_threshold=0.5,
+):
     """Plots a metric-confidence curve."""
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
 
     if 0 < len(names) < 21:  # display per-class legend if < 21 classes
         for i, names in enumerate(names):
-            # ic(i, y, names[i])
-            ax.plot(px, py[i], linewidth=1, label=f"{names}")  # plot(confidence, metric)
-        
-        # for i, y in enumerate(py):
-        #     # ic(i, y, names[i])
-        #     ax.plot(px, y, linewidth=1, label=f"{names[i]}")  # plot(confidence, metric)
+            ax.plot(
+                px, py[i], linewidth=1, label=f"{names}"
+            )  # plot(confidence, metric)
+
     else:
         ax.plot(px, py.T, linewidth=1, color="grey")  # plot(confidence, metric)
 
     y = smooth(py.mean(0), 0.05)
-    ax.plot(px, y, linewidth=3, color="blue", label=f"all classes {y.max():.2f} at {px[y.argmax()]:.3f}")
+    ax.plot(
+        px,
+        y,
+        linewidth=3,
+        color="blue",
+        label=f"all classes {y.max():.2f} at {px[y.argmax()]:.3f}",
+    )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
-    ax.set_title(f"{ylabel}-Confidence Curve")
+    ax.set_title(f"{ylabel}-Confidence Curve  at iou_threshold {iou_threshold:.2f}")
     fig.savefig(save_dir, dpi=250)
     plt.close(fig)
     if on_plot:
