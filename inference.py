@@ -28,7 +28,7 @@ parser.add_argument("--gauge_use", type=str, help="type gauge")
 parser.add_argument("--img_path", type=str, help="image path")
 
 # # Add optional argument with a default value
-parser.add_argument("--select_frame", type=bool, default=False, help="selcet_frame from path and move to select_frame -> work only in number gauge type")
+parser.add_argument("--select_frame", type=int, default=0, help="selcet_frame from path and move to select_frame -> work only in number gauge type")
 
 # Parse the command-line arguments
 args = parser.parse_args()
