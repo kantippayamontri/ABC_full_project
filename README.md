@@ -15,6 +15,8 @@ python predict.py --input_file=requirements.txt --gauge_use=digital --model_path
 
 -> inference.py
 python inference.py --input_file=requirements.txt --gauge_use=digital --img_path="./test_image/digital/" 
+-> inference -> for select frames
+python inference.py --input_file=requirements.txt --gauge_use=number --img_path="./datasets/number/number_test1/train/images" --select_frame=True   
 
 -> val.py
 python val.py requirements.txt digital ./models/digital/digital_model.pt ./datasets_for_train/digital/test/ --plot False

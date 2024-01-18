@@ -240,7 +240,7 @@ for index, (input_filename, bb_filename), in enumerate(
         target_size=image_size,
     )
 
-    if gauge_use == Constants.GaugeType.digital:
+    if (gauge_use == Constants.GaugeType.digital) or (gauge_use == Constants.GaugeType.number) :
         trans = InferenceUtils.albu_resize_pad_zero(
             target_size=image_size,
             gray=True,
@@ -279,24 +279,19 @@ for index, (input_filename, bb_filename), in enumerate(
             )
             ic(boxes.cls, boxes.conf)
             # ic(boxes.makeBBForSave())
+    elif gauge_use == Constants.GaugeType.number:
+        ic(f"doing number ................")
 
-    # Utils.visualize_img_bb(
-    #     img=image_input_np,
-    #     bb=boxes.makeBBForSave(),
-    #     with_class=True,
-    #     labels=["gauge", "display", "frame"],
-    #     format=None,
-    # )
+    Utils.visualize_img_bb(
+        img=image_input_np,
+        bb=boxes.makeBBForSave(),
+        with_class=True,
+        labels=["gauge", "display", "frame"],
+        format=None,
+    )
 
 end_time = time.time()
 
 ic(
     f"average time: {(end_time-start_time) / len(Utils.get_filenames_folder( source_folder=InferenceConstants.test_image_path_dict[gauge_use]))}"
 )
-
-#TODO: Confusion matrix
-# cfm = ConfusionMatrix(num_classes=, true_bb=, pred_bb=, iou_threshold=0.5)
-
-#TODO: Precision Recall Curve
-
-#TODO: Mean Average Precision

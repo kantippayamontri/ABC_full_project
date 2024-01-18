@@ -22,20 +22,9 @@ parser.add_argument("input_file",type=str, help = "your python file to run, only
 parser.add_argument("gauge_type", type=str, help="for loading labels name and index")
 parser.add_argument("model_path", type=str, help="path to your model")
 parser.add_argument("dataset_path", type=str, help="path to your dataset that has images and labels folder")
-# parser.add_argument("", type=str, help="model type to validate")
-
 
 # # Add optional argument with a default value
 parser.add_argument("-p", "--plot", type=bool, default=False, help="plot a confusion matrix and r,p,f1,map curve or not")
-# parser.add_argument("-imgs", "--img_size", type=int, choices=[640,1024], default=1024, help="size of train images")
-# parser.add_argument("-bs", "--batch_size", type=int, default=16, help="number of batch size")
-# parser.add_argument("-c", "--cache",type=bool, default=False, help="cache the image for True and False")
-# parser.add_argument("-p", "--patience", type=int, default=20, help="set number of how many not learning epochs to stop training")
-# parser.add_argument("-d", "--device",type=str,choices=["cpu","mps","0","1"], default="cpu", help="choose device to train")
-# parser.add_argument("-w", "--workers", type=int, default=12 , help="set the number of workers")
-# parser.add_argument("-rs", "--resume", type=bool, default=False, help="resume training")
-# parser.add_argument("-lr", "--learning_rate", type=float, default=0.001, help="learning rate")
-# parser.add_argument("-flr", "--final_learning_rate", type=float,default=0.01, help="final learning rate")
 
 # Parse the command-line arguments
 args = parser.parse_args()

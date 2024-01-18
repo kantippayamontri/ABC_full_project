@@ -12,6 +12,7 @@ runs
 test_image*
 model*
 predict_dataset*
+select_frame*
 
 # File
 *.pt

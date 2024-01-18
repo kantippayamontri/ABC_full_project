@@ -27,6 +27,9 @@ parser.add_argument("--input_file", type=str, help="your python file to run")
 parser.add_argument("--gauge_use", type=str, help="type gauge")
 parser.add_argument("--img_path", type=str, help="image path")
 
+# # Add optional argument with a default value
+parser.add_argument("--select_frame", type=bool, default=False, help="selcet_frame from path and move to select_frame -> work only in number gauge type")
+
 # Parse the command-line arguments
 args = parser.parse_args()
 
@@ -44,6 +47,7 @@ model_path_dict = {
         "digital": Path("./models/digital/digital_model.pt"),
         "number": Path("./models/number/number_model.pt"),
     },
+    Constants.GaugeType.number: Path("./models/number/number_model.pt"),
 }
 
 if gauge_use == Constants.GaugeType.digital:
@@ -108,9 +112,12 @@ if gauge_use == Constants.GaugeType.digital:
         # ic(gauge_display_frames[0].boxes[0].boxes)
 
         Utils.visualize_img_bb(
-            #img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-            img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0), 
-            bb=[ {"class": bb[5], "bb": [(bb[0],bb[1]),(bb[2],bb[3])] } for bb in boxes.boxes],
+            # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+            img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+            bb=[
+                {"class": bb[5], "bb": [(bb[0], bb[1]), (bb[2], bb[3])]}
+                for bb in boxes.boxes
+            ],
             with_class=True,
             labels=["gauge", "display", "frame"],
             format=Constants.BoundingBoxFormat.XYXY,
@@ -121,7 +128,7 @@ if gauge_use == Constants.GaugeType.digital:
         for frame_index, frame in enumerate(boxes.frameList):
             ic(f"\tframe index: {frame_index}, frame_xyxy: {frame.xyxy}")
             frame_shape = image_size_dict[Constants.GaugeType.number]
-            
+
             frame_transform = InferenceUtils.albu_make_frame(
                 img_shape=frame_shape, frame_coor=frame.xyxy, target_size=frame_shape
             )
@@ -160,4 +167,71 @@ if gauge_use == Constants.GaugeType.digital:
     ic(f"use time : {(end_time - start_time ) / number_samples}")
 
 elif gauge_use == Constants.GaugeType.number:
-    pass
+    ic(f"--- Inference Number ---")
+    number_model = InferenceModel(
+        model_path=model_path_dict[gauge_use],  # only one model
+        img_target_size=image_size_dict[gauge_use],
+        conf=0.25,
+    )
+
+    samples = Utils.get_filenames_folder(
+        source_folder=Path(img_path),
+    )
+
+    number_samples = len(samples)
+   
+    if args.select_frame:
+        Utils.delete_folder_mkdir(folder_path=Path("./select_frame"),remove=True)
+
+    for frame_index, frame_image_path in enumerate(samples):
+        ic(f"\tframe index: {frame_index}")
+        frame_shape = image_size_dict[Constants.GaugeType.number]
+        frame_transform = InferenceUtils.albu_resize_pad_zero(
+            target_size=image_size_dict[gauge_use],
+            gray=True,
+        )
+
+        image = cv2.imread(str(frame_image_path))
+        trans = InferenceUtils.albu_resize_pad_zero(
+            target_size=image_size_dict[gauge_use],
+            gray=True,
+        )
+
+        image_tensor = trans(image=image, bboxes=[])["image"]
+        image_tensor = torch.div(image_tensor, 255.0)
+        image_tensor = torch.unsqueeze(image_tensor, 0)
+
+        gauge_display_frames = number_model.inference_data(input_img=image_tensor)
+
+        # Utils.visualize_img_bb(
+        #     img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+        #     bb=[],
+        #     with_class=False,
+        #     labels=None,
+        #     format=None,
+        # )
+
+        number_predicts = number_model.inference_data(input_img=image_tensor)
+        for number_predict in number_predicts:
+            nbp = number_predict.boxes.cpu().numpy()
+            boxes = NumberBoxes(
+                boxes=nbp.boxes,
+                cls=nbp.cls,
+                conf=nbp.conf,
+                data=nbp.data,
+                id=nbp.id,
+                is_track=nbp.is_track,
+                orig_shape=nbp.orig_shape,
+                shape=nbp.shape,
+                xywh=nbp.xywh,
+                xywhn=nbp.xywhn,
+                xyxy=nbp.xyxy,
+                xyxyn=nbp.xyxyn,
+            )
+            ic(boxes.predict_number())
+            if args.select_frame and (boxes.predict_number != ""):
+                ic(f"--- select frame ---")
+                Utils.copy_file(source_file_path=frame_image_path, target_file_path=Path("./select_frame/"))
+
+        # if frame_index == 2:
+        #     exit()
