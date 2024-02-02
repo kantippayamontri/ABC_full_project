@@ -72,16 +72,29 @@ if gauge_use == Constants.GaugeType.digital:
     for digital_index, digital_filename in enumerate(
         Utils.get_filenames_folder(source_folder=Path(img_path))
     ):
+        # if digital_index != 1:
+        #     continue
         ic(f"digital index: {digital_index}, filename: {digital_filename}")
         image = cv2.imread(str(digital_filename))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         trans = InferenceUtils.albu_resize_pad_zero(
             target_size=image_size_dict[gauge_use],
             gray=True,
         )
+        trans_rgb = InferenceUtils.albu_resize_pad_zero(
+            target_size=image_size_dict[gauge_use],
+            gray=False,
+        ) # not convert to gray scale image
+
 
         image_tensor = trans(image=image, bboxes=[])["image"]
         image_tensor = torch.div(image_tensor, 255.0)
         image_tensor = torch.unsqueeze(image_tensor, 0)
+
+        image_tensor_rgb = trans_rgb(image=image, bboxes=[])["image"]
+        image_tensor_rgb = torch.div(image_tensor_rgb, 255.0)
+        image_tensor_rgb = torch.unsqueeze(image_tensor_rgb, 0)
+
 
         gauge_display_frames = model_gauge.inference_data(input_img=image_tensor)
 
@@ -111,22 +124,22 @@ if gauge_use == Constants.GaugeType.digital:
         # ic(boxes.makeBBForSave())
         # ic(gauge_display_frames[0].boxes[0].boxes)
 
-        Utils.visualize_img_bb(
-            # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-            img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-            bb=[
-                {"class": bb[5], "bb": [(bb[0], bb[1]), (bb[2], bb[3])]}
-                for bb in boxes.boxes
-            ],
-            with_class=True,
-            labels=["gauge", "display", "frame"],
-            format=Constants.BoundingBoxFormat.XYXY,
-        )
+        # Utils.visualize_img_bb(
+        #     # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+        #     img=torch.squeeze(image_tensor_rgb, 0).numpy().transpose(1, 2, 0),
+        #     bb=[
+        #         {"class": bb[5], "bb": [(bb[0], bb[1]), (bb[2], bb[3])]}
+        #         for bb in boxes.boxes
+        #     ],
+        #     with_class=True,
+        #     labels=["gauge", "display", "frame"],
+        #     format=Constants.BoundingBoxFormat.XYXY,
+        # )
 
-        image_tensor_np = torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0)
+        image_tensor_np = torch.squeeze(image_tensor_rgb, 0).numpy().transpose(1, 2, 0)
 
-        for frame_index, frame in enumerate(boxes.frameList):
-            ic(f"\tframe index: {frame_index}, frame_xyxy: {frame.xyxy}")
+        for frame_index, frame in enumerate(boxes.framePredict):
+            ic(f"\tframe index: {frame_index}")
             frame_shape = image_size_dict[Constants.GaugeType.number]
 
             frame_transform = InferenceUtils.albu_make_frame(
@@ -136,19 +149,19 @@ if gauge_use == Constants.GaugeType.digital:
             # crop_frame_image = torch.div(crop_frame_image, 255.0)
             crop_frame_image = torch.unsqueeze(crop_frame_image, 0)
 
-            Utils.visualize_img_bb(
-                img=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0),
-                bb=[],
-                with_class=False,
-                labels=None,
-                format=None,
-            )
+            # Utils.visualize_img_bb(
+            #     img=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0),
+            #     bb=[],
+            #     with_class=False,
+            #     labels=None,
+            #     format=None,
+            # )
 
             number_predicts = number_gauge.inference_data(input_img=crop_frame_image)
             for number_predict in number_predicts:
                 nbp = number_predict.boxes.cpu().numpy()
                 boxes = NumberBoxes(
-                    boxes=nbp.boxes,
+                    boxes=nbp.data,
                     cls=nbp.cls,
                     conf=nbp.conf,
                     data=nbp.data,
@@ -160,9 +173,13 @@ if gauge_use == Constants.GaugeType.digital:
                     xywhn=nbp.xywhn,
                     xyxy=nbp.xyxy,
                     xyxyn=nbp.xyxyn,
+                    image=torch.squeeze(crop_frame_image,0).numpy().transpose(1,2,0),
                 )
                 ic(boxes.predict_number())
+            # break #FIXME: remove this
 
+        # if digital_index ==0:
+        #     exit()
     end_time = time.time()
     ic(f"use time : {(end_time - start_time ) / number_samples}")
 
@@ -183,13 +200,10 @@ elif gauge_use == Constants.GaugeType.number:
     if args.select_frame:
         Utils.delete_folder_mkdir(folder_path=Path("./select_frame"),remove=True)
 
+    start_time = time.time()
+
     for frame_index, frame_image_path in enumerate(samples):
         ic(f"\tframe index: {frame_index}")
-        frame_shape = image_size_dict[Constants.GaugeType.number]
-        frame_transform = InferenceUtils.albu_resize_pad_zero(
-            target_size=image_size_dict[gauge_use],
-            gray=True,
-        )
 
         image = cv2.imread(str(frame_image_path))
         trans = InferenceUtils.albu_resize_pad_zero(
@@ -215,7 +229,7 @@ elif gauge_use == Constants.GaugeType.number:
         for number_predict in number_predicts:
             nbp = number_predict.boxes.cpu().numpy()
             boxes = NumberBoxes(
-                boxes=nbp.boxes,
+                boxes=nbp.data,
                 cls=nbp.cls,
                 conf=nbp.conf,
                 data=nbp.data,
@@ -233,5 +247,5 @@ elif gauge_use == Constants.GaugeType.number:
                 ic(f"--- select frame ---")
                 Utils.copy_file(source_file_path=frame_image_path, target_file_path=Path("./select_frame/"))
 
-        # if frame_index == 2:
-        #     exit()
+    end_time = time.time()
+    ic(f"use time : {(end_time - start_time ) / number_samples}")

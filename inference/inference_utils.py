@@ -17,7 +17,6 @@ class InferenceUtils:
         Returns:
             bool: True if the two bounding boxes overlap, False otherwise.
         """
-        print(f"bbox1: {bbox1}, bbox2: {bbox2}")
         x1, y1, x2, y2 = bbox1
         x1_2, y1_2, x2_2, y2_2 = bbox2
 
@@ -38,7 +37,7 @@ class InferenceUtils:
         aug_list = []
         if gray:
             aug_list.append(A.ToGray(p=1.0))
-            ic(f"--> USE GRAY <--")
+            # ic(f"--> USE GRAY <--")
             
 
         aug_list.extend(
@@ -80,8 +79,6 @@ class InferenceUtils:
 
         target_resize_width = target_size[1]
         target_resize_height = target_size[0]
-        
-        ic(f"crop_coor : [{max(0, frame_coor[0])}, {max(0, frame_coor[1])}, {min(crop_width, frame_coor[2])}, {min(crop_height, frame_coor[3])}]") 
         
         transform = A.Compose(
             [

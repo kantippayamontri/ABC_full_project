@@ -224,15 +224,16 @@ class Utils:
         return {value: index for index, value in enumerate(data)}
 
     @staticmethod
-    def albu_crop_img_bb(img=None, bb_crop=None, format=None, add_pixels=0):
+    def albu_crop_img_bb(img=None, bb_crop=None, format=None, add_pixels=0, with_class=True):
         from utils.constants import Constants
 
         max_x = img.shape[1] - 1
         max_y = img.shape[0] - 1
         if (format == None) or (format == Constants.BoundingBoxFormat.YOLOV8):
             xyxy_crop = Utils.change_format_yolo2xyxy(
-                img_size=img.shape, bb=bb_crop, with_class=True
+                img_size=img.shape, bb=bb_crop, with_class=with_class
             )["bb"]
+            
             transform = A.Compose(
                 [
                     A.Crop(
