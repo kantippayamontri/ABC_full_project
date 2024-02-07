@@ -7,6 +7,9 @@ class PreprocessConstants:
     train_ratio = 0.90
     val_ratio = 0.05
     test_ratio = 0.05
+
+    NUMBER_TARGET_SIZE = 640
+    NUMBER_TARGET_CLASS = Constants.map_data_dict[Constants.GaugeType.number.value]["target"] 
     
     base_folder_dict = {
         Constants.GaugeType.digital.value : base_dataset_folder / Constants.GaugeType.digital.value,

@@ -7,8 +7,8 @@ from icecream import ic
 parser = argparse.ArgumentParser(description="for training arguments parser")
 
 # Add positional argument
-parser.add_argument("input_file",type=str, help = "your python file to run")
-parser.add_argument("dataset_type", type=str, help="type of dataset to train")
+parser.add_argument("--input_file",type=str, help = "your python file to run")
+parser.add_argument("--dataset_type", type=str, help="type of dataset to train")
 
 # Parse the command-line arguments
 args = parser.parse_args()

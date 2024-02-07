@@ -82,6 +82,7 @@ class AugmentedGaugeModel:
                 self.augmented_dial(gauge_name=Constants.GaugeType.dial.value)
 
             if self.gauge_type == Constants.GaugeType.number.value:
+                continue
                 # self.num_number_aug += self.augmented_number(gauge_name=Constants.GaugeType.number.value)
                 # TODO: same augment with digital
                 self.num_number_aug += self.augmented_digital(

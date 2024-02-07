@@ -610,30 +610,40 @@ class DatasetCombineModel:
             if self.dataset_choose != None and self.dataset_choose.value != key:
                 continue
 
-            source_folder = (
-                PreprocessConstants.train_dataset_folder / key / Constants.train_folder
-            )
-            source_image_folder = source_folder / Constants.image_folder
-            source_label_folder = source_folder / Constants.label_folder
-
-            if not Utils.check_folder_exists(source_folder):
-                continue
+            #choose folder in datasets_for_train to preprocess -> train, val, test
+            folder_pre = [Constants.train_folder, Constants.val_folder, Constants.test_folder]
+            if key == "digital":
+                folder_pre = [Constants.train_folder]
+            elif key == "number":
+                folder_pre = [Constants.train_folder, Constants.val_folder, Constants.test_folder]
             else:
-                print(f"\t[-] preprocess at {key}")
+                folder_pre = [Constants.train_folder, Constants.val_folder, Constants.test_folder]
 
-            match_images_labels = Utils.get_filename_bb_folder(
-                img_path=source_image_folder,
-                bb_path=source_label_folder,
-                source_folder=source_folder,
-            )
+            for fp in folder_pre:
+                source_folder = (
+                    PreprocessConstants.train_dataset_folder / key / fp
+                )
+                source_image_folder = source_folder / Constants.image_folder
+                source_label_folder = source_folder / Constants.label_folder
 
-            # TODO: preprocess data
-            preprocessmodel = PreprocessGaugeModel(
-                match_img_bb_path=match_images_labels,
-                gauge_type=key,
-                source_folder=source_folder,
-            )
-            preprocessmodel.preprocess()
+                if not Utils.check_folder_exists(source_folder):
+                    continue
+                else:
+                    print(f"\t[-] preprocess at {key}, {str(source_folder)}")
+
+                match_images_labels = Utils.get_filename_bb_folder(
+                    img_path=source_image_folder,
+                    bb_path=source_label_folder,
+                    source_folder=source_folder,
+                )
+
+                # TODO: preprocess data
+                preprocessmodel = PreprocessGaugeModel(
+                    match_img_bb_path=match_images_labels,
+                    gauge_type=key,
+                    source_folder=source_folder,
+                )
+                preprocessmodel.preprocess()
 
         return
 

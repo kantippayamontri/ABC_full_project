@@ -45,9 +45,9 @@ image_size_dict = {
 model_path_dict = {
     Constants.GaugeType.digital: {
         "digital": Path("./models/digital/digital_model.pt"),
-        "number": Path("./models/number/number_model.pt"),
+        "number": Path("./models/number/best.pt"),
     },
-    Constants.GaugeType.number: Path("./models/number/number_model.pt"),
+    Constants.GaugeType.number: Path("./models/number/best.pt"),
 }
 
 if gauge_use == Constants.GaugeType.digital:

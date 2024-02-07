@@ -89,7 +89,8 @@ class YOLOModel:
             lr0=parameters.get_learning_rate(),
             lrf=parameters.get_final_learning_rate(),
             project=f"{str(parameters.get_project_name()[0])}", #TODO: path for experimental_project folder
-            name=f"{str(parameters.get_name()[0])}" # TODO: name of the experiment
+            name=f"{str(parameters.get_name()[0])}", # TODO: name of the experiment
+            fliplr=0.0, #set flip left and right to zero
         )
         
         if self.use_comet:
