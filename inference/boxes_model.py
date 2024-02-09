@@ -440,6 +440,8 @@ class NumberBoxes(Boxes):
             ans = "0.0"
         
         ic(ans)
+        ic(self.image.shape)
+        ic(self.image.dtype)
         Utils.visualize_img_bb(
                 img=self.image,
                 bb=[],

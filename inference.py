@@ -45,9 +45,9 @@ image_size_dict = {
 model_path_dict = {
     Constants.GaugeType.digital: {
         "digital": Path("./models/digital/digital_model.pt"),
-        "number": Path("./models/number/best.pt"),
+        "number": Path("./models/number/best (1).pt"),
     },
-    Constants.GaugeType.number: Path("./models/number/best.pt"),
+    Constants.GaugeType.number: Path("./models/number/best (1).pt"),
 }
 
 if gauge_use == Constants.GaugeType.digital:
@@ -208,7 +208,7 @@ elif gauge_use == Constants.GaugeType.number:
         image = cv2.imread(str(frame_image_path))
         trans = InferenceUtils.albu_resize_pad_zero(
             target_size=image_size_dict[gauge_use],
-            gray=True,
+            gray=False,
         )
 
         image_tensor = trans(image=image, bboxes=[])["image"]
@@ -241,6 +241,7 @@ elif gauge_use == Constants.GaugeType.number:
                 xywhn=nbp.xywhn,
                 xyxy=nbp.xyxy,
                 xyxyn=nbp.xyxyn,
+                image=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
             )
             ic(boxes.predict_number())
             if args.select_frame and (boxes.predict_number != ""):
