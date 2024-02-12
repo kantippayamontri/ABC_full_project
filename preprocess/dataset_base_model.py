@@ -11,7 +11,8 @@ class DatasetCombineModel:
     def __init__(
         self,
         make_frame=False,
-        dataset_choose:Constants.GaugeType=None
+        dataset_choose: Constants.GaugeType = None,
+        target_dataset_folder=str,
     ):
         self.found_folder_dict = {
             Constants.GaugeType.digital.value: False,
@@ -23,6 +24,24 @@ class DatasetCombineModel:
 
         self.make_frame = make_frame
         self.dataset_choose = dataset_choose
+
+        if target_dataset_folder != "":
+            self.train_dataset_folder = Path(target_dataset_folder)
+            self.train_folder_dict = {
+                Constants.GaugeType.digital.value: self.train_dataset_folder
+                / Constants.GaugeType.digital.value,
+                Constants.GaugeType.dial.value: self.train_dataset_folder
+                / Constants.GaugeType.dial.value,
+                Constants.GaugeType.number.value: self.train_dataset_folder
+                / Constants.GaugeType.number.value,
+                Constants.GaugeType.clock.value: self.train_dataset_folder
+                / Constants.GaugeType.clock.value,
+                Constants.GaugeType.level.value: self.train_dataset_folder
+                / Constants.GaugeType.level.value,
+            }
+        else:
+            self.train_dataset_folder = PreprocessConstants.train_dataset_folder
+            self.train_folder_dict = PreprocessConstants.train_folder_dict
 
     def conduct_dataset(self, delete_dataset_for_train=True, grayscale=False):
         self.check_folder(delete_dataset_for_train=delete_dataset_for_train)
@@ -44,9 +63,9 @@ class DatasetCombineModel:
         #     print()
         self.divide_datasets(
             train_ratio=PreprocessConstants.train_ratio,
-            val_ratio= PreprocessConstants.val_ratio,
-            test_ratio= PreprocessConstants.test_ratio,
-            dataset_choose=self.dataset_choose
+            val_ratio=PreprocessConstants.val_ratio,
+            test_ratio=PreprocessConstants.test_ratio,
+            dataset_choose=self.dataset_choose,
         )  # TODO: divide into train set and validation set
         print()
         print("-" * 100)
@@ -56,7 +75,8 @@ class DatasetCombineModel:
         print("-" * 100)
         print()
         self.augmented()
-# 
+
+    #
     def check_folder(self, delete_dataset_for_train):
         for key, value in PreprocessConstants.base_folder_dict.items():
             ic(f"in for loop check folder, key: {key}")
@@ -64,25 +84,25 @@ class DatasetCombineModel:
                 continue
             ic(f"pass")
             print(f"[/] CHECK {key} GAUGE")
-            if Utils.check_folder_exists(value) :  # FIXME: remove key==
+            if Utils.check_folder_exists(value):  # FIXME: remove key==
                 print(f"\t[/] FOLDER FOUND at {value}")
                 # TODO: create dataset folder in datasets_for_train/digital ...
                 Utils.delete_folder_mkdir(
-                    PreprocessConstants.train_folder_dict[key],
+                    self.train_folder_dict[key],
                     remove=delete_dataset_for_train,
                 )
                 # print(
-                #     f"delete at {PreprocessConstants.train_folder_dict[key]}, remove: {delete_dataset_for_train}"
+                #     f"delete at {self.train_folder_dict[key]}, remove: {delete_dataset_for_train}"
                 # )
                 # TODO: create train,val,test folder
                 train_folder_path = (
-                    PreprocessConstants.train_folder_dict[key] / Constants.train_folder
+                    self.train_folder_dict[key] / Constants.train_folder
                 )
                 val_folder_path = (
-                    PreprocessConstants.train_folder_dict[key] / Constants.val_folder
+                    self.train_folder_dict[key] / Constants.val_folder
                 )
                 test_folder_path = (
-                    PreprocessConstants.train_folder_dict[key] / Constants.test_folder
+                    self.train_folder_dict[key] / Constants.test_folder
                 )
 
                 Utils.delete_folder_mkdir(train_folder_path, remove=False)
@@ -116,7 +136,7 @@ class DatasetCombineModel:
                 )
                 Utils.write_yaml(
                     data=data_yaml_dict,
-                    filepath=PreprocessConstants.train_folder_dict[key]
+                    filepath=self.train_folder_dict[key]
                     / Constants.data_yaml_file,
                 )
 
@@ -138,7 +158,7 @@ class DatasetCombineModel:
         print(f"--- in function make_frame_dataset ---")
         # TODO: define dataset that use for crop images
         make_frame_dataset_path = [
-            PreprocessConstants.train_folder_dict[Constants.GaugeType.digital.value]
+            self.train_folder_dict[Constants.GaugeType.digital.value]
         ]
 
         # TODO: check make_frame dataset
@@ -168,9 +188,9 @@ class DatasetCombineModel:
                 img = Utils.load_img_cv2(filepath=img_path)
                 bb = Utils.load_bb(filepath=bb_path)
 
-                if idx % 300 ==0:
+                if idx % 300 == 0:
                     print(f"---> make frame : {idx+1}/{len(img_bb_match)}")
-                
+
                 frame_img = Utils.crop_one_class(
                     img=img,
                     bb=bb,
@@ -179,13 +199,12 @@ class DatasetCombineModel:
                     add_pixels=random.randint(0, 10),
                     class_crop=frame_index,
                 )  # TODO: return onlu frame img
-                
 
                 for index, img in enumerate(frame_img):
                     new_name = Utils.generate_random_string(25) + f"_{index}" + ".jpg"
                     # TODO: save images
                     Utils.save_image(img=img, filepath=dataset_frame_path / new_name)
-                
+
                 # if idx == 10:
                 #     return
 
@@ -205,7 +224,7 @@ class DatasetCombineModel:
             if self.dataset_choose != None and self.dataset_choose.value != key:
                 continue
 
-            if not self.found_folder_dict[key]: # FIXME: uncomment this statements
+            if not self.found_folder_dict[key]:  # FIXME: uncomment this statements
                 continue
             else:
                 print(f"[-] DIVIDE {key} DATASET")
@@ -213,21 +232,20 @@ class DatasetCombineModel:
             # if key != Constants.GaugeType.digital.value:
             #     continue
 
-            target_source_folder = PreprocessConstants.train_folder_dict[key]
+            target_source_folder = self.train_folder_dict[key]
             target_train_folder = (
-                PreprocessConstants.train_folder_dict[key] / Constants.train_folder
+                self.train_folder_dict[key] / Constants.train_folder
             )
             target_val_folder = (
-                PreprocessConstants.train_folder_dict[key] / Constants.val_folder
+                self.train_folder_dict[key] / Constants.val_folder
             )
             target_test_folder = (
-                PreprocessConstants.train_folder_dict[key] / Constants.test_folder
+                self.train_folder_dict[key] / Constants.test_folder
             )
 
             target_val_image_folder = target_val_folder / Constants.image_folder
             target_val_label_folder = target_val_folder / Constants.label_folder
 
-            
             target_test_image_folder = target_test_folder / Constants.image_folder
             target_test_label_folder = target_test_folder / Constants.label_folder
 
@@ -245,14 +263,14 @@ class DatasetCombineModel:
             random.shuffle(train_img_bb)  # TODO: shuffle the list
 
             dataset_size = len(train_img_bb)
-            train_size =  int(dataset_size * train_ratio)
+            train_size = int(dataset_size * train_ratio)
             val_size = int(dataset_size * val_ratio)
             test_size = int(dataset_size * test_ratio)
-            
-            val_img_bb = train_img_bb[train_size:train_size + val_size]
-            test_img_bb = train_img_bb[train_size + val_size:]
-            
-            #TODO: move val
+
+            val_img_bb = train_img_bb[train_size : train_size + val_size]
+            test_img_bb = train_img_bb[train_size + val_size :]
+
+            # TODO: move val
 
             for idx, (img_path, lb_path) in enumerate(val_img_bb):
                 # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
@@ -267,24 +285,28 @@ class DatasetCombineModel:
                 Utils.move_file(
                     source_file_path=lb_path,
                     target_file_path=target_val_label_folder / lb_path.name,
-
                 )
                 # TODO: make val image to grayscale
-                if dataset_choose == Constants.GaugeType.digital: # convert to grayscale
+                if (
+                    dataset_choose == Constants.GaugeType.digital
+                ):  # convert to grayscale
                     img_p = target_val_image_folder / img_path.name
                     bb_p = target_val_label_folder / lb_path.name
                     img = Utils.load_img_cv2(img_p)
                     bb = Utils.load_bb(filepath=bb_p)
-                    transform = Utils.albu_grayscale(format=Constants.BoundingBoxFormat.YOLOV8)
-                    new_img, new_bb = Utils.get_output_from_transform(transform=transform, img=img, bb=bb,number_samples=1)[0]
+                    transform = Utils.albu_grayscale(
+                        format=Constants.BoundingBoxFormat.YOLOV8
+                    )
+                    new_img, new_bb = Utils.get_output_from_transform(
+                        transform=transform, img=img, bb=bb, number_samples=1
+                    )[0]
                     # delete old images
                     Utils.delete_file(file_path=img_p)
                     Utils.save_image(img=new_img, filepath=img_p)
                     # overwrite label
                     Utils.overwrite_label(bb=new_bb, txt_file_path=bb_p)
 
-            
-            #TODO: move test
+            # TODO: move test
             ic("--- move test ---")
             for idx, (img_path, lb_path) in enumerate(test_img_bb):
                 # print(f"img path: {str(img_path)}, lb_path: {str(lb_path)}")
@@ -306,16 +328,18 @@ class DatasetCombineModel:
                     bb_p = target_test_label_folder / lb_path.name
                     img = Utils.load_img_cv2(img_p)
                     bb = Utils.load_bb(filepath=bb_p)
-                    transform = Utils.albu_grayscale(format=Constants.BoundingBoxFormat.YOLOV8)
-                    new_img, new_bb = Utils.get_output_from_transform(transform=transform, img=img, bb=bb,number_samples=1)[0]
+                    transform = Utils.albu_grayscale(
+                        format=Constants.BoundingBoxFormat.YOLOV8
+                    )
+                    new_img, new_bb = Utils.get_output_from_transform(
+                        transform=transform, img=img, bb=bb, number_samples=1
+                    )[0]
                     # delete old images
                     Utils.delete_file(file_path=img_p)
                     Utils.save_image(img=new_img, filepath=img_p)
                     # overwrite label
-                    Utils.overwrite_label(bb=new_bb, txt_file_path=bb_p) 
-            
-                        
-            
+                    Utils.overwrite_label(bb=new_bb, txt_file_path=bb_p)
+
     def combine_datasets(
         self,
     ):
@@ -329,7 +353,7 @@ class DatasetCombineModel:
                 print(f"[-] COMBINE {key} DATASET")
 
             dataset_path = value
-            target_path = PreprocessConstants.train_folder_dict[key]
+            target_path = self.train_folder_dict[key]
 
             if dataset_path == None or target_path == None:
                 print(f"\t[X] COMBINE DATASET UNSUCCESSFULL")
@@ -430,7 +454,7 @@ class DatasetCombineModel:
         # read data.yaml file
         data_yaml_file_source = Utils.read_yaml_file(data_yaml_path)
         data_yaml_file_target = Utils.read_yaml_file(
-            PreprocessConstants.train_folder_dict[key] / Constants.data_yaml_file
+            self.train_folder_dict[key] / Constants.data_yaml_file
         )
 
         # print(f"data_yaml_file_source: {data_yaml_file_source}")
@@ -565,10 +589,10 @@ class DatasetCombineModel:
 
     def visualize_samples(self, gauge_type, number_of_samples=1):
         from preprocess.preprocess_constants import PreprocessConstants
-        
+
         # TODO: get filenames and bb and labels
         source_folder = (
-            PreprocessConstants.train_folder_dict[gauge_type.value]
+            self.train_folder_dict[gauge_type.value]
             / Constants.train_folder
         )
         ic(source_folder)
@@ -605,24 +629,39 @@ class DatasetCombineModel:
         from preprocess.preprocess_model import PreprocessGaugeModel
 
         print(f"[-] Preprocess Dataset")
-        for key, value in PreprocessConstants.train_folder_dict.items():
+        for key, value in self.train_folder_dict.items():
             # print(f"key: {key}, value: {value}")
             if self.dataset_choose != None and self.dataset_choose.value != key:
                 continue
 
-            #choose folder in datasets_for_train to preprocess -> train, val, test
-            folder_pre = [Constants.train_folder, Constants.val_folder, Constants.test_folder]
+            # choose folder in datasets_for_train to preprocess -> train, val, test
+            folder_pre = [
+                Constants.train_folder,
+                Constants.val_folder,
+                Constants.test_folder,
+            ]
             if key == "digital":
                 folder_pre = [Constants.train_folder]
             elif key == "number":
-                folder_pre = [Constants.train_folder, Constants.val_folder, Constants.test_folder]
+                folder_pre = [
+                    Constants.train_folder,
+                    Constants.val_folder,
+                    Constants.test_folder,
+                ]
             else:
-                folder_pre = [Constants.train_folder, Constants.val_folder, Constants.test_folder]
+                folder_pre = [
+                    Constants.train_folder,
+                    Constants.val_folder,
+                    Constants.test_folder,
+                ]
 
             for fp in folder_pre:
-                source_folder = (
-                    PreprocessConstants.train_dataset_folder / key / fp
-                )
+                # source_folder = (
+                #     PreprocessConstants.train_dataset_folder / key / fp
+                # )
+
+                source_folder = self.train_dataset_folder / key / fp
+
                 source_image_folder = source_folder / Constants.image_folder
                 source_label_folder = source_folder / Constants.label_folder
 
@@ -654,17 +693,15 @@ class DatasetCombineModel:
         from preprocess.augment_model import AugmentedGaugeModel
 
         print(f"[-] augmented Dataset")
-        for key, value in PreprocessConstants.train_folder_dict.items():
-            
+        for key, value in self.train_folder_dict.items():
+
             if self.dataset_choose != None and self.dataset_choose.value != key:
                 continue
-            
+
             if not Utils.check_folder_exists(value):
                 continue
 
-            source_folder = (
-                Path(value) / Constants.train_folder
-            )
+            source_folder = Path(value) / Constants.train_folder
             source_image_folder = source_folder / Constants.image_folder
             source_label_folder = source_folder / Constants.label_folder
 

@@ -110,6 +110,12 @@ train_parameters = TrainParameters(
 print(f"--- Prepare Data ---")
 dataset = YOLODataset(dataset_type=dataset_type)
 train_parameters.data_yaml_path = dataset.get_data_yaml4train()
+
+#FIXME: delete this line below original= "datasets_for_train/digital/data.yaml"
+train_parameters.data_yaml_path = "datasets_for_train_eiei/digital/data.yaml"
+ic(f"train pareameters : data_yaml_path : {train_parameters.get_data_yaml_path()}")
+# end 
+
 print(len(dataset))
 # dataset.show_samples(number_of_samples=5,random_seed=21)
 

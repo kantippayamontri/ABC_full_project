@@ -5,7 +5,7 @@ from utils import Constants
 
 
 class TrainConstants:
-    train_dataset_root = Path("./datasets_for_train")
+    train_dataset_root = Path("./datasets_for_train_eiei")
 
     __train_digital_dataset_path = (
         train_dataset_root / Constants.GaugeType.digital.value

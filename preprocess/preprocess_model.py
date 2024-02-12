@@ -172,8 +172,11 @@ class PreprocessGaugeModel:
             # format for albumentation yolo = [cx,cy,w,h,class]
             permutation = [1, 2, 3, 4, 0]
             bb = np.array(bb)
-            bb = bb[:, permutation]
 
+            try:
+                bb = bb[:, permutation]
+            except:
+                continue
 
             # check bounding box is negative
             for bb_i, _bb in enumerate(bb):
