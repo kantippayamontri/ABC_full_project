@@ -8,13 +8,12 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description="for training arguments parser")
 
 # Add positional argument
-parser.add_argument("input_file", type=str, help="your python file to run")
-parser.add_argument("train_yml", type=str, help="path to train.yml file")
+parser.add_argument("config", type=str, help="config for train in .yml format")
 
 # Parse the command-line arguments
 args = parser.parse_args()
 
-data_yaml = Utils.read_yaml_file(yaml_file_path=args.train_yml)
+data_yaml = Utils.read_yaml_file(yaml_file_path=args.config)
 dataset_dict = data_yaml["DATASET"]
 model_dict = data_yaml["MODEL"]
 train_parameters_dict = data_yaml["TRAIN_PARAMETERS"]

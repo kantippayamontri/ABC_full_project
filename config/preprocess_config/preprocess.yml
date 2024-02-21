@@ -1,0 +1,26 @@
+AUGMENT:
+  AUGMENT_LIST: []
+  FOLDER:
+    - train
+    - valid
+    - test
+  NUMBER_AUGMENT: 3
+  PREFIX: aug
+DATASET:
+  DATASET_PATH:
+    [
+      "datasets/digital/digital_1_100_set1",
+      "/Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2",
+    ]
+  DATASET_TYPE: digital
+  FINAL_DATASET_PATH: "./dataset_new"
+  PERCENT_TEST: 5
+  PERCENT_TRAIN: 90
+  PERCENT_VAL: 5
+PREPROCESS:
+  FOLDER:
+    - train
+    - valid
+    - test
+  PREFIX: pre
+  PREPROCESS_LIST: []
