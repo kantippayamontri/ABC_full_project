@@ -14,12 +14,14 @@ class YOLOModel:
         self,
         model_type,
         use_comet=False,
-        gauge_type: Constants.GaugeType = None,
+        gauge_type= None,
+        pretrain_path = None,
     ):
         self.model_type = model_type
         self.model = self.loadModels(model_type)
         self.use_comet = use_comet
         self.gauge_type = gauge_type
+        self.pretrain_path = pretrain_path
 
     def loadModels(self, model_type):
         model = None
@@ -30,7 +32,7 @@ class YOLOModel:
                 "yolov8n.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8n.yaml").load("yolov8n.pt")
-            print(f"\t--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 NANO Load Success ---")
         elif model_type == Constants.ModelType.SMALL:
             print(f"\t--- MODEL small ---")
             model = YOLO("yolov8s.yaml")  # build a new model from scratch
@@ -38,15 +40,15 @@ class YOLOModel:
                 "yolov8s.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8s.yaml").load("yolov8s.pt")
-            print(f"\t--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 SMALL Load Success ---")
         elif model_type == Constants.ModelType.MEDIUM:
             print(f"\t--- MODEL MEDIUM ---")
-            model = YOLO("yolov8m.yaml")  # build a new model from scratch
+            # model = YOLO("yolov8m.yaml")  # build a new model from scratch
             model = YOLO(
                 "yolov8m.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8m.yaml").load("yolov8m.pt")
-            print(f"\t--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 MEDIUM Load Success ---")
         elif model_type == Constants.ModelType.LARGE:
             print(f"\t--- MODEL LARGE ---")
             model = YOLO("yolov8l.yaml")  # build a new model from scratch
@@ -54,7 +56,7 @@ class YOLOModel:
                 "yolov8l.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8l.yaml").load("yolov8l.pt")
-            print(f"\t--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 LARGE Load Success ---")
         elif model_type == Constants.ModelType.EXTRA_LARGE:
             print(f"\t--- MODEL EXTRA LARGE ---")
             model = YOLO("yolov8x.yaml")  # build a new model from scratch
@@ -62,36 +64,38 @@ class YOLOModel:
                 "yolov8x.pt"
             )  # load a pretrained model (recommended for training)
             model = YOLO("yolov8x.yaml").load("yolov8x.pt")
-            print(f"\t--- YOLOv8 Load Success ---")
+            print(f"\t--- YOLOv8 EXTRA LARGE Load Success ---")
         return model
 
     def train(self, parameters: TrainParameters):
         # if self.use_comet:
         #     self.init_comet(train_parameters=parameters)
             
-        print(f"train parameters: {parameters.comet_parameters()}")
+        ic(parameters.comet_parameters())
         # TODO: check experiment folder
         
         # TODO: create name of the experiment
         
         ic(str(parameters.get_project_name()[0]))
+        ic(parameters.get_project_name())
+        ic(parameters.get_name())
         
-        # self.model.train(
-        #     data=parameters.get_data_yaml_path(),
-        #     epochs=parameters.get_epochs(),
-        #     imgsz=parameters.get_imgsz(),
-        #     batch=parameters.get_batch(),
-        #     cache=parameters.get_cache(),
-        #     patience=parameters.get_patience(),
-        #     device=parameters.get_device(),
-        #     workers=parameters.get_workers(),
-        #     resume=parameters.get_resume(),
-        #     lr0=parameters.get_learning_rate(),
-        #     lrf=parameters.get_final_learning_rate(),
-        #     project=f"{str(parameters.get_project_name()[0])}", #TODO: path for experimental_project folder
-        #     name=f"{str(parameters.get_name()[0])}", # TODO: name of the experiment
-        #     fliplr=0.0, #set flip left and right to zero
-        # )
+        self.model.train(
+            data=parameters.get_data_yaml_path(),
+            epochs=parameters.get_epochs(),
+            imgsz=parameters.get_imgsz(),
+            batch=parameters.get_batch(),
+            cache=parameters.get_cache(),
+            patience=parameters.get_patience(),
+            device=parameters.get_device(),
+            workers=parameters.get_workers(),
+            resume=parameters.get_resume(),
+            lr0=parameters.get_learning_rate(),
+            lrf=parameters.get_final_learning_rate(),
+            project=parameters.get_project_name(), #TODO: path for experimental_project folder
+            name=parameters.get_name()[0], # TODO: name of the experiment
+            fliplr=0.0, #set flip left and right to zero
+        )
         
         # if self.use_comet:
         #     self.end_comet()
@@ -102,7 +106,7 @@ class YOLOModel:
     ):
         comet_ml.init()
 
-        comet_parameter = Comet.parameters[self.gauge_type.value]
+        comet_parameter = Comet.parameters[self.gauge_type]
 
         ic(comet_parameter)
 

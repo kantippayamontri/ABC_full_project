@@ -1,0 +1,18 @@
+DATASET:
+  # DATASET_PATH: datasets_for_train_eiei
+  DATASET_PATH: datasets_for_train_eiei
+  DATASET_TYPE: number
+MODEL:
+  MODEL_PATH: null
+  MODEL_TYPE: MEDIUM
+TRAIN_PARAMETERS:
+  BATCH_SIZE: 16
+  CACHE: false
+  DEVICE: mps
+  EPOCHS: 100
+  FINAL_LEARNING_RATE: 0.01
+  IMG_SIZE: 640
+  LEARNING_RATE: 0.001
+  PATIENCE: 15
+  RESUME: true
+  WORKERS: 12

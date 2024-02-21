@@ -45,9 +45,9 @@ image_size_dict = {
 model_path_dict = {
     Constants.GaugeType.digital: {
         "digital": Path("./models/digital/digital_model.pt"),
-        "number": Path("./models/number/best (1).pt"),
+        "number": Path("./models/number/best (2).pt"),
     },
-    Constants.GaugeType.number: Path("./models/number/best (1).pt"),
+    Constants.GaugeType.number: Path("./models/number/best (2).pt"),
 }
 
 if gauge_use == Constants.GaugeType.digital:
@@ -206,6 +206,7 @@ elif gauge_use == Constants.GaugeType.number:
         ic(f"\tframe index: {frame_index}")
 
         image = cv2.imread(str(frame_image_path))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         trans = InferenceUtils.albu_resize_pad_zero(
             target_size=image_size_dict[gauge_use],
             gray=False,
@@ -243,7 +244,8 @@ elif gauge_use == Constants.GaugeType.number:
                 xyxyn=nbp.xyxyn,
                 image=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
             )
-            ic(boxes.predict_number())
+            # ic(boxes.predict_number())
+            boxes.predict_number()
             if args.select_frame and (boxes.predict_number != ""):
                 ic(f"--- select frame ---")
                 Utils.copy_file(source_file_path=frame_image_path, target_file_path=Path("./select_frame/"))

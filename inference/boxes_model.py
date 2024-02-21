@@ -345,12 +345,51 @@ class NumberBoxes(Boxes):
     def predict_number(
         self,
     ):
+        float_cls = 12
+        dot_cls = 11
+        
 
         # convert cls to number
         sort_boxes = self.sort_boxes()
+
+        is_float = False
+        is_dot = False
+        # ic(sort_boxes)
+        # ic(self.boxes_list)
+
         ans = ""
         for _, cls in sort_boxes.items():
+            if int(cls) == float_cls:
+                is_float = True
+                # ic(f"found float")
+            
+            if int(cls) == dot_cls:
+                is_dot = True
+                # ic(f"found dot")
+
             ans += InferenceConstants.inference_number_convert[cls]
+        
+        if (is_float and (not is_dot)) or (is_float and is_dot):
+            ans = ""
+            float_boxes = []
+            for box in self.boxes_list:
+                if int(box.cls) == float_cls:
+                    float_boxes.append(box) 
+            
+            # ic(f"number of float boxes : {len(float_boxes)}")
+            float_start = float_boxes[0].xyxy[0]
+
+            for center_x_pos,cls in sort_boxes.items():
+                if (int(cls) == float_cls) or (int(cls) == dot_cls):
+                    continue
+                
+                # ic(ans, float_start, center_x_pos)
+                if (center_x_pos > float_start) and (ans.find(".") == -1): # ans doesn't have . 
+                    ans += "."
+                
+                 
+                ans += InferenceConstants.inference_number_convert[cls]
+            
         
         if len(self.boxes_list) and ans[-1] == ".": # for ex 12. -> 12.0
             ans += "0"
@@ -440,15 +479,15 @@ class NumberBoxes(Boxes):
             ans = "0.0"
         
         ic(ans)
-        ic(self.image.shape)
-        ic(self.image.dtype)
-        Utils.visualize_img_bb(
-                img=self.image,
-                bb=[],
-                with_class=False,
-                labels=None,
-                format=None,
-            )
+        # ic(self.image.shape)
+        # ic(self.image.dtype)
+        # Utils.visualize_img_bb(
+        #         img=self.image,
+        #         bb=[],
+        #         with_class=False,
+        #         labels=None,
+        #         format=None,
+        #     )
 
         return ans
 
@@ -460,6 +499,7 @@ class NumberBoxes(Boxes):
             self.getCenter(minimum=box.xyxy[0], maximum=box.xyxy[2]): box.cls if box.group is None else (box.cls, box.group)
             for index, box in enumerate(self.boxes_list)
         }
+
         #if found dot class return only class number
         #if not found dot class return class number, group number
 

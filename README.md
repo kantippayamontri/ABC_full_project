@@ -12,6 +12,9 @@ ex. ./datasets_for_train/digital/
 
     python train.py requirements.txt digital SMALL --epochs 100 --img_size 1024 --batch_size 32 --cache True --patience 15 --device cpu --workers 20 --resume True -lr 0.001
 
+-> train new with yml file
+python train.py requirements.txt /Users/kantip/Desktop/work/ABC_training/config/train_config/train.yml
+
 
 -> predict.py
 python predict.py --input_file=requirements.txt --gauge_use=digital --model_path="models/digital/digital_model.pt" --img_path="datasets_for_train/digital/test/images/" --bb_path="datasets_for_train/digital/test/labels/" --image_size=640 --conf=0.25
@@ -23,3 +26,7 @@ python inference.py --input_file=requirements.txt --gauge_use=number --img_path=
 
 -> val.py
 python val.py requirements.txt digital ./models/digital/digital_model.pt ./datasets_for_train/digital/test/ --plot False
+
+
+[Config]
+use null instead of None

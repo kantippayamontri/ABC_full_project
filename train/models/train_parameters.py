@@ -1,3 +1,5 @@
+from icecream import ic
+
 class TrainParameters:
     def __init__(
         self,
@@ -34,10 +36,11 @@ class TrainParameters:
         self.name = name, 
     
     def get_gauge_type(self):
-        return self.gauge_type.value
+        # return self.gauge_type.value
+        return self.gauge_type
     
     def get_model_type(self):
-        return self.model_type.value
+        return self.model_type
     
     def get_data_yaml_path(self):
         return self.data_yaml_path
@@ -73,7 +76,8 @@ class TrainParameters:
         return self.final_learning_rate
     
     def get_project_name(self, ):
-        return self.project_name
+        # ic(self.project_name[0])
+        return self.project_name[0] 
 
     def get_name(self,):
         return self.name
@@ -95,4 +99,3 @@ class TrainParameters:
             "project_name": str(self.get_project_name()),
             "name": self.get_name(),
         }
-

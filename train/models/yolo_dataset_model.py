@@ -5,10 +5,11 @@ from train.train_constants import TrainConstants
 import random
 import yaml
 import typing
+from icecream import ic
 
 
 class YOLODataset(Dataset):
-    def __init__(self, dataset_type: Constants.GaugeType):
+    def __init__(self, dataset_type: Constants.GaugeType, dataset_path=None):
         super().__init__()
         print("\t[-] Initialized dataset")
         self.dataset_type = dataset_type
@@ -17,6 +18,11 @@ class YOLODataset(Dataset):
         self.test_img_bb = []
         self.target_labels = []
         self.data_yaml_path = None
+        self.dataset_path = (
+            Path(dataset_path)
+            if dataset_path is not None
+            else TrainConstants.train_dataset_root
+        )
 
         # TODO: chekc folder that ready to train
         print(f"\t\t[-] Check Dataset Folder")
@@ -31,26 +37,20 @@ class YOLODataset(Dataset):
         self,
     ):
         # TODO: check dataset_for_train folder
-        if Utils.check_folder_exists(TrainConstants.train_dataset_root):
+        if Utils.check_folder_exists(self.dataset_path):
+            print(f"in check_folder self.dataset_path:{self.dataset_path}")
             # TODO: check gauge dataset ex dataset_for_train/digital
-            if Utils.check_folder_exists(
-                TrainConstants.train_dataset_path_dict[self.dataset_type]
-            ):
-                print(
-                    f"\t\t\t[-] {str(TrainConstants.train_dataset_path_dict[self.dataset_type])} exists"
-                )
+            if Utils.check_folder_exists(self.dataset_path / self.dataset_type):
+                print(f"\t\t\t[-] {str(self.dataset_path / self.dataset_type)} exists")
                 # TODO: check Train Val Test folder
                 train_folder = (
-                    TrainConstants.train_dataset_path_dict[self.dataset_type]
-                    / Constants.train_folder
+                    self.dataset_path / self.dataset_type / Constants.train_folder
                 )
                 test_folder = (
-                    TrainConstants.train_dataset_path_dict[self.dataset_type]
-                    / Constants.test_folder
+                    self.dataset_path / self.dataset_type / Constants.test_folder
                 )
                 val_folder = (
-                    TrainConstants.train_dataset_path_dict[self.dataset_type]
-                    / Constants.val_folder
+                    self.dataset_path / self.dataset_type / Constants.val_folder
                 )
 
                 train_test_val_folder = [train_folder, val_folder, test_folder]
@@ -104,10 +104,9 @@ class YOLODataset(Dataset):
 
                 # TODO: check data.yaml file
                 yaml_path = (
-                    TrainConstants.train_dataset_path_dict[self.dataset_type]
-                    / Constants.data_yaml_file
+                    self.dataset_path / self.dataset_type / Constants.data_yaml_file
                 )
-
+                
                 if Utils.check_yaml(yaml_path=yaml_path):
                     print(f"\t\t\t\t[/] YAML file is OK")
                     self.target_labels = Utils.read_yaml_file(yaml_file_path=yaml_path)[
@@ -121,7 +120,7 @@ class YOLODataset(Dataset):
                 return True
             else:
                 print(
-                    f"\t\t\t---> {str(TrainConstants.train_dataset_path_dict[self.dataset_type])} not exists"
+                    f"\t\t\t---> {str(self.dataset_path / self.dataset_type)} not exists"
                 )
 
         return False
@@ -144,9 +143,6 @@ class YOLODataset(Dataset):
         print(f"number of test: {n_test}")
 
         return n_train + n_val + n_test
-
-    def change_folder_name4train(self, old_folder_name, new_folder_name):
-        return
 
     # def prepare_train(self):
     #     print(f"self.target_folder_path: {self.target_folder_path}")
