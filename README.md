@@ -13,6 +13,9 @@ ex. ./datasets_for_train/digital/
 -> preprocess with specific target dataset folder
     python preprocess.py --input_file=requirements.txt --dataset_type=number --dataset_target=./dataset_eiei/
 
+-> preprocess new
+    python preprocess.py /Users/kantip/Desktop/work/ABC_training/config/preprocess_config/preprocess.yml
+
 -> command to train
 
     python train.py requirements.txt digital SMALL --epochs 100 --img_size 1024 --batch_size 32 --cache True --patience 15 --device cpu --workers 20 --resume True -lr 0.001

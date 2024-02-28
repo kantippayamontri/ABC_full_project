@@ -11,6 +11,7 @@ DATASET:
     [
       "datasets/digital/digital_1_100_set1",
       "/Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2",
+      "datasets/user13_101223",
     ]
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: "./dataset_new"

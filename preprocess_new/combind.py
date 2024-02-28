@@ -1,3 +1,3 @@
-class Augment:
+class Combind:
     def __init__(self,):
         ...

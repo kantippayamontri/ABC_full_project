@@ -16,6 +16,7 @@ class Constants:
     train_folder = "train"
     val_folder = "valid"
     test_folder = "test"
+    img_bb_folder_list = [train_folder, val_folder, test_folder]
     image_folder = "images"
     label_folder = "labels"
     data_yaml_file = "data.yaml"

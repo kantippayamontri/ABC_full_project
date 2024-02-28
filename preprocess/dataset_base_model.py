@@ -515,7 +515,7 @@ class DatasetCombineModel:
         )
 
         # TODO: reclass bb
-        # print(f"number of filename_bb_list: {len(filename_bb_list)}")
+        # print(f"number of filename_bb_list: {len(fildatasets/user13_101223ename_bb_list)}")
 
         for index, (img_path, bb_path) in enumerate(filename_bb_list):
             new_bb = Utils.reclass_bb_from_dict(
