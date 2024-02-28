@@ -766,6 +766,39 @@ class Utils:
                 )
 
         plt.show()
+    
+    @staticmethod
+    def visualize_samples( source_folder, number_of_samples=10, gauge_type=None):
+        from preprocess.preprocess_constants import PreprocessConstants
+        from utils.constants import Constants
+
+        # TODO: get filenames and bb and labels
+        ic(source_folder)
+        img_path = source_folder / Constants.image_folder
+        bb_path = source_folder / Constants.label_folder
+        match_filename_bb = Utils.get_filename_bb_folder(
+            img_path=img_path, bb_path=bb_path, source_folder=source_folder
+        )
+        # print(f"--- Match File ---")
+        # TODO: random images and bb
+        number_of_images = len(match_filename_bb)
+        random_index_list = []
+        for i in range(number_of_samples):
+            index = random.randint(0, number_of_images)
+            random_index_list.append(index)
+
+        # TODO: visulize image and bb
+        labels = Constants.map_data_dict[gauge_type]["target"]
+        for index in random_index_list:
+            _img_path = match_filename_bb[index][0]
+            _bb_path = match_filename_bb[index][1]
+            Utils.visualize_img_bb(
+                img=Utils.load_img_cv2(filepath=_img_path),
+                bb=Utils.load_bb(filepath=_bb_path),
+                with_class=True,
+                labels=labels,
+            )
+        return
 
     @staticmethod
     def change_filename_sample(

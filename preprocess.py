@@ -14,20 +14,11 @@ parser.add_argument("config", type=str, help="add config file in .yml")
 # # Parse the command-line arguments
 args = parser.parse_args()
 
-# ic(f"config path: {args.config}")
-
 # read config file
 data_yaml = Utils.read_yaml_file(args.config)
 dataset_dict = data_yaml["DATASET"]
 preprocess_dict = data_yaml["PREPROCESS"]
 augment_dict = data_yaml["AUGMENT"]
-
-# ic(data_yaml)
-# ic(dataset_dict)
-# ic(preprocess_dict)
-# ic(augment_dict)
-
-# ic(f"final path: {dataset_dict['FINAL_DATASET_PATH']}")
 
 # check final dataset
 if not Utils.check_folder_exists(Path(dataset_dict["FINAL_DATASET_PATH"])):
@@ -77,7 +68,6 @@ for ds_folder in dataset_dict["DATASET_PATH"]:
 
 # Preprocess
 preprocess = preprocess_new.CreateDataset(data_yaml=data_yaml)
-# preprocess = preprocess_new.Preprocess(preprocess_dict=preprocess_dict,final_folder=dataset_dict["FINAL_DATASET_PATH"])
 
 
 
