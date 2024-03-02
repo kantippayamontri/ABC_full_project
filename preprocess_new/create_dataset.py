@@ -17,9 +17,9 @@ class CreateDataset:
         ic(self.data_yaml)
 
         # combind the dataset to final dataset path
-        print("[-] COMBIND DATASET")
-        self.combind = Combind(data_dict=self.dataset_dict)
-        self.combind.combind()
+        # print("[-] COMBIND DATASET")
+        # self.combind = Combind(data_dict=self.dataset_dict)
+        # self.combind.combind()
         # self.combind.visualize_samples(n=10, folder="valid")
 
         # preprocess the dataset in final dataset_path

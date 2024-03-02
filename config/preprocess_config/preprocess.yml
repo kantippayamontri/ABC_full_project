@@ -23,4 +23,10 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST:
-  - CROP
+  - CROP:
+      ADD_PIXEL: 50
+      CLASS_CROP: 0
+      CLASS_IGNORE: null
+      NEED_RESIZE: true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
