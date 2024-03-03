@@ -1,16 +1,16 @@
 AUGMENT:
   AUGMENT_LIST: []
   FOLDER:
-  - train
+  # - train
   - valid
-  - test
+  # - test
   NUMBER_AUGMENT: 3
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  - datasets/digital/digital_1_100_set1
-  - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
-  - datasets/user13_101223
+  - /media/kan/kan_ex/digital_1_100_set1 
+  - /media/kan/kan_ex/digital_1_100_set2 
+  - /media/kan/kan_ex/
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_new
   PERCENT_TEST: 5
@@ -18,15 +18,24 @@ DATASET:
   PERCENT_VAL: 5
 PREPROCESS:
   FOLDER:
-  - train
+  # - train
   - valid
-  - test
+  # - test
   PREFIX: pre
   PREPROCESS_LIST:
   - CROP:
       ADD_PIXEL: 50
-      CLASS_CROP: 0
-      CLASS_IGNORE: null
+      CLASS_CROP: 1
+      CLASS_IGNORE: 
+      - 0
       NEED_RESIZE: true
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
+      REPLACE: false
+  - RESIZE:
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+  # - GRAY:
+  #     P: 1.0
+  #     REPLACE: true

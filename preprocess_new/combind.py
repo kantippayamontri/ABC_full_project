@@ -67,6 +67,14 @@ class Combind:
                 fn = test_filename_bb
 
             for _, (img_p, bb_p) in enumerate(fn):
+                # test read img
+                _img = Utils.load_img_cv2(filepath=img_p)
+                # tes read bb
+                _bb = Utils.load_bb(filepath=bb_p)
+
+                if (_img is None) or (_bb is None):
+                    continue
+                
                 Utils.move_file(
                     source_file_path=img_p,
                     target_file_path=Path(data_dict["FINAL_DATASET_PATH"])

@@ -233,7 +233,7 @@ class Utils:
             xyxy_crop = Utils.change_format_yolo2xyxy(
                 img_size=img.shape, bb=bb_crop, with_class=with_class
             )["bb"]
-            
+
             transform = A.Compose(
                 [
                     A.Crop(
@@ -277,13 +277,13 @@ class Utils:
         return transform
 
     @staticmethod
-    def albu_grayscale(format=None):
+    def albu_grayscale(format=None, p=1.0):
         from utils.constants import Constants
         transform = None
         if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
             transform = A.Compose(
                 [
-                    A.ToGray(p=1.0)
+                    A.ToGray(p=p)
                 ],
                 bbox_params={
                     "format": "yolo",
@@ -715,6 +715,9 @@ class Utils:
     def visualize_img_bb(img, bb, with_class=False, format=None, labels=None):
         from utils.constants import Constants
 
+        if (img is None) or (bb is None):
+            return
+
         xyxy_bb = []
         if (len(bb) != 0) and (
             format == Constants.BoundingBoxFormat.YOLOV8 or format == None
@@ -779,26 +782,42 @@ class Utils:
         match_filename_bb = Utils.get_filename_bb_folder(
             img_path=img_path, bb_path=bb_path, source_folder=source_folder
         )
+
         # print(f"--- Match File ---")
         # TODO: random images and bb
         number_of_images = len(match_filename_bb)
+
         random_index_list = []
-        for i in range(number_of_samples):
-            index = random.randint(0, number_of_images)
-            random_index_list.append(index)
+
+        if number_of_samples > number_of_images:
+            print(f"[warning] we can show only {number_of_images} images because number of samples is exceed.")
+            random_index_list = list(range(number_of_images))
+        else:
+            while len(random_index_list) < number_of_samples:
+                index = random.randint(0, number_of_images-1)
+                if index not in random_index_list:
+                    random_index_list.append(index)
+   
+        print(f"randon index list : {random_index_list}")
+        print(f"number of samples : {number_of_samples}")
+        print(f"number of images : {number_of_images}")
 
         # TODO: visulize image and bb
         labels = Constants.map_data_dict[gauge_type]["target"]
         for index in random_index_list:
             _img_path = match_filename_bb[index][0]
             _bb_path = match_filename_bb[index][1]
-            Utils.visualize_img_bb(
-                img=Utils.load_img_cv2(filepath=_img_path),
-                bb=Utils.load_bb(filepath=_bb_path),
-                with_class=True,
-                labels=labels,
-            )
-        return
+            _img = Utils.load_img_cv2(filepath=_img_path)
+            _bb = Utils.load_bb(filepath=_bb_path)
+            print(_bb_path,_bb)
+            if _img is not None and _bb is not None:
+                ic(f'visual, img path: {_img_path}, bb path: {_bb_path}')
+                Utils.visualize_img_bb(
+                    img=_img,
+                    bb=_bb,
+                    with_class=True,
+                    labels=labels,
+                )
 
     @staticmethod
     def change_filename_sample(
@@ -856,27 +875,38 @@ class Utils:
             pil_image = Image.fromarray(img)
 
         if filepath.is_file():
-            os.remove(filepath)
+            os.remove(str(filepath))
+
         # Save the image
-        pil_image.save(filepath)
+        pil_image.save(str(filepath))
+
 
     @staticmethod
     def load_img_cv2(filepath):
         img = cv2.imread(str(filepath))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        return img
+        try:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            return img
+        except:
+            return None
 
     @staticmethod
     def load_bb(filepath):
         bb = []
 
-        fp = open(filepath, "r")  # read the bounding box
-        for c, line in enumerate(fp):
-            bb_l = list(float(n) for n in line.split(" "))
-            if len(bb_l) == 5:
-                bb.append(bb_l)
-                
-        return np.array(bb) if len(bb) > 0 else None
+        try:
+            fp = open(str(filepath), "r")  # read the bounding box
+            for c, line in enumerate(fp):
+                bb_l = line.split(" ")
+                if bb_l[-1] == "\n":
+                    bb_l = bb_l[:len(bb_l)-1]
+                bb_l = list(float(n) for n in bb_l)
+                if len(bb_l) == 5:
+                    bb.append(bb_l)
+                    
+            return np.array(bb) if len(bb) > 0 else None
+        except :
+            return None
 
     @staticmethod
     def overwrite_label(txt_file_path, bb):
@@ -997,3 +1027,16 @@ class Utils:
             {"train": "../train/images"}
         )
         Utils.write_yaml(data=yaml_list, filepath=yaml_path)
+
+    @staticmethod
+    def save_bb(bb_path, bb_list):
+        with open(bb_path, "w") as fp:
+            for item in bb_list:
+                for index, bb in enumerate(item):
+                    if index != len(item):
+                        fp.write("%s " % bb)
+                    else:
+                        fp.write("%s" % bb)
+                # write each item on a new line
+                fp.write("\n")
+        
