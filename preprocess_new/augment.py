@@ -1,5 +1,6 @@
 from icecream import ic
 from utils import Utils, Constants
+from pathlib import Path
 
 
 class Augment:
@@ -20,6 +21,7 @@ class Augment:
 
     def augment(self, augment_list=[], dataset_folder=None, number_augment=1):
         from .transforms import Transform
+
         ic(augment_list, dataset_folder)
 
         if augment_list == []:
@@ -34,7 +36,10 @@ class Augment:
             img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"
         )
 
-        for img_path, bb_path in matches_img_bb:
+        for aug_index, (img_path, bb_path) in enumerate(matches_img_bb):
+            if aug_index > 5:
+                return
+
             img = Utils.load_img_cv2(filepath=img_path)
             bb = Utils.load_bb(filepath=bb_path)
 
@@ -57,9 +62,31 @@ class Augment:
                         function_parameter=function_parameter,
                         img=new_img,
                         bb=new_bb,
-                        target_folder_path=dataset_folder
-                    
+                        target_folder_path=dataset_folder,
                     )
+
+                # save augment image with index of number samples prefix
+                new_name_img = transform.make_new_name(
+                    name=Path(transform.get_img_path()),
+                    function_name="aug",
+                    prefix=f"{aug_index}",
+                )
+                new_name_bb = transform.make_new_name(
+                    name=Path(transform.get_bb_path()),
+                    function_name="aug",
+                    prefix=f"{aug_index}",
+                )
+
+                transform.save_img(img=new_img, path=Path(new_name_img))
+                transform.save_bb(bb_list=new_bb, path=Path(new_name_bb))
+
+                Utils.visualize_img_bb(
+                    img=new_img,
+                    bb=new_bb,
+                    with_class=True,
+                    format=None,
+                    labels=["gauge", "display", "frame"],
+                )
 
         # (function_name, function_parameter) = tuple(
         #     (key, value) for key, value in pre_d.items()

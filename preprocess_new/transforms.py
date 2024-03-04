@@ -10,6 +10,21 @@ class Transform:
         self.img_path = img_path
         self.bb_path = bb_path
 
+    def get_img_path(
+        self,
+    ):
+        return self.img_path
+
+    def get_bb_path(
+        self,
+    ):
+        return self.bb_path
+
+    def get_img_bb_path(
+        self,
+    ):
+        return (self.img_path, self.bb_path)
+
     def prepare_input(self, img, bb):
         # format for albumentation yolo = [cx,cy,w,h,class]
         permutation = [1, 2, 3, 4, 0]
@@ -159,10 +174,46 @@ class Transform:
         return new_img, new_bb
 
     def gray(self, img, bb, format=None, p=1.0):
-        albu_transform = Utils.albu_grayscale(format=format,p=1.0)
+        albu_transform = Utils.albu_grayscale(format=format, p=1.0)
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         return new_img, new_bb
+
+    def channel_shuffle(self, img, bb, format=None, p=1.0):
+        albu_transform = Utils.albu_channelshuffle(format=format, p=p)
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+
+    def multiplicative_noise(
+        self, img, bb, format=None, p=1.0, multiplier=[0.0, 1.0], element_wise=True
+    ):
+        albu_transform = Utils.albu_multiplicative_noise(
+            format=format, multiplier=multiplier, element_wise=element_wise, p=p
+        )
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+
+    def blur(self, img, bb, format=None, p=1.0, blur_limit=[7, 7]):
+        albu_transform = Utils.albu_blur(blur_limit=blur_limit, p=p, format=format)
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+
+    def rotate(self, img, bb, format=None, p=1.0, limit=[-10, 10]):
+        albu_transform = Utils.albu_rotate(format=format, p=p, limit=limit)
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+
+    def color_jitter(self, img, bb, format=None, p=1.0,):
+        ic(f"color jitter")
+        albu_transform = Utils.albu_color_jitter(format=format, p=p)
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+        
 
     def transform_dict_function(
         self, function_name, function_parameter, img, bb, target_folder_path
@@ -195,14 +246,59 @@ class Transform:
                 format=Constants.BoundingBoxFormat.YOLOV8,
             )
         elif function_name == "GRAY":
-            img, bb = self.gray(img=img.copy(), bb=bb.copy(), format=Constants.BoundingBoxFormat.YOLOV8)
+            img, bb = self.gray(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=float(function_parameter["P"]),
+            )
+        elif function_name == "CHANNEL_SHUFFLE":
+            img, bb = self.channel_shuffle(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=float(function_parameter["P"]),
+            )
+        elif function_name == "MULTIPLICATIVE_NOISE":
+            img, bb = self.multiplicative_noise(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"],
+                multiplier=function_parameter["MULTIPLIER"],
+                element_wise=function_parameter["ELEMENT_WISE"],
+            )
+        elif function_name == "BLUR":
+            img, bb = self.blur(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"],
+                blur_limit=function_parameter["BLUR_LIMIT"],
+            )
+        elif function_name == "ROTATE":
+            img, bb = self.rotate(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"],
+                limit=function_parameter["LIMIT"],
+            )
+        elif function_name == "COLOR_JITTER":
+            img, bb = self.color_jitter(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"]
+            )
+
         else:
             ...
 
         img, bb = self.prepare_output(img=img, bb=bb)
 
         # for some function need to replace original image
-        try: 
+        try:
             if function_parameter["REPLACE"]:
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)

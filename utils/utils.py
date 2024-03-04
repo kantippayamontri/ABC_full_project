@@ -291,6 +291,91 @@ class Utils:
             )
         
         return transform 
+    
+    @staticmethod
+    def albu_channelshuffle(format=None, p=1.0):
+        from utils.constants import Constants
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.ChannelShuffle(p=p)
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+        
+        return transform 
+    
+    @staticmethod
+    def albu_multiplicative_noise(format=None, multiplier=[0.0,1.0],element_wise=True , p=1.0):
+        from utils.constants import Constants
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.MultiplicativeNoise(
+                        multiplier=multiplier,
+                        elementwise=element_wise,
+                        p=p
+                    )
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+        
+        return transform 
+    
+    @staticmethod
+    def albu_blur(format=None, p=1.0, blur_limit=[7,7]):
+        from utils.constants import Constants
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.Blur(blur_limit=blur_limit,p=p)
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+        
+        return transform 
+    
+    @staticmethod
+    def albu_rotate(format=None, p=1.0, limit=[-10,10]):
+        from utils.constants import Constants
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.Rotate(limit=limit, border_mode=cv2.BORDER_CONSTANT,p=p,)
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+        
+        return transform 
+
+    @staticmethod
+    def albu_color_jitter(format=None, p=1.0,):
+        from utils.constants import Constants
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.ColorJitter(p=p,)
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+        
+        return transform 
+        
 
     @staticmethod
     def get_output_from_transform(transform=None, img=None, bb=None, number_samples=1):
