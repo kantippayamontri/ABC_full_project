@@ -30,7 +30,7 @@ class Transform:
     def save_bb(self, bb_list, path):
         Utils.save_bb(bb_list=bb_list, bb_path=path)
 
-    def new_name_pre(self, name, function_name, prefix):
+    def make_new_name(self, name, function_name, prefix):
         file_name, file_prefix = str(name).split(".")
 
         return f"{file_name}_{function_name}_{prefix}.{file_prefix}"
@@ -124,12 +124,12 @@ class Transform:
                 new_bb = np.array([list(bb_temp) for bb_temp in new_bb])
 
             # new name for crop
-            new_name_img = self.new_name_pre(
+            new_name_img = self.make_new_name(
                 name=self.img_path.name,
                 function_name="crop",
                 prefix=f"{class_crop}_{index_crop}",
             )
-            new_name_bb = self.new_name_pre(
+            new_name_bb = self.make_new_name(
                 name=self.bb_path.name,
                 function_name="crop",
                 prefix=f"{class_crop}_{index_crop}",
@@ -202,8 +202,11 @@ class Transform:
         img, bb = self.prepare_output(img=img, bb=bb)
 
         # for some function need to replace original image
-        if function_parameter["REPLACE"]:
-            self.save_img(img=img, path=self.img_path)
-            self.save_bb(bb_list=bb, path=self.bb_path)
+        try: 
+            if function_parameter["REPLACE"]:
+                self.save_img(img=img, path=self.img_path)
+                self.save_bb(bb_list=bb, path=self.bb_path)
+        except:
+            pass
 
         return img, bb

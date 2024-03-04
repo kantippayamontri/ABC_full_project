@@ -811,7 +811,7 @@ class Utils:
             _bb = Utils.load_bb(filepath=_bb_path)
             print(_bb_path,_bb)
             if _img is not None and _bb is not None:
-                ic(f'visual, img path: {_img_path}, bb path: {_bb_path}')
+                # ic(f'visual, img path: {_img_path}, bb path: {_bb_path}')
                 Utils.visualize_img_bb(
                     img=_img,
                     bb=_bb,

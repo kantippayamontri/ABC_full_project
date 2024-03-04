@@ -36,7 +36,3 @@ class CreateDataset:
             augment_dict=self.augment_dict,
             dataset_path=Path(self.dataset_dict["FINAL_DATASET_PATH"]),
         )
-
-    def augment(
-        self,
-    ): ...

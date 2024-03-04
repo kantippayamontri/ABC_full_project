@@ -1,5 +1,9 @@
 AUGMENT:
   AUGMENT_LIST: []
+  # - RESIZE:
+  #     TARGET_WIDTH: 640
+  #     TARGET_HEIGHT: 640
+  #     REPLACE: false
   FOLDER:
   # - train
   - valid
@@ -8,9 +12,12 @@ AUGMENT:
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  - /media/kan/kan_ex/digital_1_100_set1 
-  - /media/kan/kan_ex/digital_1_100_set2 
-  - /media/kan/kan_ex/
+  # - /media/kan/kan_ex/digital_1_100_set1 
+  # - /media/kan/kan_ex/digital_1_100_set2 
+  # - /media/kan/kan_ex/
+  - datasets/digital/digital_1_100_set1
+  - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
+  - datasets/user13_101223
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_new
   PERCENT_TEST: 5
@@ -32,10 +39,10 @@ PREPROCESS:
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
       REPLACE: false
-  - RESIZE:
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
-      REPLACE: true
+  # - RESIZE:
+  #     TARGET_HEIGHT: 640
+  #     TARGET_WIDTH: 640
+  #     REPLACE: true
   # - GRAY:
   #     P: 1.0
   #     REPLACE: true
