@@ -160,6 +160,7 @@ class PreprocessGaugeModel:
     def preprocess_number(self, gauge_name=None):
         print(f"\t\t[-] PREPROCESS NUMBER")
         from preprocess.preprocess_constants import PreprocessConstants
+
         for index, (img_path, bb_path) in enumerate(self.match_img_bb_path):
             if index % 100 == 0:
                 print(f"image index: {index}")
@@ -167,8 +168,11 @@ class PreprocessGaugeModel:
             img = Utils.load_img_cv2(filepath=img_path)
             bb = Utils.load_bb(filepath=bb_path)
             # Utils.visualize_img_bb(img=img, bb=np.array(bb), with_class=True, labels=None)
-            target_size = (PreprocessConstants.NUMBER_TARGET_SIZE, PreprocessConstants.NUMBER_TARGET_SIZE) 
-            
+            target_size = (
+                PreprocessConstants.NUMBER_TARGET_SIZE,
+                PreprocessConstants.NUMBER_TARGET_SIZE,
+            )
+
             # format for albumentation yolo = [cx,cy,w,h,class]
             permutation = [1, 2, 3, 4, 0]
             bb = np.array(bb)
@@ -181,14 +185,14 @@ class PreprocessGaugeModel:
             # check bounding box is negative
             for bb_i, _bb in enumerate(bb):
                 bb[bb_i][bb[bb_i] < 0] = 0.0
-            
+
             # check bounding box is over 1
             for bb_i, _bb in enumerate(bb):
-                c = _bb[-1] # for store class number
-                bb[bb_i][bb[bb_i]>1.0] = 0.99
+                c = _bb[-1]  # for store class number
+                bb[bb_i][bb[bb_i] > 1.0] = 0.99
                 bb[bb_i][-1] = c
-            
-            try: 
+
+            try:
                 trans = Utils.albu_resize_img_bb(target_size=target_size)
                 preprocess_obj = trans(image=img, bboxes=bb)
                 preprocess_image = preprocess_obj["image"]
@@ -199,34 +203,35 @@ class PreprocessGaugeModel:
                 preprocess_image = img
                 preprocess_bb = bb
 
-
             # check bounding box is negative
             for bb_i, _bb in enumerate(preprocess_bb):
                 preprocess_bb[bb_i][preprocess_bb[bb_i] < 0] = 0.0
-            
+
             # check bounding box is over 1
             for bb_i, _bb in enumerate(preprocess_bb):
-                c = _bb[-1] # for store class number
-                preprocess_bb[bb_i][preprocess_bb[bb_i]>1.0] = 0.99
+                c = _bb[-1]  # for store class number
+                preprocess_bb[bb_i][preprocess_bb[bb_i] > 1.0] = 0.99
                 preprocess_bb[bb_i][-1] = c
-            
+
             if len(preprocess_bb) > 0:
                 inversePermutation = [4, 0, 1, 2, 3]
-                preprocess_bb = np.array(preprocess_bb)[:,inversePermutation]
+                preprocess_bb = np.array(preprocess_bb)[:, inversePermutation]
 
             # ic(img_path, bb_path)
 
-            #TODO: save images
-            Utils.save_image(img=preprocess_image,filepath=img_path,)
-            
-            #TODO: save bb
-            Utils.overwrite_label(bb=preprocess_bb,txt_file_path=bb_path)
+            # TODO: save images
+            Utils.save_image(
+                img=preprocess_image,
+                filepath=img_path,
+            )
+
+            # TODO: save bb
+            Utils.overwrite_label(bb=preprocess_bb, txt_file_path=bb_path)
 
             # Utils.visualize_img_bb(img=preprocess_image, bb=preprocess_bb, with_class=True, labels=PreprocessConstants.NUMBER_TARGET_CLASS)
             # if index > 5:
             #     return
 
-            
         return
 
     def preprocess_clock(

@@ -63,7 +63,7 @@ class Preprocess:
                 
             print(f"\t\t\t[/] {function_name} success.")
         
-        Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
+        # Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
             
 
         
