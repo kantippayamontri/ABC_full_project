@@ -37,8 +37,8 @@ class Augment:
         )
 
         for aug_index, (img_path, bb_path) in enumerate(matches_img_bb):
-            if aug_index > 5:
-                return
+            # if aug_index > 5:
+            #     return
 
             img = Utils.load_img_cv2(filepath=img_path)
             bb = Utils.load_bb(filepath=bb_path)
@@ -47,7 +47,7 @@ class Augment:
                 continue
 
             for round in range(number_augment):
-                ic(round)
+                # ic(round)
                 new_img = img.copy()
                 new_bb = bb.copy()
 
@@ -55,7 +55,7 @@ class Augment:
                     (function_name, function_parameter) = tuple(
                         (key, value) for key, value in aug_d.items()
                     )[0]
-                    ic(function_name, function_parameter)
+                    # ic(function_name, function_parameter)
                     transform = Transform(img_path=img_path, bb_path=bb_path)
                     new_img, new_bb = transform.transform_dict_function(
                         function_name=function_name,
@@ -80,13 +80,13 @@ class Augment:
                 transform.save_img(img=new_img, path=Path(new_name_img))
                 transform.save_bb(bb_list=new_bb, path=Path(new_name_bb))
 
-                Utils.visualize_img_bb(
-                    img=new_img,
-                    bb=new_bb,
-                    with_class=True,
-                    format=None,
-                    labels=["gauge", "display", "frame"],
-                )
+                # Utils.visualize_img_bb(
+                #     img=new_img,
+                #     bb=new_bb,
+                #     with_class=True,
+                #     format=None,
+                #     labels=["gauge", "display", "frame"],
+                # )
 
         # (function_name, function_parameter) = tuple(
         #     (key, value) for key, value in pre_d.items()

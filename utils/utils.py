@@ -224,7 +224,9 @@ class Utils:
         return {value: index for index, value in enumerate(data)}
 
     @staticmethod
-    def albu_crop_img_bb(img=None, bb_crop=None, format=None, add_pixels=0, with_class=True):
+    def albu_crop_img_bb(
+        img=None, bb_crop=None, format=None, add_pixels=0, with_class=True
+    ):
         from utils.constants import Constants
 
         max_x = img.shape[1] - 1
@@ -279,112 +281,144 @@ class Utils:
     @staticmethod
     def albu_grayscale(format=None, p=1.0):
         from utils.constants import Constants
+
         transform = None
         if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
             transform = A.Compose(
-                [
-                    A.ToGray(p=p)
-                ],
+                [A.ToGray(p=p)],
                 bbox_params={
                     "format": "yolo",
                 },
             )
-        
-        return transform 
-    
+
+        return transform
+
     @staticmethod
     def albu_channelshuffle(format=None, p=1.0):
         from utils.constants import Constants
+
         transform = None
         if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
             transform = A.Compose(
-                [
-                    A.ChannelShuffle(p=p)
-                ],
+                [A.ChannelShuffle(p=p)],
                 bbox_params={
                     "format": "yolo",
                 },
             )
-        
-        return transform 
-    
+
+        return transform
+
     @staticmethod
-    def albu_multiplicative_noise(format=None, multiplier=[0.0,1.0],element_wise=True , p=1.0):
+    def albu_multiplicative_noise(
+        format=None, multiplier=[0.0, 1.0], element_wise=True, p=1.0
+    ):
         from utils.constants import Constants
+
         transform = None
         if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
             transform = A.Compose(
                 [
                     A.MultiplicativeNoise(
-                        multiplier=multiplier,
-                        elementwise=element_wise,
-                        p=p
+                        multiplier=multiplier, elementwise=element_wise, p=p
                     )
                 ],
                 bbox_params={
                     "format": "yolo",
                 },
             )
-        
-        return transform 
-    
-    @staticmethod
-    def albu_blur(format=None, p=1.0, blur_limit=[7,7]):
-        from utils.constants import Constants
-        transform = None
-        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
-            transform = A.Compose(
-                [
-                    A.Blur(blur_limit=blur_limit,p=p)
-                ],
-                bbox_params={
-                    "format": "yolo",
-                },
-            )
-        
-        return transform 
-    
-    @staticmethod
-    def albu_rotate(format=None, p=1.0, limit=[-10,10]):
-        from utils.constants import Constants
-        transform = None
-        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
-            transform = A.Compose(
-                [
-                    A.Rotate(limit=limit, border_mode=cv2.BORDER_CONSTANT,p=p,)
-                ],
-                bbox_params={
-                    "format": "yolo",
-                },
-            )
-        
-        return transform 
+
+        return transform
 
     @staticmethod
-    def albu_color_jitter(format=None, p=1.0,brightness=0.2, contrast=0.2,saturation=0.2, hue=0.2):
+    def albu_blur(format=None, p=1.0, blur_limit=[7, 7]):
         from utils.constants import Constants
+
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [A.Blur(blur_limit=blur_limit, p=p)],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+
+        return transform
+
+    @staticmethod
+    def albu_rotate(format=None, p=1.0, limit=[-10, 10]):
+        from utils.constants import Constants
+
         transform = None
         if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
             transform = A.Compose(
                 [
-                    A.ColorJitter(p=p,
-                                  brightness=brightness,
-                                  contrast=contrast,
-                                  saturation=saturation,
-                                  hue=hue,
-                                  )
+                    A.Rotate(
+                        limit=limit,
+                        border_mode=cv2.BORDER_CONSTANT,
+                        p=p,
+                    )
                 ],
                 bbox_params={
                     "format": "yolo",
                 },
             )
-        
-        return transform 
-    
+
+        return transform
+
     @staticmethod
-    def longest_max_size(format=None, p=1.0, max_size=640):
-        ...
-        
+    def albu_color_jitter(
+        format=None, p=1.0, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2
+    ):
+        from utils.constants import Constants
+
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [
+                    A.ColorJitter(
+                        p=p,
+                        brightness=brightness,
+                        contrast=contrast,
+                        saturation=saturation,
+                        hue=hue,
+                    )
+                ],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+
+        return transform
+
+    @staticmethod
+    def albu_longest_max_size(format=None, p=1.0, max_size=640):
+        from utils.constants import Constants
+
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [A.LongestMaxSize(max_size=max_size, p=p)],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+
+        return transform
+
+    @staticmethod
+    def albu_pad_if_needed(format=None, p=1.0, min_width=640, min_height=640):
+        from utils.constants import Constants
+
+        transform = None
+        if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
+            transform = A.Compose(
+                [A.PadIfNeeded(p=p, min_width=min_width, min_height=min_height)],
+                bbox_params={
+                    "format": "yolo",
+                },
+            )
+
+        return transform
 
     @staticmethod
     def get_output_from_transform(transform=None, img=None, bb=None, number_samples=1):
@@ -863,9 +897,9 @@ class Utils:
                 )
 
         plt.show()
-    
+
     @staticmethod
-    def visualize_samples( source_folder, number_of_samples=10, gauge_type=None):
+    def visualize_samples(source_folder, number_of_samples=10, gauge_type=None):
         from preprocess.preprocess_constants import PreprocessConstants
         from utils.constants import Constants
 
@@ -884,14 +918,16 @@ class Utils:
         random_index_list = []
 
         if number_of_samples > number_of_images:
-            print(f"[warning] we can show only {number_of_images} images because number of samples is exceed.")
+            print(
+                f"[warning] we can show only {number_of_images} images because number of samples is exceed."
+            )
             random_index_list = list(range(number_of_images))
         else:
             while len(random_index_list) < number_of_samples:
-                index = random.randint(0, number_of_images-1)
+                index = random.randint(0, number_of_images - 1)
                 if index not in random_index_list:
                     random_index_list.append(index)
-   
+
         print(f"randon index list : {random_index_list}")
         print(f"number of samples : {number_of_samples}")
         print(f"number of images : {number_of_images}")
@@ -903,7 +939,7 @@ class Utils:
             _bb_path = match_filename_bb[index][1]
             _img = Utils.load_img_cv2(filepath=_img_path)
             _bb = Utils.load_bb(filepath=_bb_path)
-            print(_bb_path,_bb)
+            print(_bb_path, _bb)
             if _img is not None and _bb is not None:
                 # ic(f'visual, img path: {_img_path}, bb path: {_bb_path}')
                 Utils.visualize_img_bb(
@@ -974,7 +1010,6 @@ class Utils:
         # Save the image
         pil_image.save(str(filepath))
 
-
     @staticmethod
     def load_img_cv2(filepath):
         img = cv2.imread(str(filepath))
@@ -993,13 +1028,13 @@ class Utils:
             for c, line in enumerate(fp):
                 bb_l = line.split(" ")
                 if bb_l[-1] == "\n":
-                    bb_l = bb_l[:len(bb_l)-1]
+                    bb_l = bb_l[: len(bb_l) - 1]
                 bb_l = list(float(n) for n in bb_l)
                 if len(bb_l) == 5:
                     bb.append(bb_l)
-                    
+
             return np.array(bb) if len(bb) > 0 else None
-        except :
+        except:
             return None
 
     @staticmethod
@@ -1117,9 +1152,7 @@ class Utils:
             {"names": bb_class},
         )
         yaml_list.append({"nc": len(bb_class)})
-        yaml_list.append(
-            {"train": "../train/images"}
-        )
+        yaml_list.append({"train": "../train/images"})
         Utils.write_yaml(data=yaml_list, filepath=yaml_path)
 
     @staticmethod
@@ -1133,4 +1166,3 @@ class Utils:
                         fp.write("%s" % bb)
                 # write each item on a new line
                 fp.write("\n")
-        

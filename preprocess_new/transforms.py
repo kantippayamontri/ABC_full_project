@@ -230,6 +230,20 @@ class Transform:
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         return new_img, new_bb
 
+    def longest_max_size(self, img, bb, format=None, p=1.0, max_size=640):
+        albu_transform = Utils.albu_longest_max_size(
+            format=format, p=p, max_size=max_size
+        )
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+
+    def pad_if_needed(self, img, bb, format=None, p=1.0, min_width=640, min_height=640):
+        albu_transform = Utils.albu_pad_if_needed(format=format, p=p, min_width=min_width, min_height=min_height)
+        transformed = albu_transform(image=img, bboxes=bb)
+        new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        return new_img, new_bb
+
     def transform_dict_function(
         self, function_name, function_parameter, img, bb, target_folder_path
     ):
@@ -306,13 +320,32 @@ class Transform:
                 format=Constants.BoundingBoxFormat.YOLOV8,
                 p=function_parameter["P"],
                 brightness=function_parameter["BRIGHTNESS"],
-                contrast=function_parameter["CONTRAST"], 
+                contrast=function_parameter["CONTRAST"],
                 saturation=function_parameter["SATURATION"],
                 hue=function_parameter["HUE"],
             )
+        elif function_name == "LONGEST_MAX_SIZE":
+            img, bb = self.longest_max_size(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"],
+                max_size=function_parameter["MAX_SIZE"],
+            )
+        elif function_name == "PAD_IF_NEEDED":
+            img, bb = self.pad_if_needed(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"],
+                min_width=function_parameter["MIN_WIDTH"],
+                min_height=function_parameter["MIN_HEIGHT"],
+            )
 
         else:
-            ...
+            print(f"\t\t Augment function {function_name} is not found.")
+            img, bb = self.prepare_output(img=img, bb=bb)
+            return img, bb
 
         img, bb = self.prepare_output(img=img, bb=bb)
 

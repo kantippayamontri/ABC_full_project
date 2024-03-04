@@ -1,56 +1,61 @@
 AUGMENT:
   AUGMENT_LIST: 
-  #  - RESIZE:
-  #      TARGET_WIDTH: 320
-  #      TARGET_HEIGHT: 320
-  #      REPLACE: true
-  # - CHANNEL_SHUFFLE:
-  #     P: 1.0
-  #     REPLACE: false
-  # - MULTIPLICATIVE_NOISE:
-  #     MULTIPLIER:
-  #     - 0.4
-  #     - 1.0
-  #     ELEMENT_WISE: true
-  #     P: 1.0
-  #     REPLACE: false
-  # - BLUR:
-  #     BLUR_LIMIT:
-  #     - 3
-  #     - 3 
-  #     P: 1.0
-  #     REPLACE: false
-  # - ROTATE:
-  #     LIMIT:
-  #     - -45
-  #     - 45 
-  #     P: 1.0
-  #  - COLOR_JITTER:
-  #     BRIGHTNESS: 0.5
-  #     CONTRAST: 0.5
-  #     SATURATION: 0.5
-  #     HUE: 0.5
-  #     P: 1.0
-  #     REPLACE: false
+   - RESIZE:
+       TARGET_WIDTH: 640
+       TARGET_HEIGHT: 640
+       REPLACE: true
+   - CHANNEL_SHUFFLE:
+      P: 0.5
+      REPLACE: false
+   - MULTIPLICATIVE_NOISE:
+      MULTIPLIER:
+      - 0.4
+      - 1.0
+      ELEMENT_WISE: true
+      P: 0.5
+      REPLACE: false
+   - BLUR:
+      BLUR_LIMIT:
+      - 3
+      - 3 
+      P: 0.5
+      REPLACE: false
+   - ROTATE:
+      LIMIT:
+      - -45
+      - 45 
+      P: 0.75
+   - COLOR_JITTER:
+      BRIGHTNESS: 0.5
+      CONTRAST: 0.5
+      SATURATION: 0.5
+      HUE: 0.5
+      P: 0.75
+      REPLACE: false
    - LONGEST_MAX_SIZE:
       MAX_SIZE: 640
       P: 1.0
       REPLACE: false
+   - PAD_IF_NEEDED:
+      MIN_WIDTH: 640
+      MIN_HEIGHT: 640
+      P: 1.0
+      REPLACE: false
   FOLDER:
-  # - train
+  - train
   - valid
   # - test
   NUMBER_AUGMENT: 3
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  # - ./dataset
+  - ./dataset
   # - /media/kan/kan_ex/digital_1_100_set1 
   # - /media/kan/kan_ex/digital_1_100_set2 
   # - /media/kan/kan_ex/
-  - datasets/digital/digital_1_100_set1
-  - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
-  - datasets/user13_101223
+  # - datasets/digital/digital_1_100_set1
+  # - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
+  # - datasets/user13_101223
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_new
   PERCENT_TEST: 5
@@ -58,9 +63,9 @@ DATASET:
   PERCENT_VAL: 5
 PREPROCESS:
   FOLDER:
-  # - train
+  - train
   - valid
-  # - test
+  - test
   PREFIX: pre
   PREPROCESS_LIST:
   - CROP:
