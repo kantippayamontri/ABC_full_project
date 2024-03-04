@@ -25,7 +25,15 @@ AUGMENT:
   #     - -45
   #     - 45 
   #     P: 1.0
-   - COLOR_JITTER:
+  #  - COLOR_JITTER:
+  #     BRIGHTNESS: 0.5
+  #     CONTRAST: 0.5
+  #     SATURATION: 0.5
+  #     HUE: 0.5
+  #     P: 1.0
+  #     REPLACE: false
+   - LONGEST_MAX_SIZE:
+      MAX_SIZE: 640
       P: 1.0
       REPLACE: false
   FOLDER:
@@ -36,13 +44,13 @@ AUGMENT:
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  - ./dataset
+  # - ./dataset
   # - /media/kan/kan_ex/digital_1_100_set1 
   # - /media/kan/kan_ex/digital_1_100_set2 
   # - /media/kan/kan_ex/
-  # - datasets/digital/digital_1_100_set1
-  # - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
-  # - datasets/user13_101223
+  - datasets/digital/digital_1_100_set1
+  - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
+  - datasets/user13_101223
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_new
   PERCENT_TEST: 5

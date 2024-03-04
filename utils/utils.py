@@ -361,13 +361,18 @@ class Utils:
         return transform 
 
     @staticmethod
-    def albu_color_jitter(format=None, p=1.0,):
+    def albu_color_jitter(format=None, p=1.0,brightness=0.2, contrast=0.2,saturation=0.2, hue=0.2):
         from utils.constants import Constants
         transform = None
         if format == None or format == Constants.BoundingBoxFormat.YOLOV8:
             transform = A.Compose(
                 [
-                    A.ColorJitter(p=p,)
+                    A.ColorJitter(p=p,
+                                  brightness=brightness,
+                                  contrast=contrast,
+                                  saturation=saturation,
+                                  hue=hue,
+                                  )
                 ],
                 bbox_params={
                     "format": "yolo",
@@ -375,6 +380,10 @@ class Utils:
             )
         
         return transform 
+    
+    @staticmethod
+    def longest_max_size(format=None, p=1.0, max_size=640):
+        ...
         
 
     @staticmethod

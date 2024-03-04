@@ -207,13 +207,28 @@ class Transform:
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         return new_img, new_bb
 
-    def color_jitter(self, img, bb, format=None, p=1.0,):
-        ic(f"color jitter")
-        albu_transform = Utils.albu_color_jitter(format=format, p=p)
+    def color_jitter(
+        self,
+        img,
+        bb,
+        format=None,
+        p=1.0,
+        brightness=0.2,
+        contrast=0.2,
+        saturation=0.2,
+        hue=0.2,
+    ):
+        albu_transform = Utils.albu_color_jitter(
+            format=format,
+            p=p,
+            brightness=brightness,
+            contrast=contrast,
+            saturation=saturation,
+            hue=hue,
+        )
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         return new_img, new_bb
-        
 
     def transform_dict_function(
         self, function_name, function_parameter, img, bb, target_folder_path
@@ -289,7 +304,11 @@ class Transform:
                 img=img.copy(),
                 bb=bb.copy(),
                 format=Constants.BoundingBoxFormat.YOLOV8,
-                p=function_parameter["P"]
+                p=function_parameter["P"],
+                brightness=function_parameter["BRIGHTNESS"],
+                contrast=function_parameter["CONTRAST"], 
+                saturation=function_parameter["SATURATION"],
+                hue=function_parameter["HUE"],
             )
 
         else:
