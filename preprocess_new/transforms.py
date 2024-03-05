@@ -72,7 +72,7 @@ class Transform:
 
         for class_crop in class_crop_list:
             # ic(f"class crop : {class_crop}, class crp list: {class_crop_list}")
-            ic(f"class crop : {class_crop}")
+            # ic(f"class crop : {class_crop}")
             bb = []  # for store bb use after crop
             bb_crop = []  # for store bb that use to crop the coordinate
 
