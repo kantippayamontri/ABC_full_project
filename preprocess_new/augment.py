@@ -69,12 +69,12 @@ class Augment:
                 new_name_img = transform.make_new_name(
                     name=Path(transform.get_img_path()),
                     function_name="aug",
-                    prefix=f"{aug_index}",
+                    prefix=f"{round}",
                 )
                 new_name_bb = transform.make_new_name(
                     name=Path(transform.get_bb_path()),
                     function_name="aug",
-                    prefix=f"{aug_index}",
+                    prefix=f"{round}",
                 )
 
                 transform.save_img(img=new_img, path=Path(new_name_img))

@@ -22,9 +22,9 @@ AUGMENT:
       REPLACE: false
    - ROTATE:
       LIMIT:
-      - -45
-      - 45 
-      P: 0.75
+      - -20
+      - 20 
+      P: 0.5
    - COLOR_JITTER:
       BRIGHTNESS: 0.5
       CONTRAST: 0.5
@@ -70,9 +70,10 @@ PREPROCESS:
   PREPROCESS_LIST:
   - CROP:
       ADD_PIXEL: 50
-      CLASS_CROP: 1
-      CLASS_IGNORE: 
+      CLASS_CROP_LIST: 
       - 0
+      - 1
+      CLASS_IGNORE: []
       NEED_RESIZE: true
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
