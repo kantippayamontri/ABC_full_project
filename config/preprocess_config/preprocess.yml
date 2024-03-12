@@ -49,18 +49,18 @@ AUGMENT:
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  - ./dataset
+#   - ./dataset
   # - /media/kan/kan_ex/digital_1_100_set1 
   # - /media/kan/kan_ex/digital_1_100_set2 
   # - /media/kan/kan_ex/
   # - datasets/digital/digital_1_100_set1
   # - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
-  # - datasets/user13_101223
+  - datasets/user13_101223
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_new
-  PERCENT_TEST: 5
+  PERCENT_TEST: 0
   PERCENT_TRAIN: 90
-  PERCENT_VAL: 5
+  PERCENT_VAL: 10
 PREPROCESS:
   FOLDER:
   - train

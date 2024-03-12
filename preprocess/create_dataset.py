@@ -6,9 +6,9 @@ import random
 
 class CreateDataset:
     def __init__(self, data_yaml):
-        from preprocess_new.combind import Combind
-        from preprocess_new.preprocess import Preprocess
-        from preprocess_new.augment import Augment
+        from preprocess.combind import Combind
+        from preprocess.preprocess import Preprocess
+        from preprocess.augment import Augment
 
         self.data_yaml = data_yaml
         self.dataset_dict = data_yaml["DATASET"]
@@ -36,3 +36,11 @@ class CreateDataset:
             augment_dict=self.augment_dict,
             dataset_path=Path(self.dataset_dict["FINAL_DATASET_PATH"]),
         )
+
+        print(f"[-] NUMBER OF FILE AFTER")
+        for folder in ["train", "valid", "test"]:
+            folder_path = Path(self.dataset_dict["FINAL_DATASET_PATH"]) / folder /"images"
+            number_of_file = 0
+            if Utils.check_folder_exists(folder_path=folder_path):
+                number_of_file = Utils.count_files(folder=folder_path)
+            print(f"\t[-] Number of {folder} : {number_of_file} images")
