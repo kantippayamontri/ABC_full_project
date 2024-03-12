@@ -25,7 +25,19 @@ if not Utils.check_folder_exists(Path(dataset_dict["FINAL_DATASET_PATH"])):
     ic(f"final folder no exist. -> make folder {dataset_dict['FINAL_DATASET_PATH']}")
     Utils.delete_folder_mkdir(
         folder_path=dataset_dict["FINAL_DATASET_PATH"], remove=False
+    )    
+    
+    #create yaml file
+    data_yaml_dict = Utils.make_data_yaml_dict(
+        nc=len(Constants.map_data_dict[dataset_dict["DATASET_TYPE"]]["target"]),
+        names=Constants.map_data_dict[dataset_dict["DATASET_TYPE"]]["target"],
     )
+    #write yaml file
+    Utils.write_yaml(
+        data=data_yaml_dict,
+        filepath=Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.data_yaml_file,
+    )
+
 else:
     ic(
         f"final folder exist. -> remove folder {dataset_dict['FINAL_DATASET_PATH']} and recreate"

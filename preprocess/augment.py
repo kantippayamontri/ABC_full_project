@@ -35,6 +35,11 @@ class Augment:
 
         # matches_img_bb = Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels")
         number_files = Utils.count_files(folder=dataset_folder / "images")
+
+        if number_files==0:
+            print(f"\t\t[X] AUGMENT FAIL -> NUMBER OF FILE 0")
+            return
+        
         matches_img_bb_gen = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
 
         for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
@@ -46,7 +51,6 @@ class Augment:
                 continue
 
             for round in range(number_augment):
-                # ic(round)
                 new_img = img.copy()
                 new_bb = bb.copy()
 

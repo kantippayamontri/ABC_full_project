@@ -32,14 +32,19 @@ class Preprocess:
         for pre_d in preprocess_list:
 
             
-            matches_img_bb = Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels")
+            # matches_img_bb = Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels")
             (function_name, function_parameter) = tuple(
                 (key, value) for key, value in pre_d.items()
             )[0]
 
-            matches_img_bb_gen = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
             number_files = Utils.count_files(folder=dataset_folder / "images")
 
+            if number_files ==0:
+                print(f"\t\t[X] PREPROCESS FAIL -> NUMBER OF FILE 0")
+                return
+
+            matches_img_bb_gen = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
+            
             # print(f"size of matches list : {sys.getsizeof(matches_img_bb, 'bytes')}")
             # print(f"size of matches gen : {sys.getsizeof(matches_img_bb_gen, 'bytes')}")
             # print(f"number of files: {number_files}")
