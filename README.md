@@ -1,39 +1,121 @@
-# ABC_full_project
 
-For preprocess
--> Prepare dataset 1. put the datset folder in folder ./datasets/{name dataset}
-ex. ./datasets/digital/ 2. run preprocess.py
-ex. python preprocess.py 3. the dataset will appear in datasets_for_train/{name dataset}
-ex. ./datasets_for_train/digital/
+# ABC Gauge Detection
 
+This project make to doing an ABC gauge detection focusing on object detection task 
 
--> preprocess with yml file
-    python preprocess.py --input_file=requirements.txt --preprocess_yml=/Users/kantip/Desktop/work/ABC_training/config/preprocess_config/preprocess.yml
+## Dataset template
 
--> preprocess with specific target dataset folder
-    python preprocess.py --input_file=requirements.txt --dataset_type=number --dataset_target=./dataset_eiei/
+we use yolo like dataset which bounding box contain this information
 
--> preprocess new
-    python preprocess.py /Users/kantip/Desktop/work/ABC_training/config/preprocess_config/preprocess.yml
-
--> command to train
-
-    python train.py requirements.txt digital SMALL --epochs 100 --img_size 1024 --batch_size 32 --cache True --patience 15 --device cpu --workers 20 --resume True -lr 0.001
-
--> train new with yml file
-python train.py /Users/kantip/Desktop/work/ABC_training/config/train_config/train.yml
-
--> predict.py
-python predict.py --input_file=requirements.txt --gauge_use=digital --model_path="models/digital/digital_model.pt" --img_path="datasets_for_train/digital/test/images/" --bb_path="datasets_for_train/digital/test/labels/" --image_size=640 --conf=0.25
-
--> inference.py
-python inference.py --input_file=requirements.txt --gauge_use=digital --img_path="./test_image/digital/" 
--> inference -> for select frames
-python inference.py --input_file=requirements.txt --gauge_use=number --img_path="./datasets/number/number_test1/train/images" --select_frame=True   
-
--> val.py
-python val.py requirements.txt digital ./models/digital/digital_model.pt ./datasets_for_train/digital/test/ --plot False
+| data             | description                                                                |
+| ----------------- | ------------------------------------------------------------------ |
+| x |  center x in range [0,1] |
+| y |  center y in range[0,1] |
+| w |  width of the image from center range [0,1] |
+| h |  height of the image from center range [0,1] |
 
 
-[Config]
-use null instead of None
+## Create config .yml file
+before using preprocess and augmentation we need to create a config file in .yml format like this 
+
+```yaml
+AUGMENT:
+  AUGMENT_LIST: 
+   - RESIZE:
+       TARGET_WIDTH: 640
+       TARGET_HEIGHT: 640
+       REPLACE: true
+   - CHANNEL_SHUFFLE:
+      P: 0.5
+      REPLACE: false
+   - MULTIPLICATIVE_NOISE:
+      MULTIPLIER:
+      - 0.4
+      - 1.0
+      ELEMENT_WISE: true
+      P: 0.5
+      REPLACE: false
+   - BLUR:
+      BLUR_LIMIT:
+      - 3
+      - 3 
+      P: 0.5
+      REPLACE: false
+   - ROTATE:
+      LIMIT:
+      - -20
+      - 20 
+      P: 0.5
+   - COLOR_JITTER:
+      BRIGHTNESS: 0.5
+      CONTRAST: 0.5
+      SATURATION: 0.5
+      HUE: 0.5
+      P: 0.75
+      REPLACE: false
+   - LONGEST_MAX_SIZE:
+      MAX_SIZE: 640
+      P: 1.0
+      REPLACE: false
+   - PAD_IF_NEEDED:
+      MIN_WIDTH: 640
+      MIN_HEIGHT: 640
+      P: 1.0
+      REPLACE: false
+  FOLDER:
+  - train
+  - valid
+  # - test
+  NUMBER_AUGMENT: 3
+  PREFIX: aug
+DATASET:
+  DATASET_PATH:
+  - ./dataset
+  DATASET_TYPE: digital
+  FINAL_DATASET_PATH: dataset_new
+  PERCENT_TEST: 5
+  PERCENT_TRAIN: 90
+  PERCENT_VAL: 5
+PREPROCESS:
+  FOLDER:
+  - train
+  - valid
+  - test
+  PREFIX: pre
+  PREPROCESS_LIST:
+  - CROP:
+      ADD_PIXEL: 50
+      CLASS_CROP_LIST: 
+      - 0
+      - 1
+      CLASS_IGNORE: []
+      NEED_RESIZE: true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: false
+  - RESIZE:
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+  - GRAY:
+      P: 1.0
+      REPLACE: true
+```
+
+**Note** working process is Combind -> Preprocess -> Augment
+
+## Preprocess
+
+using command 
+
+```bash
+  python preprocess.py {path_to_config_yml_file}
+```
+
+```bash
+  python preprocess.py /Users/kantip/Desktop/work/ABC_training/config/preprocess_config/preprocess.yml
+```
+
+| Parameter | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `path_to_config_yml_file` | `string` | **Required**. path to your yml config file |

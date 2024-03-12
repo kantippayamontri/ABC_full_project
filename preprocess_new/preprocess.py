@@ -21,7 +21,6 @@ class Preprocess:
     def preprocess(self, preprocess_list=[], dataset_folder=None):
         from .transforms import Transform
 
-        # FIXME: uncomment this for
         if preprocess_list == []:
             print(f"\t\t[X] NO NEED TO PREPROCESS -> PREPROCESS LIST = 0")
             return
