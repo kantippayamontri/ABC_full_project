@@ -70,8 +70,11 @@ class Transform:
         full_img = img.copy()
         bb_temp = bb.copy()
 
-        bb = []  # for store bb use after crop
-        bb_crop = []  # for store bb that use to crop the coordinate
+        for class_crop in class_crop_list:
+            # ic(f"class crop : {class_crop}, class crp list: {class_crop_list}")
+            # ic(f"class crop : {class_crop}")
+            bb = []  # for store bb use after crop
+            bb_crop = []  # for store bb that use to crop the coordinate
 
         for _bb in bb_temp:
             if _bb[-1] == class_crop:

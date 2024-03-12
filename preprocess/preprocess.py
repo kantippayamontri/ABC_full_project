@@ -1,7 +1,7 @@
 from icecream import ic
-import typing
 from utils import Utils
-
+import sys
+from tqdm import tqdm
 
 class Preprocess:
     def __init__(self, preprocess_dict, dataset_path):
@@ -10,8 +10,7 @@ class Preprocess:
 
         ic(self.preprocess_dict,self.target_folder)
 
-        for folder in self.preprocess_dict["FOLDER"]: #FIXME: choose this line instead
-        # for folder in ["valid"]:
+        for folder in self.preprocess_dict["FOLDER"]: 
             print(f'\t[-] PREPROCESS AT {str(dataset_path / folder)}')
             self.preprocess(
                 preprocess_list=self.preprocess_dict["PREPROCESS_LIST"],
@@ -32,21 +31,30 @@ class Preprocess:
 
         for pre_d in preprocess_list:
 
-            matches_img_bb = Utils.get_filename_bb_folder(
-                img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"
-            )
+            
+            # matches_img_bb = Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels")
             (function_name, function_parameter) = tuple(
                 (key, value) for key, value in pre_d.items()
             )[0]
 
+            number_files = Utils.count_files(folder=dataset_folder / "images")
+
+            if number_files ==0:
+                print(f"\t\t[X] PREPROCESS FAIL -> NUMBER OF FILE 0")
+                return
+
+            matches_img_bb_gen = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
+            
+            # print(f"size of matches list : {sys.getsizeof(matches_img_bb, 'bytes')}")
+            # print(f"size of matches gen : {sys.getsizeof(matches_img_bb_gen, 'bytes')}")
+            # print(f"number of files: {number_files}")
+
+
             print(f"\t\t[-] {function_name}")
 
-            for _, (img_path, bb_path) in enumerate(matches_img_bb):
+            for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
                 img = Utils.load_img_cv2(filepath=img_path)
                 bb = Utils.load_bb(filepath=bb_path)
-
-                # if _ > 0:
-                #     break
 
                 if (img is None) or (bb is None):
                     continue

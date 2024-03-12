@@ -1,6 +1,7 @@
 from icecream import ic
 from utils import Utils, Constants
 from pathlib import Path
+from tqdm import tqdm
 
 
 class Augment:
@@ -32,13 +33,16 @@ class Augment:
             print(f"\t\t[X] AUGMENT FAIL -> NO DATASET FOLDER")
             return
 
-        matches_img_bb = Utils.get_filename_bb_folder(
-            img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"
-        )
+        # matches_img_bb = Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels")
+        number_files = Utils.count_files(folder=dataset_folder / "images")
 
-        for aug_index, (img_path, bb_path) in enumerate(matches_img_bb):
-            # if aug_index > 5:
-            #     return
+        if number_files==0:
+            print(f"\t\t[X] AUGMENT FAIL -> NUMBER OF FILE 0")
+            return
+        
+        matches_img_bb_gen = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
+
+        for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
 
             img = Utils.load_img_cv2(filepath=img_path)
             bb = Utils.load_bb(filepath=bb_path)
@@ -47,7 +51,6 @@ class Augment:
                 continue
 
             for round in range(number_augment):
-                # ic(round)
                 new_img = img.copy()
                 new_bb = bb.copy()
 
