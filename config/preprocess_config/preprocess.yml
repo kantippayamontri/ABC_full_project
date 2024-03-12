@@ -44,7 +44,7 @@ AUGMENT:
   FOLDER:
   - train
   - valid
-  # - test
+  - test
   NUMBER_AUGMENT: 3
   PREFIX: aug
 DATASET:

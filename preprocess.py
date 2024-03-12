@@ -26,6 +26,20 @@ if not Utils.check_folder_exists(Path(dataset_dict["FINAL_DATASET_PATH"])):
     Utils.delete_folder_mkdir(
         folder_path=dataset_dict["FINAL_DATASET_PATH"], remove=False
     )    
+
+    #create train folder
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.train_folder),remove=False)
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.train_folder / Constants.image_folder),remove=False) # create images folder
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.train_folder / Constants.label_folder ),remove=False) # create labels folder
+
+    #create valid folder
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.val_folder),remove=False)
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.val_folder / Constants.image_folder),remove=False)
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.val_folder / Constants.label_folder),remove=False)
+    #create test folder
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.test_folder),remove=False)
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.test_folder / Constants.image_folder),remove=False)
+    Utils.delete_folder_mkdir(str(Path(dataset_dict["FINAL_DATASET_PATH"]) / Constants.test_folder / Constants.label_folder),remove=False)
     
     #create yaml file
     data_yaml_dict = Utils.make_data_yaml_dict(

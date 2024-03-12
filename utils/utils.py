@@ -28,8 +28,6 @@ class Utils:
         new_name_path = old_file_name.with_name(new_name).with_suffix(extension)
 
         if Utils.check_folder_exists(folder_path=new_name_path):
-            # print(f"--- file exists: {new_name_path}")
-            # print(f"new_name : {old_file_name.with_name(new_name + Utils.generate_random_string(5, with_under=True)).with_suffix(extension)}")
             new_name_path = old_file_name.with_name(
                 new_name + Utils.generate_random_string(5, with_under=True)
             ).with_suffix(extension)
@@ -72,7 +70,6 @@ class Utils:
 
     @staticmethod
     def move_file(source_file_path, target_file_path):
-        # print(f"source path: {source_file_path} \ntarget path: {target_file_path}")
         shutil.move(str(source_file_path), str(target_file_path))
         return
 
@@ -85,8 +82,6 @@ class Utils:
     def get_filenames_folder(
         source_folder,
     ):
-        # print(f"source folder: {str(source_folder)}")
-        # ic(source_folder)
         return [
             source_folder / file.name
             for file in source_folder.iterdir()
@@ -95,7 +90,6 @@ class Utils:
 
     @staticmethod
     def get_filename_bb_folder(img_path=None, bb_path=None, source_folder=None):
-        # ic(img_path)
         img_filenames = Utils.get_filenames_folder(img_path)
         bb_filenames = Utils.get_filenames_folder(bb_path)
         match_files = Utils.match_img_bb_filename(
@@ -412,7 +406,6 @@ class Utils:
 
         # Check if there's an actual intersection
         if intersection_x1 < intersection_x2 and intersection_y1 < intersection_y2:
-            # return (intersection_x1, intersection_y1, intersection_x2, intersection_y2)
             return True
         else:
             return False  # No intersection
@@ -456,16 +449,12 @@ class Utils:
                 box2 = Utils.change_format_yolo2xyxy(
                     img_size=img.shape, bb=_bb, with_class=True
                 )["bb"]
-                # print(f"check intersect: " + str(Utils.calculate_intersection(box1, box2)))
                 if Utils.calculate_intersection(box1, box2):
                     bb_use.append(_bb.copy())
 
             bb_use = np.array(bb_use)
 
             if len(bb_use) != 0:
-                # if len(bb_crop) > 1:
-                # Utils.visualize_img_bb(img=img, bb=bb, with_class=True)
-                # print(f"bb_use: {bb_use}")
                 transform_crop_image = Utils.albu_crop_img_bb(
                     img=img,
                     bb_crop=_bb_crop,
@@ -508,12 +497,6 @@ class Utils:
             else:
                 crop_images_bb_list.append((img, []))
 
-            # if len(crop_images_bb_list) > 1:
-            #     print(f"bb_Crop: {bb_crop}")
-            #     print(f"bb: {bb}")
-            #     for d in crop_images_bb_list:
-            #         Utils.visualize_img_bb(img=d[0], bb=d[1], with_class=True)
-
             return crop_images_bb_list
 
         return crop_images_bb_list
@@ -555,28 +538,18 @@ class Utils:
     ):
         value_to_key_before = {value: key for key, value in bb_dict_before.items()}
 
-        # print(f"bb_dict_before: {bb_dict_before}")
-        # print(f"bb_dict_after: {bb_dict_after}")
-        # print(f"value_to_key_before: {value_to_key_before}")
-        # print(f"class_crop: {class_crop}")
         bb_temp = []
         for index, _bb in enumerate(bb):
             key = value_to_key_before[int(_bb[0])]
             if key in list(bb_dict_after.keys()):
                 new_value = bb_dict_after[key]
-                # minus_for_crop =0
-                if (class_crop != None) and (new_value > class_crop):
-                    # print(f'use -> class_crop: {class_crop}, new_value: {new_value}')
-                    # minus_for_crop -=1
-                    pass
-                bb[index][0] = int(new_value)  # + minus_for_crop
+                bb[index][0] = int(new_value) 
                 bb_temp.append(bb[index])
 
         return bb_temp
 
     @staticmethod
     def change_format_yolo2xyxy(img_size=None, bb=None, with_class=False):
-        # print(img_size, bb)
         img_w = img_size[1]
         img_h = img_size[0]
         if with_class:
@@ -630,7 +603,6 @@ class Utils:
         plt.axis("off")  # Turn off axes numbers and ticks
 
         for xyxy in xyxy_bb:
-            # ic(xyxy)
             color_index = 0
             top_left = (0, 0)
             bottom_right = (0, 0)
@@ -695,7 +667,7 @@ class Utils:
                 if index not in random_index_list:
                     random_index_list.append(index)
 
-        print(f"randon index list : {random_index_list}")
+        # print(f"randon index list : {random_index_list}")
         print(f"number of samples : {number_of_samples}")
         print(f"number of images : {number_of_images}")
 
@@ -708,7 +680,6 @@ class Utils:
             _bb = Utils.load_bb(filepath=_bb_path)
             print(_bb_path, _bb)
             if _img is not None and _bb is not None:
-                # ic(f'visual, img path: {_img_path}, bb path: {_bb_path}')
                 Utils.visualize_img_bb(
                     img=_img,
                     bb=_bb,
@@ -720,7 +691,6 @@ class Utils:
     def change_filename_sample(
         filepath, filename, index, start_index=0, extension=None
     ):
-        # print(f"filename: {filename}")
         if index == start_index:
             if extension == None:
                 return filepath
@@ -747,7 +717,6 @@ class Utils:
         if source_folder != None:
             bb_folder_path = source_folder / Constants.label_folder
         else:
-            # print(f"bb_filenames_list: {bb_filenames_list}")
             bb_folder_path = bb_filenames_list[0].parent
 
         for index, img_filename in enumerate(img_filenames_list):
@@ -842,8 +811,6 @@ class Utils:
 
     @staticmethod
     def change_xyxy_to_yolo(xyxy_format, image_width, image_height, class_bb=None):
-        # ic(image_width)
-        # ic(image_height)
         x_min, y_min, x_max, y_max = xyxy_format
 
         # Calculate box center coordinates
