@@ -119,3 +119,6 @@ using command
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
 | `path_to_config_yml_file` | `string` | **Required**. path to your yml config file |
+
+## Training
+
