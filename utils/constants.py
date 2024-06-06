@@ -187,5 +187,9 @@ class Constants:
         MEDIUM = "MEDIUM"
         LARGE = "LARGE"
         EXTRA_LARGE = "EXTRA_LARGE"
+    
+    def MapYOLOModel(version, type):
+        if version ==8:
+            return ""
 
     dataset_dial = {}

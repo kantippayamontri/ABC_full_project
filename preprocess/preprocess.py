@@ -28,7 +28,6 @@ class Preprocess:
             print(f"\t\t[X] PREPROCESS FAIL -> NO DATASET FOLDER")
             return
 
-
         for pre_d in preprocess_list:
 
             

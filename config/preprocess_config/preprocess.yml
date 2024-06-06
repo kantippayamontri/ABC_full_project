@@ -44,23 +44,23 @@ AUGMENT:
   FOLDER:
   - train
   - valid
-  - test
+#   - test
   NUMBER_AUGMENT: 3
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-#   - ./dataset
-  # - /media/kan/kan_ex/digital_1_100_set1 
-  # - /media/kan/kan_ex/digital_1_100_set2 
+  #   - ./dataset
+  - /media/kan/kan_ex/digital_1_100_set1 
+  - /media/kan/kan_ex/digital_1_100_set2 
   # - /media/kan/kan_ex/
   # - datasets/digital/digital_1_100_set1
   # - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
-#   - datasets/user13_101223
-  - datasets/number/number_test1
-  DATASET_TYPE: number
+  # - datasets/user13_101223
+  # - datasets/number/number_test1
+  DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_new
-  PERCENT_TEST: 0
-  PERCENT_TRAIN: 90
+  PERCENT_TEST: 10
+  PERCENT_TRAIN: 80
   PERCENT_VAL: 10
 PREPROCESS:
   FOLDER:

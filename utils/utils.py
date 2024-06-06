@@ -237,6 +237,7 @@ class Utils:
                         min_height=target_height,
                         min_width=target_width,
                         border_mode=cv2.BORDER_CONSTANT,
+                        value=[0] # pad with zero value
                     ),
                     A.Resize(
                         height=target_height, width=target_width, always_apply=True

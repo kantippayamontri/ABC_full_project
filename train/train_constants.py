@@ -2,10 +2,31 @@ from utils import Constants
 from pathlib import Path
 from enum import Enum
 from utils import Constants
+from pathlib import Path
+from train.models.train_parameters import TrainParameters
+from abc import ABC, abstractmethod
 
 
 class TrainConstants:
     train_dataset_root = Path("./datasets_for_train")
+
+class TrainModel(ABC):
+
+    @abstractmethod
+    def loadModel(self,model_path: Path):
+        ...
+    
+    @abstractmethod
+    def trainModel(self,train_parameters: TrainParameters):
+        ...
+    
+    @abstractmethod
+    def exportModel(self,dest_path: Path):
+        ...
+    
+    @abstractmethod
+    def evalModel(self,):
+        ...
 
 class Comet:
     parameters = {
