@@ -17,7 +17,7 @@ class TrainModel(ABC):
         ...
     
     @abstractmethod
-    def trainModel(self,train_parameters: TrainParameters):
+    def trainModel(self,train_parameters: TrainParameters, **kwargs):
         ...
     
     @abstractmethod

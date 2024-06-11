@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     print(f"--- Training Model ---")
     ic(train_parameters.comet_parameters())
-    model.trainModel(train_parameters=train_parameters)
+    model.trainModel(train_parameters=train_parameters, model_path=Path(model.mapModel()) )
 
     #     print(f"--- Export Model ---")
 

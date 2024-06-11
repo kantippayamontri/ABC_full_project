@@ -59,45 +59,39 @@ class YOLOModel(TrainModel):
         
         return map_model[(model_version, model_type)]
 
-    
-    
-    def loadModel(self, model_path: Path):
-        _model = None
-        print(f"--- Load Model :{str(model_path)} ---")
-        _model = YOLO(str(model_path)) # load a model (.pt = with pretrain, .yaml = without pretrain)
-        print(f"--- Load Model Success ---")
-        return _model
-
-
-    def trainModel(self, train_parameters: TrainParameters):
-        # make experiments in comet ml
-        if self.use_comet:
-            self.init_comet(train_parameters=train_parameters)
-
-        # train model 
-        self.model.train(
-            data=str(train_parameters.get_data_yaml_path()),
-            epochs=train_parameters.get_epochs(),
-            imgsz=train_parameters.get_imgsz(),
-            batch=train_parameters.get_batch(),
-            cache=train_parameters.get_cache(),
-            patience=train_parameters.get_patience(),
-            device=train_parameters.get_device(),
-            workers=train_parameters.get_workers(),
-            resume=train_parameters.get_resume(),
-            lr0=train_parameters.get_learning_rate(),
-            lrf=train_parameters.get_final_learning_rate(),
-            project=str(train_parameters.get_project_name()), #TODO: path for experimental_project folder
-            name=train_parameters.get_name()[0], # TODO: name of the experiment
-            fliplr=0.0, #set flip left and right to zero
-        )
+    # def trainModel(self, parameters: TrainParameters):
+    #     # if self.use_comet:
+    #     #     self.init_comet(train_parameters=parameters)
+            
+    #     ic(parameters.comet_parameters())
+    #     # TODO: check experiment folder
         
+    #     # TODO: create name of the experiment
         
-        # end the experiment in comet ml
-        if self.use_comet:
-            self.end()
+    #     ic(str(parameters.get_project_name()[0]))
+    #     ic(parameters.get_project_name())
+    #     ic(parameters.get_name())
+        
+    #     self.model.train(
+    #         data=parameters.get_data_yaml_path(),
+    #         epochs=parameters.get_epochs(),
+    #         imgsz=parameters.get_imgsz(),
+    #         batch=parameters.get_batch(),
+    #         cache=parameters.get_cache(),
+    #         patience=parameters.get_patience(),
+    #         device=parameters.get_device(),
+    #         workers=parameters.get_workers(),
+    #         resume=parameters.get_resume(),
+    #         lr0=parameters.get_learning_rate(),
+    #         lrf=parameters.get_final_learning_rate(),
+    #         project=parameters.get_project_name(), #TODO: path for experimental_project folder
+    #         name=parameters.get_name()[0], # TODO: name of the experiment
+    #         fliplr=0.0, #set flip left and right to zero
+    #     )
+        
+    #     # if self.use_comet:
+    #     #     self.end_comet()
 
-        
     def init_comet(
         self,
         train_parameters:TrainParameters=None
@@ -121,137 +115,387 @@ class YOLOModel(TrainModel):
     def end_comet(self,):
         comet_ml.Experiment.end() # end the experiment
         return
+    
+    def export_model(self, ):
+        self.model
+        return
 
-        
-        return None
-        # return super().trainModel(train_parameters)
+    def loadModel(self,model_path):
+        return YOLO(str(model_path))
 
+    def evalModel(self):
+        return 
     
     def exportModel(self, dest_path: Path):
         return super().exportModel(dest_path)
     
-    def evalModel(self):
-        return super().evalModel()
-
-# class YOLOModel:
-#     def __init__(
-#         self,
-#         model_type,
-#         use_comet=False,
-#         gauge_type= None,
-#         pretrain_path = None,
-#         version=8,
-#     ):
-#         self.model_type = model_type
-#         self.model = self.loadModels(model_type)
-#         self.use_comet = use_comet
-#         self.gauge_type = gauge_type
-#         self.pretrain_path = pretrain_path
-#         self.version=version
-
-#     def loadModels(self, model_type):
-#         model = None
-#         if model_type == Constants.ModelType.NANO:
-#             print(f"\t--- MODEL NANO ---")
-#             model = YOLO("yolov8n.yaml")  # build a new model from scratch
-#             model = YOLO(
-#                 "yolov8n.pt"
-#             )  # load a pretrained model (recommended for training)
-#             model = YOLO("yolov8n.yaml").load("yolov8n.pt")
-#             print(f"\t--- YOLOv8 NANO Load Success ---")
-#         elif model_type == Constants.ModelType.SMALL:
-#             print(f"\t--- MODEL small ---")
-#             model = YOLO("yolov8s.yaml")  # build a new model from scratch
-#             model = YOLO(
-#                 "yolov8s.pt"
-#             )  # load a pretrained model (recommended for training)
-#             model = YOLO("yolov8s.yaml").load("yolov8s.pt")
-#             print(f"\t--- YOLOv8 SMALL Load Success ---")
-#         elif model_type == Constants.ModelType.MEDIUM:
-#             print(f"\t--- MODEL MEDIUM ---")
-#             # model = YOLO("yolov8m.yaml")  # build a new model from scratch
-#             model = YOLO(
-#                 "yolov8m.pt"
-#             )  # load a pretrained model (recommended for training)
-#             model = YOLO("yolov8m.yaml").load("yolov8m.pt")
-#             print(f"\t--- YOLOv8 MEDIUM Load Success ---")
-#         elif model_type == Constants.ModelType.LARGE:
-#             print(f"\t--- MODEL LARGE ---")
-#             model = YOLO("yolov8l.yaml")  # build a new model from scratch
-#             model = YOLO(
-#                 "yolov8l.pt"
-#             )  # load a pretrained model (recommended for training)
-#             model = YOLO("yolov8l.yaml").load("yolov8l.pt")
-#             print(f"\t--- YOLOv8 LARGE Load Success ---")
-#         elif model_type == Constants.ModelType.EXTRA_LARGE:
-#             print(f"\t--- MODEL EXTRA LARGE ---")
-#             model = YOLO("yolov8x.yaml")  # build a new model from scratch
-#             model = YOLO(
-#                 "yolov8x.pt"
-#             )  # load a pretrained model (recommended for training)
-#             model = YOLO("yolov8x.yaml").load("yolov8x.pt")
-#             print(f"\t--- YOLOv8 EXTRA LARGE Load Success ---")
-#         return model
-
-#     def train(self, parameters: TrainParameters):
-#         # if self.use_comet:
-#         #     self.init_comet(train_parameters=parameters)
-            
-#         ic(parameters.comet_parameters())
-#         # TODO: check experiment folder
+    def trainModel(self, train_parameters: TrainParameters, **kwargs):
+        self.trainModelCommand(train_parameters=train_parameters, model_path=kwargs["model_path"])
         
-#         # TODO: create name of the experiment
-        
-#         ic(str(parameters.get_project_name()[0]))
-#         ic(parameters.get_project_name())
-#         ic(parameters.get_name())
-#         ic(str(parameters.get_data_yaml_path()))
-        
-#         self.model.train(
-#             data=str(parameters.get_data_yaml_path()),
-#             epochs=parameters.get_epochs(),
-#             imgsz=parameters.get_imgsz(),
-#             batch=parameters.get_batch(),
-#             cache=parameters.get_cache(),
-#             patience=parameters.get_patience(),
-#             device=parameters.get_device(),
-#             workers=parameters.get_workers(),
-#             resume=parameters.get_resume(),
-#             lr0=parameters.get_learning_rate(),
-#             lrf=parameters.get_final_learning_rate(),
-#             project=str(parameters.get_project_name()), #TODO: path for experimental_project folder
-#             name=parameters.get_name()[0], # TODO: name of the experiment
-#             fliplr=0.0, #set flip left and right to zero
-#         )
-        
-#         # if self.use_comet:
-#         #     self.end_comet()
-
-#     def init_comet(
-#         self,
-#         train_parameters:TrainParameters=None
-#     ):
-#         comet_ml.init()
-
-#         comet_parameter = Comet.parameters[self.gauge_type]
-
-#         ic(comet_parameter)
-
-#         # Initialize Comet ML with API key
-#         experiment = comet_ml.Experiment(
-#             api_key=comet_parameter["api_key"],
-#             project_name=comet_parameter["project_name"],
-#             workspace=comet_parameter["workspace"],
-#         )
-        
-#         # Log parameters
-#         experiment.log_parameters(parameters=train_parameters.comet_parameters())
+        return 
     
-#     def end_comet(self,):
-#         comet_ml.Experiment.end() # end the experiment
-#         return
-    
-#     def export_model(self, ):
-#         self.model
-#         return
-    
+
+    def trainModelCommand(self, train_parameters: TrainParameters, model_path: Path):
+        from icecream import ic
+        
+        # train the model
+        command = "yolo detect train "
+        command += f"model={str(model_path)} "
+        command += f"data={str(train_parameters.get_data_yaml_path())} "
+        command += f"epochs={train_parameters.get_epochs()} "
+        command += f"imgsz={train_parameters.get_imgsz()} "
+        command += f"batch={train_parameters.get_batch()} "
+        command += f"cache={train_parameters.get_cache()} "
+        command += f"patience={train_parameters.get_patience()} "
+        command += f"device={train_parameters.get_device()} "
+        command += f"workers={train_parameters.get_workers()} "
+        command += f"resume={train_parameters.get_resume()} "
+        command += f"lr0={train_parameters.get_learning_rate()} "
+        command += f"lrf={train_parameters.get_final_learning_rate()} "
+        command += f"project='{str(train_parameters.get_project_name())}' "
+        command += f"name='{train_parameters.get_name()[0]}' "
+        command += f"fliplr=0.0" # set flip left and right to zero
+        # command += f""
+        # command += f""
+
+        # train the model
+        from subprocess import call
+        ic(f"command: {command}")
+        print(command)
+        call(command, shell=True)
+
+        return 
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
