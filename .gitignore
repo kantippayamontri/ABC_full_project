@@ -13,7 +13,7 @@ test_image*
 model*
 predict_dataset*
 select_frame*
-YOLOv8
+YOLOv8/
 v9-test/
 
 # File
