@@ -1,17 +1,18 @@
-import os
-import shutil
-import yaml
-import cv2
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import numpy as np
-import albumentations as A
-from pathlib import Path
-from PIL import Image
 import datetime
+import os
 import random
+import shutil
 import string
+from pathlib import Path
+
+import albumentations as A
+import cv2
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
 from icecream import ic
+from PIL import Image
 
 
 class Utils:
@@ -768,6 +769,14 @@ class Utils:
                     bb_l = bb_l[: len(bb_l) - 1]
                 bb_l = list(float(n) for n in bb_l)
                 if len(bb_l) == 5:
+                    for idx, val in enumerate(bb_l):
+                        if idx ==0:
+                            continue
+                        if val > 1:
+                            bb_l[idx] =1 
+                        if val < 0:
+                            bb_l[idx] =0
+
                     bb.append(bb_l)
 
             return np.array(bb) if len(bb) > 0 else None
