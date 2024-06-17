@@ -760,6 +760,7 @@ class Utils:
     @staticmethod
     def load_bb(filepath):
         bb = []
+        # print(f"hello")
 
         try:
             fp = open(str(filepath), "r")  # read the bounding box
