@@ -2,13 +2,17 @@ from icecream import ic
 from utils import Utils
 import sys
 from tqdm import tqdm
+from joblib import Parallel, delayed
 
 class Preprocess:
     def __init__(self, preprocess_dict, dataset_path):
         self.preprocess_dict = preprocess_dict
         self.target_folder = dataset_path
 
+        self.number_of_error =0
+
         ic(self.preprocess_dict,self.target_folder)
+
 
         for folder in self.preprocess_dict["FOLDER"]: 
             print(f'\t[-] PREPROCESS AT {str(dataset_path / folder)}')
@@ -28,7 +32,6 @@ class Preprocess:
             print(f"\t\t[X] PREPROCESS FAIL -> NO DATASET FOLDER")
             return
 
-        number_of_error =0
 
         for pre_d in preprocess_list:
 
@@ -53,33 +56,79 @@ class Preprocess:
 
             print(f"\t\t[-] {function_name}")
 
-            for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
-                img = Utils.load_img_cv2(filepath=img_path)
-                bb = Utils.load_bb(filepath=bb_path)
-
-                if (img is None) or (bb is None):
-                    continue
+            num_cores = -1 #Use all available CPU cores
+            with Parallel(n_jobs=num_cores) as parallel:
+                parallel(delayed(self.process_image)(img_path, bb_path, function_name, function_parameter, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files))
                 
-                try:
-                    transform = Transform(img_path=img_path, bb_path=bb_path)
-                    img, bb = transform.transform_dict_function(
-                        function_name=function_name,
-                        function_parameter=function_parameter,
-                        img=img.copy(),
-                        bb=bb.copy(),
-                        target_folder_path=dataset_folder
-                    )
-                except:
-                    number_of_error += 1
-                    if Utils.check_folder_exists(str(img_path)): #check is image exist
-                        Utils.deleted_file(file_path=str(img_path))
+            # for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
+            #     img = Utils.load_img_cv2(filepath=img_path)
+            #     bb = Utils.load_bb(filepath=bb_path)
 
-                    if Utils.check_folder_exists(str(bb_path)): #check is image exist
-                        Utils.deleted_file(file_path=str(bb_path))
+            #     if (img is None) or (bb is None):
+            #         continue
+
+            #     transform = Transform(img_path=img_path, bb_path=bb_path)
+            #     img, bb = transform.transform_dict_function(
+            #         function_name=function_name,
+            #         function_parameter=function_parameter,
+            #         img=img.copy(),
+            #         bb=bb.copy(),
+            #         target_folder_path=dataset_folder
+            #     )
                 
-            print(f"\t\t\t[/] {function_name} success, number of error : {number_of_error}")
+                # try:
+                #     transform = Transform(img_path=img_path, bb_path=bb_path)
+                #     img, bb = transform.transform_dict_function(
+                #         function_name=function_name,
+                #         function_parameter=function_parameter,
+                #         img=img.copy(),
+                #         bb=bb.copy(),
+                #         target_folder_path=dataset_folder
+                #     )
+                # except:
+                #     number_of_error += 1
+                #     if Utils.check_folder_exists(str(img_path)): #check is image exist
+                #         Utils.deleted_file(file_path=str(img_path))
+
+                #     if Utils.check_folder_exists(str(bb_path)): #check is image exist
+                #         Utils.deleted_file(file_path=str(bb_path))
+                
+            print(f"\t\t\t[/] {function_name} success, number of error : {self.number_of_error}")
         
         # Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
-            
+    
+    def process_image(self,img_path, bb_path, function_name, function_parameter, dataset_folder):
+        from .transforms import Transform
+        img = Utils.load_img_cv2(filepath=img_path)
+        bb = Utils.load_bb(filepath=bb_path)
 
-        
+        if (img is None) or (bb is None):
+            return
+
+        # transform = Transform(img_path=img_path, bb_path=bb_path)
+        # img, bb = transform.transform_dict_function(
+        #     function_name=function_name,
+        #     function_parameter=function_parameter,
+        #     img=img.copy(),
+        #     bb=bb.copy(),
+        #     target_folder_path=dataset_folder
+        # )
+
+        try:
+            transform = Transform(img_path=img_path, bb_path=bb_path)
+            img, bb = transform.transform_dict_function(
+                function_name=function_name,
+                function_parameter=function_parameter,
+                img=img.copy(),
+                bb=bb.copy(),
+                target_folder_path=dataset_folder
+            )
+        except:
+            number_of_error += 1
+            if Utils.check_folder_exists(str(img_path)): #check is image exist
+                Utils.deleted_file(file_path=str(img_path))
+
+            if Utils.check_folder_exists(str(bb_path)): #check is image exist
+                Utils.deleted_file(file_path=str(bb_path))
+
+
