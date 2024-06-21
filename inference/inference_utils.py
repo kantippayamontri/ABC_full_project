@@ -69,7 +69,6 @@ class InferenceUtils:
 
         if (format == None) and (format == Constants.BoundingBoxFormat.YOLOV8):
             transform = A.Compose([A.ToGray(p=1.0)])
-            print(f"return transform")
             return transform
 
     @staticmethod

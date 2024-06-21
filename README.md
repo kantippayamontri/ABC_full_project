@@ -352,7 +352,7 @@ TRAIN_PARAMETERS:
         set to make YOLO model know the dataset path and dataset type
     - parameters
         - `DATASET_PATH`: PATH
-            path to folder that have dataset type folder name inside For ex, if we set `DATASET_PATH` = dataset_new , the dataset_new folder must have folde digital, dial, number, level, inside
+            path to folder that have dataset type folder name inside For ex, if we set `DATASET_PATH` = dataset_new , the dataset_new folder must have folder digital, dial, number, level, inside
         - `DATASET_TYPE`: PATH
             type of dataset that contain the data ex. digital, number, dial, level
 

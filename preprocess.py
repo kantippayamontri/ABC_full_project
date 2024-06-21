@@ -4,6 +4,7 @@ import argparse
 from icecream import ic
 from pathlib import Path
 import preprocess
+import time
 
 # Create ArgumentParser object
 parser = argparse.ArgumentParser(description="for training arguments parser")
@@ -92,5 +93,9 @@ for ds_folder in dataset_dict["DATASET_PATH"]:
     else:
         ic(f"dataset folder : {ds_folder} folder exits.")
 
+start_time = time.time()
 # Preprocess
 preprocess = preprocess.CreateDataset(data_yaml=data_yaml)
+end_time = time.time()
+
+print(f"time use : {(end_time - start_time):.2f}")
