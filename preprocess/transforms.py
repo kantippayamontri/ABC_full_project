@@ -51,9 +51,20 @@ class Transform:
         return f"{file_name}_{function_name}_{prefix}.{file_prefix}"
 
     def get_output_tramsformed(self, transformed):
-        return transformed["image"], np.array(
+        # bboxes = x,y,w,h,c
+        _bb = np.array(
             [list(bb_temp) for bb_temp in transformed["bboxes"]]
         )
+        for j in range(len(_bb)):
+            for i in range(len(_bb[j])-1):
+                if _bb[j][i] < 0.0:
+                    _bb[j][i]  =0.0
+                
+                if _bb[j][i] > 1.0:
+                    _bb[j][i] =1.0
+            
+            
+        return transformed["image"], _bb 
 
     def crop(
         self,

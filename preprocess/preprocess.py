@@ -28,6 +28,8 @@ class Preprocess:
             print(f"\t\t[X] PREPROCESS FAIL -> NO DATASET FOLDER")
             return
 
+        number_of_error =0
+
         for pre_d in preprocess_list:
 
             
@@ -57,17 +59,25 @@ class Preprocess:
 
                 if (img is None) or (bb is None):
                     continue
-
-                transform = Transform(img_path=img_path, bb_path=bb_path)
-                img, bb = transform.transform_dict_function(
-                    function_name=function_name,
-                    function_parameter=function_parameter,
-                    img=img.copy(),
-                    bb=bb.copy(),
-                    target_folder_path=dataset_folder
-                )
                 
-            print(f"\t\t\t[/] {function_name} success.")
+                try:
+                    transform = Transform(img_path=img_path, bb_path=bb_path)
+                    img, bb = transform.transform_dict_function(
+                        function_name=function_name,
+                        function_parameter=function_parameter,
+                        img=img.copy(),
+                        bb=bb.copy(),
+                        target_folder_path=dataset_folder
+                    )
+                except:
+                    number_of_error += 1
+                    if Utils.check_folder_exists(str(img_path)): #check is image exist
+                        Utils.deleted_file(file_path=str(img_path))
+
+                    if Utils.check_folder_exists(str(bb_path)): #check is image exist
+                        Utils.deleted_file(file_path=str(bb_path))
+                
+            print(f"\t\t\t[/] {function_name} success, number of error : {number_of_error}")
         
         # Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
             

@@ -68,6 +68,11 @@ class Utils:
     def deleted_folder(folder_path):
         shutil.rmtree(folder_path)
 
+    @staticmethod
+    def deleted_file(file_path):
+        os.remove(file_path)
+        return
+
 
     @staticmethod
     def move_file(source_file_path, target_file_path):
@@ -773,10 +778,10 @@ class Utils:
                     for idx, val in enumerate(bb_l):
                         if idx ==0:
                             continue
-                        if val > 1:
-                            bb_l[idx] =1 
-                        if val < 0:
-                            bb_l[idx] =0
+                        if val > 1.0:
+                            bb_l[idx] =1.0 
+                        if val < 0.0:
+                            bb_l[idx] =0.0
 
                     bb.append(bb_l)
 
