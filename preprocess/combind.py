@@ -2,6 +2,7 @@ from pathlib import Path
 from utils import Utils, Constants
 from icecream import ic
 import random
+from joblib import Parallel, delayed
 
 
 class Combind:
@@ -60,34 +61,65 @@ class Combind:
         print(f"\t[-] number of valid images : " + str(len(val_filename_bb)))
         print(f"\t[-] number of test images : " + str(len(test_filename_bb))) 
 
+        # num_cores = -1 #Use all available CPU cores
+        # with Parallel(n_jobs=num_cores) as parallel:
+        #     parallel(delayed(self.move_file_parallel)(folder_move, val_filename_bb, test_filename_bb, test_filename_bb, data_dict) for folder_move in ["valid", "test"])
+        
         for folder_move in ["valid", "test"]:
             if folder_move == "valid":
                 fn = val_filename_bb
             elif folder_move == "test":
                 fn = test_filename_bb
 
-            for _, (img_p, bb_p) in enumerate(fn):
-                # test read img
-                _img = Utils.load_img_cv2(filepath=img_p)
-                # tes read bb
-                _bb = Utils.load_bb(filepath=bb_p)
+            num_cores = -1 #Use all avilable CPU cores
+            with Parallel(n_jobs=num_cores) as parallel:
+                parallel( delayed(self.move_file_parallel)(img_p, bb_p, data_dict, folder_move) for _, (img_p, bb_p) in enumerate(fn))
 
-                if (_img is None) or (_bb is None):
-                    continue
+            # for _, (img_p, bb_p) in enumerate(fn):
+            #     # test read img
+            #     _img = Utils.load_img_cv2(filepath=img_p)
+            #     # tes read bb
+            #     _bb = Utils.load_bb(filepath=bb_p)
+
+            #     if (_img is None) or (_bb is None):
+            #         continue
                 
-                Utils.move_file(
-                    source_file_path=img_p,
-                    target_file_path=Path(data_dict["FINAL_DATASET_PATH"])
-                    / folder_move
-                    / "images",
-                )  # move image
-                Utils.move_file(
-                    source_file_path=bb_p,
-                    target_file_path=Path(data_dict["FINAL_DATASET_PATH"])
-                    / folder_move
-                    / "labels",
-                )  # move bb
+            #     Utils.move_file(
+            #         source_file_path=img_p,
+            #         target_file_path=Path(data_dict["FINAL_DATASET_PATH"])
+            #         / folder_move
+            #         / "images",
+            #     )  # move image
+            #     Utils.move_file(
+            #         source_file_path=bb_p,
+            #         target_file_path=Path(data_dict["FINAL_DATASET_PATH"])
+            #         / folder_move
+            #         / "labels",
+            #     )  # move bb
+    
+    def move_file_parallel(self, img_p, bb_p, data_dict, folder_move):
+            # test read img
+            _img = Utils.load_img_cv2(filepath=img_p)
+            # tes read bb
+            _bb = Utils.load_bb(filepath=bb_p)
 
+            if (_img is None) or (_bb is None):
+                return
+            
+            Utils.move_file(
+                source_file_path=img_p,
+                target_file_path=Path(data_dict["FINAL_DATASET_PATH"])
+                / folder_move
+                / "images",
+            )  # move image
+            Utils.move_file(
+                source_file_path=bb_p,
+                target_file_path=Path(data_dict["FINAL_DATASET_PATH"])
+                / folder_move
+                / "labels",
+            )  # move bb
+           
+    
     def move_images_reclass_from_folder(
         self, source_folder, target_folder, key, index=0
     ):  # index use for rename images -> make images unique
@@ -212,36 +244,71 @@ class Combind:
             source_folder=None,
         )
 
-        for index, (_img, _bb) in enumerate(match_img_bb):
-            # TODO: rename image
-            new_name = Utils.new_name_with_date(
-                gauge=gauge, number=index + 1, folder_number=folder_number
-            )
+        num_cores = -1 #Use all available CPU cores
+        with Parallel(n_jobs=num_cores) as parallel:
+            parallel( delayed(self.move_image_and_labels_parallel)(gauge, index, folder_number, _img, target_folder, _bb) for index, (_img, _bb) in enumerate(match_img_bb))
+        #FIXME: need pararellel
+        # for index, (_img, _bb) in enumerate(match_img_bb):
+        #     # TODO: rename image
+        #     new_name = Utils.new_name_with_date(
+        #         gauge=gauge, number=index + 1, folder_number=folder_number
+        #     )
 
-            # TODO: move images
-            new_source_image_path = Utils.change_file_name(
-                old_file_name=_img, new_name=new_name
-            )
+        #     # TODO: move images
+        #     new_source_image_path = Utils.change_file_name(
+        #         old_file_name=_img, new_name=new_name
+        #     )
 
-            target_image = (
-                target_folder / Constants.image_folder / new_source_image_path.name
-            )
+        #     target_image = (
+        #         target_folder / Constants.image_folder / new_source_image_path.name
+        #     )
 
-            Utils.copy_file(
-                source_file_path=new_source_image_path, target_file_path=target_image
-            )  # TODO: use copy file instead of move
+        #     Utils.copy_file(
+        #         source_file_path=new_source_image_path, target_file_path=target_image
+        #     )  # TODO: use copy file instead of move
 
-            # TODO: move labels
-            new_source_label_path = Utils.change_file_name(
-                old_file_name=_bb, new_name=new_source_image_path.stem
-            )
-            target_label = (
-                target_folder / Constants.label_folder / new_source_label_path.name
-            )
-            Utils.copy_file(
-                source_file_path=new_source_label_path, target_file_path=target_label
-            )  # TODO: use copy file instead of move
+        #     # TODO: move labels
+        #     new_source_label_path = Utils.change_file_name(
+        #         old_file_name=_bb, new_name=new_source_image_path.stem
+        #     )
+        #     target_label = (
+        #         target_folder / Constants.label_folder / new_source_label_path.name
+        #     )
+        #     Utils.copy_file(
+        #         source_file_path=new_source_label_path, target_file_path=target_label
+        #     )  # TODO: use copy file instead of move
 
+    def move_image_and_labels_parallel(self,gauge, index, folder_number, _img, target_folder, _bb):
+        # TODO: rename image
+        new_name = Utils.new_name_with_date(
+            gauge=gauge, number=index + 1, folder_number=folder_number
+        )
+
+        # TODO: move images
+        new_source_image_path = Utils.change_file_name(
+            old_file_name=_img, new_name=new_name
+        )
+
+        target_image = (
+            target_folder / Constants.image_folder / new_source_image_path.name
+        )
+
+        Utils.copy_file(
+            source_file_path=new_source_image_path, target_file_path=target_image
+        )  # TODO: use copy file instead of move
+
+        # TODO: move labels
+        new_source_label_path = Utils.change_file_name(
+            old_file_name=_bb, new_name=new_source_image_path.stem
+        )
+        target_label = (
+            target_folder / Constants.label_folder / new_source_label_path.name
+        )
+        Utils.copy_file(
+            source_file_path=new_source_label_path, target_file_path=target_label
+        )  # TODO: use copy file instead of move
+        
+        
     def check_yaml_is_ok(self, data_yaml_path):
         yaml_file = Utils.read_yaml_file(str(data_yaml_path))
         # TODO: check key exists in dict
@@ -273,15 +340,34 @@ class Combind:
             source_folder=source_folder,
         )
 
-        for index, (img_path, bb_path) in enumerate(filename_bb_list):
+        num_cores=-1 #Use all available CPU cores
+        # ic(filename_bb_list[:30])
+        # with Parallel(n_jobs=num_cores) as parallel:
+        #     parallel( delayed(self.reclass_parallel)(bb_path, bb_before, bb_after) for (_, bb_path) in filename_bb_list)
+        count_none=0
+        for index, (_, bb_path) in enumerate(filename_bb_list):
             new_bb = Utils.reclass_bb_from_dict(
                 bb=Utils.load_bb(bb_path),
                 bb_dict_before=bb_before,
                 bb_dict_after=bb_after,
             )
-            Utils.overwrite_label(txt_file_path=bb_path, bb=new_bb)
+            
+            if new_bb is not None:
+                count_none += 1
+                Utils.overwrite_label(txt_file_path=bb_path, bb=new_bb)
+        print(f"## number of none bb : {count_none} ##")
 
         Utils.write_yaml(data=target_yaml_data, filepath=target_yaml_path)
+    
+    def reclass_parallel(self,bb_path, bb_before, bb_after):
+        print(f"bb_path: {bb_path}, bb_before: {bb_before}, bb_after: {bb_after}")
+        new_bb = Utils.reclass_bb_from_dict(
+            bb=Utils.load_bb(bb_path),
+            bb_dict_before=bb_before,
+            bb_dict_after=bb_after,
+        )
+        Utils.overwrite_label(txt_file_path=bb_path, bb=new_bb)
+
 
     def visualize_samples(self, n=5,folder="train"):
         Utils.visualize_samples(

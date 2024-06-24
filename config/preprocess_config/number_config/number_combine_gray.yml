@@ -17,8 +17,8 @@ PREPROCESS:
   PREFIX: pre
   PREPROCESS_LIST: []
 AUGMENT:
-  AUGMENT_LIST:  
-  FOLDER: []
+  AUGMENT_LIST: []  
+  FOLDER: 
   - train
   NUMBER_AUGMENT: 0 # augment 3 image for own dataset
   PREFIX: aug

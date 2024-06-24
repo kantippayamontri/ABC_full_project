@@ -124,7 +124,7 @@ class Preprocess:
                 target_folder_path=dataset_folder
             )
         except:
-            number_of_error += 1
+            self.number_of_error += 1
             if Utils.check_folder_exists(str(img_path)): #check is image exist
                 Utils.deleted_file(file_path=str(img_path))
 
