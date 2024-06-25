@@ -32,7 +32,6 @@ class Preprocess:
 
         for pre_d in preprocess_list:
 
-            
             # matches_img_bb = Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels")
             (function_name, function_parameter) = tuple(
                 (key, value) for key, value in pre_d.items()
