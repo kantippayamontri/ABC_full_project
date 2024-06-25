@@ -15,6 +15,7 @@ predict_dataset*
 select_frame*
 YOLOv8/
 v9-test/
+erawan*
 
 # File
 *.pt

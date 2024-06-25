@@ -68,6 +68,11 @@ class Utils:
     def deleted_folder(folder_path):
         shutil.rmtree(folder_path)
 
+    @staticmethod
+    def deleted_file(file_path):
+        os.remove(file_path)
+        return
+
 
     @staticmethod
     def move_file(source_file_path, target_file_path):
@@ -538,15 +543,20 @@ class Utils:
     def reclass_bb_from_dict(
         bb=None, bb_dict_before=None, bb_dict_after=None, class_crop=None
     ):
+        if bb is None:
+            return None        
+
         value_to_key_before = {value: key for key, value in bb_dict_before.items()}
 
         bb_temp = []
-        for index, _bb in enumerate(bb):
+        index=0
+        for _bb in bb:
             key = value_to_key_before[int(_bb[0])]
             if key in list(bb_dict_after.keys()):
                 new_value = bb_dict_after[key]
                 bb[index][0] = int(new_value) 
                 bb_temp.append(bb[index])
+            index += 1
 
         return bb_temp
 
@@ -761,6 +771,7 @@ class Utils:
     def load_bb(filepath):
         bb = []
         # print(f"hello")
+        # print(f"filepath: {filepath}")
 
         try:
             fp = open(str(filepath), "r")  # read the bounding box
@@ -773,15 +784,15 @@ class Utils:
                     for idx, val in enumerate(bb_l):
                         if idx ==0:
                             continue
-                        if val > 1:
-                            bb_l[idx] =1 
-                        if val < 0:
-                            bb_l[idx] =0
-
+                        if val > 1.0:
+                            bb_l[idx] =1.0 
+                        if val < 0.0:
+                            bb_l[idx] =0.0
                     bb.append(bb_l)
 
             return np.array(bb) if len(bb) > 0 else None
         except:
+            print(f"error during load bb from : {filepath}")
             return None
 
     @staticmethod

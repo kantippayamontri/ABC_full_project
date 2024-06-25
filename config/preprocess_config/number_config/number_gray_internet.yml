@@ -1,0 +1,31 @@
+
+DATASET:
+  DATASET_PATH:
+  #TODO: for number dataset
+  #FIXME: internet data
+  - dataset_process/number/number_process_color_internet/number
+  DATASET_TYPE: number
+  FINAL_DATASET_PATH: dataset_process/number/number_process_gray_internet/number
+  PERCENT_TEST: 0
+  PERCENT_TRAIN: 100
+  PERCENT_VAL: 0
+PREPROCESS:
+  FOLDER:
+  - train
+  - valid
+  - test
+  PREFIX: pre
+  PREPROCESS_LIST:
+  - RESIZE:
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+  - GRAY:
+      P: 1.0
+      REPLACE: true
+AUGMENT:
+  AUGMENT_LIST: []  
+  FOLDER:
+  - train
+  NUMBER_AUGMENT: 0 # No need to augment for internet dataset
+  PREFIX: aug

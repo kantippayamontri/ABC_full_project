@@ -1,0 +1,24 @@
+DATASET:
+  DATASET_PATH:
+  #TODO: for number dataset
+  #FIXME: self data
+  - dataset_process/number/number_process_color_own/number
+  - dataset_process/number/number_process_color_internet/number
+  DATASET_TYPE: number
+  FINAL_DATASET_PATH: dataset_process_final/number/number_process_color_final/number
+  PERCENT_TEST: 1
+  PERCENT_TRAIN: 98
+  PERCENT_VAL: 1
+PREPROCESS:
+  FOLDER:
+  - train
+  - valid
+  - test
+  PREFIX: pre
+  PREPROCESS_LIST: []
+AUGMENT:
+  AUGMENT_LIST: []  
+  FOLDER: 
+  - train
+  NUMBER_AUGMENT: 0 # augment 3 image for own dataset
+  PREFIX: aug

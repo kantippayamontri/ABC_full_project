@@ -47,7 +47,7 @@ model_path_dict = {
         "digital": Path("./models/digital/digital_model.pt"),
         "number": Path("./models/number/best (2).pt"),
     },
-    Constants.GaugeType.number: Path("./models/number/best (2).pt"),
+    Constants.GaugeType.number: Path("/home/kan.t/work/ABC_full_project/experiment/(ds_t)_number_(m_t)_m_3/weights/best.pt"),
 }
 
 if gauge_use == Constants.GaugeType.digital:

@@ -130,13 +130,54 @@ class YOLOModel(TrainModel):
         return super().exportModel(dest_path)
     
     def trainModel(self, train_parameters: TrainParameters, **kwargs):
-        self.trainModelCommand(train_parameters=train_parameters, model_path=kwargs["model_path"])
+        train_with_command = True
+        if train_with_command:
+            self.trainModelCommand(train_parameters=train_parameters, model_path=kwargs["model_path"])
+        else:
+            self.trainModelCode(parameters=train_parameters)
         
         return 
     
+    def trainModelCode(self, parameters: TrainParameters):
+        # if self.use_comet:
+        #     self.init_comet(train_parameters=parameters)
+            
+        ic(parameters.comet_parameters())
+        # TODO: check experiment folder
+        
+        # TODO: create name of the experiment
+        
+        ic(str(parameters.get_project_name()[0]))
+        ic(parameters.get_project_name())
+        ic(parameters.get_name())
+
+        print(f"+++=== Train with Code ===+++")
+        
+        self.model.train(
+            data=parameters.get_data_yaml_path(),
+            epochs=parameters.get_epochs(),
+            imgsz=parameters.get_imgsz(),
+            batch=parameters.get_batch(),
+            # cache=parameters.get_cache(),
+            patience=parameters.get_patience(),
+            device=parameters.get_device(),
+            workers=parameters.get_workers(),
+            resume=parameters.get_resume(),
+            lr0=parameters.get_learning_rate(),
+            lrf=parameters.get_final_learning_rate(),
+            project=parameters.get_project_name(), #TODO: path for experimental_project folder
+            name=parameters.get_name()[0], # TODO: name of the experiment
+            fliplr=0.0, #set flip left and right to zero
+            optimizer="Adam",
+        )
+        
+        # if self.use_comet:
+        #     self.end_comet()
 
     def trainModelCommand(self, train_parameters: TrainParameters, model_path: Path):
         from icecream import ic
+
+        print(f"+++=== Train with Command ===+++")
         
         # train the model
         command = "yolo detect train "
@@ -145,16 +186,21 @@ class YOLOModel(TrainModel):
         command += f"epochs={train_parameters.get_epochs()} "
         command += f"imgsz={train_parameters.get_imgsz()} "
         command += f"batch={train_parameters.get_batch()} "
-        command += f"cache={train_parameters.get_cache()} "
+        command += f"cache={train_parameters.get_cache()} " 
         command += f"patience={train_parameters.get_patience()} "
         command += f"device={train_parameters.get_device()} "
         command += f"workers={train_parameters.get_workers()} "
-        command += f"resume={train_parameters.get_resume()} "
+
+        # bug we need to avoid resume for now
+        # if train_parameters.get_resume():
+        #     command += f"resume "
+
         command += f"lr0={train_parameters.get_learning_rate()} "
         command += f"lrf={train_parameters.get_final_learning_rate()} "
         command += f"project='{str(train_parameters.get_project_name())}' "
         command += f"name='{train_parameters.get_name()[0]}' "
-        command += f"fliplr=0.0" # set flip left and right to zero
+        command += f"fliplr=0.0 " # set flip left and right to zero
+        command += f"optimizer=Adam half=True int8=True dropout=0.1 " 
         # command += f""
         # command += f""
 
