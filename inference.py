@@ -7,6 +7,7 @@ from inference import (
     InferenceUtils,
     DigitalBoxes,
     NumberBoxes,
+    ClockBoxes,
 )
 from ultralytics import YOLO
 import torch
@@ -41,6 +42,7 @@ img_path = args.img_path
 image_size_dict = {
     Constants.GaugeType.digital: (640, 640),
     Constants.GaugeType.number: (640, 640),
+    Constants.GaugeType.clock: (640,640),
 }
 model_path_dict = {
     Constants.GaugeType.digital: {
@@ -48,6 +50,7 @@ model_path_dict = {
         "number": Path("./models/number/best (2).pt"),
     },
     Constants.GaugeType.number: Path("/home/kan.t/work/ABC_full_project/experiment/(ds_t)_number_(m_t)_m_3/weights/best.pt"),
+    Constants.GaugeType.clock: Path("/home/kan/Desktop/Work/ABC_full_project/experiment/(ds_t)_clock_(m_t)_m/weights/best.pt")
 }
 
 if gauge_use == Constants.GaugeType.digital:
@@ -249,6 +252,110 @@ elif gauge_use == Constants.GaugeType.number:
             if args.select_frame and (boxes.predict_number != ""):
                 ic(f"--- select frame ---")
                 Utils.copy_file(source_file_path=frame_image_path, target_file_path=Path("./select_frame/"))
+
+
+    end_time = time.time()
+    ic(f"use time : {(end_time - start_time ) / number_samples}")
+
+elif gauge_use == Constants.GaugeType.clock:
+    print(f"--- Inference clock ---")
+    
+    model_clock = InferenceModel(
+        model_path=model_path_dict[gauge_use], 
+        img_target_size=image_size_dict[gauge_use],
+        conf=0.25
+    )
+    
+    samples = Utils.get_filenames_folder(
+        source_folder=Path(img_path)
+    )
+
+    number_samples = len(samples)
+
+    start_time =time.time()
+    
+    for clock_index, clock_img_path in enumerate(samples):
+        print(f"clock index: {clock_index}")
+
+        image = cv2.imread(str(clock_img_path))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        trans = InferenceUtils.albu_resize_pad_zero(
+            target_size=image_size_dict[gauge_use],
+            gray=False,
+        )
+
+        image_tensor = trans(image=image, bboxes=[])["image"]
+        image_tensor = torch.div(image_tensor, 255.0)
+        image_tensor = torch.unsqueeze(image_tensor, 0)
+
+        print(f"image tensor shape: {image_tensor.shape}")
+
+        clock_result = model_clock.inference_data(input_img=image_tensor)
+
+        # Utils.visualize_img_bb(
+        #     img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+        #     bb=[],
+        #     with_class=False,
+        #     labels=None,
+        #     format=None,
+        # )
+        # break
+
+        for r in clock_result:
+            nbp = r.boxes.cpu().numpy()
+            # print(nbp)
+
+            boxes = ClockBoxes(
+                boxes=nbp.data,
+                cls=nbp.cls,
+                conf=nbp.conf,
+                data=nbp.data,
+                id=nbp.id,
+                is_track=nbp.is_track,
+                orig_shape=nbp.orig_shape,
+                shape=nbp.shape,
+                xywh=nbp.xywh,
+                xywhn=nbp.xywhn,
+                xyxy=nbp.xyxy,
+                xyxyn=nbp.xyxyn,
+                # image=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+                # image_orig=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+                # labels= ['gauge', "min", "max", "center", "head", "bottom"],
+            )
+
+            Utils.visualize_img_bb(
+                # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+                img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+                bb=[],
+                with_class=True,
+                labels=['gauge', "min", "max", "center", "head", "bottom"],
+                format=Constants.BoundingBoxFormat.XYXY,
+            )
+            min_value = float(input("Please input min value: "))
+            max_value = float(input("Please input max value: "))
+            
+            ic(boxes.predict_clock(gauge_min_value=min_value, gauge_max_value=max_value))
+
+            Utils.visualize_img_bb(
+                # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+                img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+                bb=[
+                    {"class": bb[5], "bb": [(bb[0], bb[1]), (bb[2], bb[3])]}
+                    for bb in boxes.boxes
+                ],
+                with_class=True,
+                labels=['gauge', "min", "max", "center", "head", "bottom"],
+                format=Constants.BoundingBoxFormat.XYXY,
+            )
+        
+        # if clock_index == 4:
+        #     break
+            
+        # break
+
+        # gauge_display_frames = number_model.inference_data(input_img=image_tensor)
+
+
 
     end_time = time.time()
     ic(f"use time : {(end_time - start_time ) / number_samples}")

@@ -17,6 +17,7 @@ args = parser.parse_args()
 
 # read config file
 data_yaml = Utils.read_yaml_file(args.config)
+ic(data_yaml)
 dataset_dict = data_yaml["DATASET"]
 preprocess_dict = data_yaml["PREPROCESS"]
 augment_dict = data_yaml["AUGMENT"]

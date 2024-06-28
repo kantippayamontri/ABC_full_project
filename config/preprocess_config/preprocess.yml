@@ -1,46 +1,46 @@
 AUGMENT:
-  AUGMENT_LIST: 
-   - RESIZE:
-       TARGET_WIDTH: 640
-       TARGET_HEIGHT: 640
-       REPLACE: true
-   - CHANNEL_SHUFFLE:
-      P: 0.5
-      REPLACE: false
-   - MULTIPLICATIVE_NOISE:
-      MULTIPLIER:
-      - 0.4
-      - 1.0
-      ELEMENT_WISE: true
-      P: 0.5
-      REPLACE: false
-   - BLUR:
-      BLUR_LIMIT:
-      - 3
-      - 3 
-      P: 0.5
-      REPLACE: false
-   - ROTATE:
-      LIMIT:
-      - -20
-      - 20 
-      P: 0.5
-   - COLOR_JITTER:
-      BRIGHTNESS: 0.5
-      CONTRAST: 0.5
-      SATURATION: 0.5
-      HUE: 0.5
-      P: 0.75
-      REPLACE: false
-   - LONGEST_MAX_SIZE:
-      MAX_SIZE: 640
-      P: 1.0
-      REPLACE: false
-   - PAD_IF_NEEDED:
-      MIN_WIDTH: 640
-      MIN_HEIGHT: 640
-      P: 1.0
-      REPLACE: false
+  AUGMENT_LIST: []
+   # - RESIZE:
+   #     TARGET_WIDTH: 640
+   #     TARGET_HEIGHT: 640
+   #     REPLACE: true
+   # - CHANNEL_SHUFFLE:
+   #    P: 0.5
+   #    REPLACE: false
+   # - MULTIPLICATIVE_NOISE:
+   #    MULTIPLIER:
+   #    - 0.4
+   #    - 1.0
+   #    ELEMENT_WISE: true
+   #    P: 0.5
+   #    REPLACE: false
+   # - BLUR:
+   #    BLUR_LIMIT:
+   #    - 3
+   #    - 3 
+   #    P: 0.5
+   #    REPLACE: false
+   # - ROTATE:
+   #    LIMIT:
+   #    - -20
+   #    - 20 
+   #    P: 0.5
+   # - COLOR_JITTER:
+   #    BRIGHTNESS: 0.5
+   #    CONTRAST: 0.5
+   #    SATURATION: 0.5
+   #    HUE: 0.5
+   #    P: 0.75
+   #    REPLACE: false
+   # - LONGEST_MAX_SIZE:
+   #    MAX_SIZE: 640
+   #    P: 1.0
+   #    REPLACE: false
+   # - PAD_IF_NEEDED:
+   #    MIN_WIDTH: 640
+   #    MIN_HEIGHT: 640
+   #    P: 1.0
+   #    REPLACE: false
   FOLDER:
   - train
   - valid
@@ -49,16 +49,17 @@ AUGMENT:
   PREFIX: aug
 DATASET:
   DATASET_PATH:
+  - /home/kan/Desktop/Work/ABC_full_project/datasets/clock/clock_test/set1_300
   #   - ./dataset
-  - /media/kan/kan_ex/digital_1_100_set1 
-  - /media/kan/kan_ex/digital_1_100_set2 
+#   - /media/kan/kan_ex/digital_1_100_set1 
+#   - /media/kan/kan_ex/digital_1_100_set2 
   # - /media/kan/kan_ex/
   # - datasets/digital/digital_1_100_set1
   # - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
   # - datasets/user13_101223
   # - datasets/number/number_test1
-  DATASET_TYPE: digital
-  FINAL_DATASET_PATH: dataset_new
+  DATASET_TYPE: clock
+  FINAL_DATASET_PATH: dataset_new/clock/clock_test/clock
   PERCENT_TEST: 10
   PERCENT_TRAIN: 80
   PERCENT_VAL: 10
@@ -69,20 +70,19 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST:
-#   - CROP:
-#       ADD_PIXEL: 50
-#       CLASS_CROP_LIST: 
-#       - 0
-#       - 1
-#       CLASS_IGNORE: []
-#       NEED_RESIZE: true
-#       TARGET_HEIGHT: 640
-#       TARGET_WIDTH: 640
-#       REPLACE: false
+  - CROP:
+      ADD_PIXEL: 0
+      CLASS_CROP_LIST: 
+      - 0
+      CLASS_IGNORE: []
+      NEED_RESIZE: true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: false
   - RESIZE:
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
       REPLACE: true
-  # - GRAY:
-  #     P: 1.0
-  #     REPLACE: true
+#   - GRAY:
+#       P: 1.0
+#       REPLACE: true

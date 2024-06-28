@@ -84,6 +84,15 @@ class InferenceConstants:
         14: "",
     }
 
+    inference_clock_dict = {
+        'gauge':0, 
+        "min":1, 
+        "max":2, 
+        "center":3, 
+        "head":4, 
+        "bottom":5,
+    }
+
     predict_parameters = {
         Constants.GaugeType.digital: {
             "image size": (640, 640),

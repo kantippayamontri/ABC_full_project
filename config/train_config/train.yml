@@ -1,7 +1,7 @@
 DATASET:
   # DATASET_PATH: datasets_for_train_eiei
-  DATASET_PATH: dataset_new
-  DATASET_TYPE: digital
+  DATASET_PATH: dataset_new/clock/clock_test
+  DATASET_TYPE: clock
 MODEL:
   MODEL: 
     MODEL_NAME: YOLO

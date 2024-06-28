@@ -90,7 +90,12 @@ class Constants:
         GaugeType.number.value: {
             "source": ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'colon', 'dot', 'float', 'minus', 'slash'],
             "target": ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'colon', 'dot', 'float', 'minus', 'slash']
-        }
+        },
+        GaugeType.clock.value: {
+            "source": ['bottom', 'center', 'gauge', 'head', "max", "min"],
+            "target": ['gauge', "min", "max", "center", "head", "bottom"]
+        },
+        
         # "type3": {
         #     # "gauge": {
         #     #     "source": ["gauge", "display", "frame"],
