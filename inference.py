@@ -331,11 +331,13 @@ elif gauge_use == Constants.GaugeType.clock:
                 labels=['gauge', "min", "max", "center", "head", "bottom"],
                 format=Constants.BoundingBoxFormat.XYXY,
             )
+            clock_case = {
+                "normal": "normal",
+            }
             min_value = float(input("Please input min value: "))
             max_value = float(input("Please input max value: "))
             
-            ic(boxes.predict_clock(gauge_min_value=min_value, gauge_max_value=max_value))
-
+            
             Utils.visualize_img_bb(
                 # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
                 img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
@@ -347,9 +349,12 @@ elif gauge_use == Constants.GaugeType.clock:
                 labels=['gauge', "min", "max", "center", "head", "bottom"],
                 format=Constants.BoundingBoxFormat.XYXY,
             )
+            
+            ic(boxes.predict_clock(clock_case= clock_case["normal"] ,gauge_min_value=min_value, gauge_max_value=max_value))
+
         
-        # if clock_index == 4:
-        #     break
+        if clock_index == 1:
+            break
             
         # break
 

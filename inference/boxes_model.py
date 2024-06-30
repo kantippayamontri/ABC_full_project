@@ -593,6 +593,7 @@ class ClockBoxes(Boxes):
 
     def predict_clock(
         self,
+        clock_case,
         gauge_min_value,
         gauge_max_value,
     ):
@@ -634,45 +635,30 @@ class ClockBoxes(Boxes):
                 gauge_xyxy=gauge_use.xyxy, check_list=self.bottom_list
             )
 
-            # --------------------------------------Preprocess 6 class---------------------------------------------
-
-            # check is found min and max
-            if (min_use is not None) and (max_use is not None):
-                ...
-            else:
-                return 99
-
-            # check is found head center and bottom
-            if (
-                (center_use is not None)
-                and (head_use is not None)
-                and (bottom_use is not None)
-            ):
-                ...
-            else:
-                return 99
-
             # --------------------------------------Predict gauge value-----------------------------------------------
 
             clock_ratio = self.predict_clock_value(
-                gauge=gauge_use,
-                min=min_use,
-                max=max_use,
-                center=center_use,
-                head=head_use,
-                bottom=bottom_use,
+                clock_case=clock_case,
+                gauge=gauge_use.get_center_xyxy() if gauge_use is not None else None,
+                min=min_use.get_center_xyxy() if min_use is not None else None ,
+                max=max_use.get_center_xyxy() if max_use is not None else None,
+                center=center_use.get_center_xyxy() if center_use is not None else None,
+                head=head_use.get_center_xyxy() if head_use is not None else None,
+                bottom=bottom_use.get_center_xyxy() if bottom_use is not None else None,
             )
-            
-            range_value = gauge_max_value - gauge_min_value
-            actual_value = clock_ratio * range_value + gauge_min_value
 
-            return actual_value
+            if clock_ratio is not None:
+            
+                range_value = gauge_max_value - gauge_min_value
+                actual_value = clock_ratio * range_value + gauge_min_value
+
+                return actual_value
 
         else:
 
             return 99
 
-        return 0.0
+        return 99
 
     def box_in_gauge(self, gauge_xyxy, check_list):
         temp_use = []
@@ -695,7 +681,7 @@ class ClockBoxes(Boxes):
         return None
 
     def predict_clock_value(
-        self, gauge: Box, min: Box, max: Box, center: Box, head: Box, bottom: Box
+        self,clock_case:str, gauge: Box, min: Box, max: Box, center: Box, head: Box, bottom: Box
     ):
         # self.visualize_clock_img_bb(
         #     img=self.image_orig,
@@ -705,125 +691,113 @@ class ClockBoxes(Boxes):
         #     format=Constants.BoundingBoxFormat.YOLOV8,
 
         # )
-        # center_min_slope= self.get_slope_from_2_point(point1=center.get_center_xyxy(), point2=min.get_center_xyxy())
-        # print(f"center_min_line: {center_min_slope}")
-        # center_head_slope= self.get_slope_from_2_point(point1=center.get_center_xyxy(), point2=head.get_center_xyxy())
-        # print(f"center_head_line: {center_head_slope}")
-        # center_max_slope= self.get_slope_from_2_point(point1=center.get_center_xyxy(), point2=max.get_center_xyxy())
-        # print(f"center max line: {center_max_slope}")
+        # ic("visualize before")
+        self.visualize_clock(
+                gauge=gauge,
+                min=min,
+                max=max,
+                center=center,
+                head=head,
+                bottom=bottom,  # clock_center=center.get_center_xyxy(), clock_r=radius,
+                vectors=[]
+            )
+        
+        
 
-        # min_head_angle = self.findAngle(M1=center_min_slope, M2=center_head_slope)
-        # min_max_angle = self.findAngle(M1=center_min_slope, M2=center_max_slope)
+        #TODO: preprocess clock 
+        min, max, center, head, bottom = self.preprocess_clock(clock_case=clock_case, min=min,max=max, center=center, head=head, bottom=bottom)
+        
+        if None in [min, max, center, head, bottom]:
+            print(f"Can't detect clock please capture proper position.")
+            return 0
 
-        # print(f"min_head_angle: {min_head_angle}")
-        # print(f"min_max_angle: {min_max_angle}")
-
-        # # TODO: create circle
-        # circle_center = center.get_center_xyxy() # center point of the circle
-        # radius = self.get_distance_from_2_point(point1=min.get_center_xyxy(), point2=max.get_center_xyxy()) / 2.0
-        # circle_eq = (circle_center[0] - x)**2 + (circle_center[1] - y)**2 - radius**2
-
-        # print(f"radius: {radius}")
-        # print(f"min to center l: {self.get_distance_from_2_point(point1=center.get_center_xyxy(), point2=min.get_center_xyxy())}")
-        # print(f"max to center l: {self.get_distance_from_2_point(point1=center.get_center_xyxy(), point2=max.get_center_xyxy())}")
-
-        # # find min coor in the circle
-        # min_m, min_b = self.get_slope_intercept(point1=center.get_center_xyxy(), point2=min.get_center_xyxy())
-
-        # ic(solve([(circle_center[0] - x)**2 + (circle_center[1] - y)**2 - radius**2,min_m*x + min_b], [x,y], dict=True))
-        # # min_x_circle, min_y_circle = self.find_xy_circle(circle_eq=circle_eq, line_m=min_m, line_b=min_b)
-
+        
+        #TODO: calculate the vector
         image_height = self.orig_shape[0]
         image_width = self.orig_shape[1]
         # origin_point = (image_width/2.0, image_height/2.0)
-        origin_point = center.get_center_xyxy()  # set center point to the origin_point
+        origin_point = center
 
         center_origin = self.set_point_2_origin(
-            origin=origin_point, point=center.get_center_xyxy()
+            origin=origin_point, point=center
         )
         min_origin = self.set_point_2_origin(
-            origin=origin_point, point=min.get_center_xyxy()
+            origin=origin_point, point=min
         )
         max_origin = self.set_point_2_origin(
-            origin=origin_point, point=max.get_center_xyxy()
+            origin=origin_point, point=max
         )
         head_origin = self.set_point_2_origin(
-            origin=origin_point, point=head.get_center_xyxy()
+            origin=origin_point, point=head
         )
         bottom_origin = self.set_point_2_origin(
-            origin=origin_point, point=bottom.get_center_xyxy()
+            origin=origin_point, point=bottom
         )
 
-        ic(min_origin)
-        ic(max_origin)
-        ic(head_origin)
-        ic(bottom_origin)
-        ic(center_origin)
+        # ic(min_origin)
+        # ic(max_origin)
+        # ic(head_origin)
+        # ic(bottom_origin)
+        # ic(center_origin)
 
-        # angle_min_head = self.angle_between_2_line(a=min_origin, b=head_origin)
-        # ic(angle_min_head)
+        ratio =0
 
-        # angle_min_max = self.angle_between_2_line(a=min_origin,b=max_origin)
-        # # check min,max y position with y position of center
-        # if min_origin[1] < 0 and max_origin[1] <0:
-        #     angle_min_max = 360 - angle_min_max
+        if clock_case == "normal":
+            
+            head_min_angle, head_min_v = self.angle_between_2_vector(start_vector=head_origin,end_vector=min_origin)
+            ic(head_min_angle)
+            
+            max_head_angle, max_head_v = self.angle_between_2_vector(start_vector=max_origin, end_vector=head_origin, )
+            ic(max_head_angle)
+            
+            all_angle = head_min_angle + max_head_angle
+            ratio = head_min_angle / all_angle
+            
+            vectors = [head_min_v, max_head_v]
 
-        # ic(angle_min_max)
-
-        # min_head = np.array(min_origin)  # start from min and rotate to head
-        # min_head = self.rotation_vector(theta=np.deg2rad(30), vector=min_head)
-
-        # for deg in range(10, 360, 10):
-        #     _min_head = self.rotation_vector(theta=np.deg2rad(deg), vector=min_head)
-        #     vectors = [_min_head]
-        #     ic(vectors)
-
-        #     self.visualize_clock(
-        #         gauge=gauge,
-        #         min=min,
-        #         max=max,
-        #         center=center,
-        #         head=head,
-        #         bottom=bottom,  # clock_center=center.get_center_xyxy(), clock_r=radius,
-        #         vectors=list(
-        #             [
-        #                 [
-        #                     origin_point[0],
-        #                     origin_point[1],
-        #                     v[0] + origin_point[0],
-        #                     -1 * v[1] + origin_point[1],
-        #                 ]
-        #                 for v in vectors
-        #             ]
-        #         ),
-        #     )
-
-        # ic(vectors)
-
-        
-        head_min_angle, head_min_v = self.angle_between_2_vector(start_vector=head_origin,end_vector=min_origin)
-        ic(head_min_angle)
-        
-        max_head_angle, max_head_v = self.angle_between_2_vector(start_vector=max_origin, end_vector=head_origin, )
-        ic(max_head_angle)
-        
-        all_angle = head_min_angle + max_head_angle
-        ratio = head_min_angle / all_angle
-        
-        
-        
-        
-        vectors = [head_min_v, max_head_v]
-        self.visualize_clock(
-            gauge=gauge,
-            min=min,
-            max=max,
-            center=center,
-            head=head,
-            bottom=bottom,  # clock_center=center.get_center_xyxy(), clock_r=radius,
-            vectors=list([ [origin_point[0], origin_point[1], v[0] + origin_point[0], -1*v[1] + origin_point[1] ] for v in vectors]),
-        )
+            ic("visual after")
+            self.visualize_clock(
+                gauge=gauge,
+                min=min,
+                max=max,
+                center=center,
+                head=head,
+                bottom=bottom,  # clock_center=center.get_center_xyxy(), clock_r=radius,
+                vectors=list([ [origin_point[0], origin_point[1], v[0] + origin_point[0], -1*v[1] + origin_point[1] ] for v in vectors]),
+            )
         return ratio
+
+    
+    def preprocess_clock(self,clock_case, min,max,center,head,bottom):
+        if clock_case == "normal":
+            min,max,center,head,bottom = self.preprocess_normal_clock(min=min, max=max, center=center, head=head, bottom=bottom)
+        
+        return min,max,center,head, bottom
+            
+
+    def preprocess_normal_clock(self,min, max, center, head, bottom):
+
+        for _ in range(5):
+            if center is None:
+                if bottom is not None: 
+                    center = bottom
+                else:
+                    break
+            
+            if min is None and (max is not None and center is not None):
+                _max_origin = self.set_point_2_origin(
+                    origin=center, point=max
+                )
+                _min_orgin = (-1 * max[0], max[1])
+                ...
+
+                
+
+        return min, max,center, head,bottom
+    
+    def predict_normal_clock(self,):
+        ...
+    
 
     def angle_between_2_vector(
         self, start_vector, end_vector, step_deg=1, min_deg_thres=0
@@ -873,9 +847,6 @@ class ClockBoxes(Boxes):
     def set_point_2_origin(self, origin, point):
         return (point[0] - origin[0], -1 * (point[1] - origin[1]))
 
-    # def find_xy_circle(self, circle_eq, line_m,line_b):
-    #     line_eq = line_m * x + line_b - y
-    #     ic(solve([circle_eq, line_eq],[x,y],dict=True))
 
     def get_distance_from_2_point(self, point1: tuple, point2: tuple):
         """
@@ -887,21 +858,6 @@ class ClockBoxes(Boxes):
         )
         return distance
 
-    # def findAngle(self,M1, M2):
-    #     PI = 3.14159265
-
-    #     # Store the tan value  of the angle
-    #     angle = abs((M2 - M1) / (1 + M1 * M2))
-
-    #     # Calculate tan inverse of the angle
-    #     ret = atan(angle)
-
-    #     # Convert the angle from
-    #     # radian to degree
-    #     val = (ret * 180) / PI
-
-    #     # Print the result
-    #     return (round(val, 4))
 
     def get_slope_intercept(self, point1, point2):
         slope = self.get_slope(point1=point1, point2=point2)
@@ -930,102 +886,108 @@ class ClockBoxes(Boxes):
     ):
         # create mock images
         image = np.ones(image_size)
-        print(f"center: {center.get_center_xyxy()}")
-        print(f"gauge: {gauge.get_center_xyxy()}")
-        print(f"min: {min.get_center_xyxy()}")
-        print(f"max: {max.get_center_xyxy()}")
+        print(f"center: {center}")
+        print(f"gauge: {gauge}")
+        print(f"min: {min}")
+        print(f"max: {max}")
 
         plt.imshow(image)
-        gauge_x1, gauge_y1, gauge_x2, gauge_y2 = gauge.xyxy
-        plt.gca().add_patch(
-            patches.Rectangle(
-                xy=(gauge_x1, gauge_y1),
-                width=gauge_x2 - gauge_x1,
-                height=gauge_y2 - gauge_y1,
-                linewidth=2,
-                edgecolor=np.array([0, 255, 0]) / 255.0,
-                facecolor="none",
+        # gauge_x1, gauge_y1, gauge_x2, gauge_y2 = gauge.xyxy
+        # plt.gca().add_patch(
+        #     patches.Rectangle(
+        #         xy=(gauge_x1, gauge_y1),
+        #         width=gauge_x2 - gauge_x1,
+        #         height=gauge_y2 - gauge_y1,
+        #         linewidth=2,
+        #         edgecolor=np.array([0, 255, 0]) / 255.0,
+        #         facecolor="none",
+        #     )
+        # )
+
+        if min is not None:
+            min_x, min_y = min
+            plt.plot(min_x, min_y, "ro", markersize=10)
+            plt.annotate(
+                "min",
+                (min_x, min_y),
+                textcoords="offset points",
+                xytext=(0, 10),
+                ha="center",
             )
-        )
 
-        min_x, min_y = min.get_center_xyxy()
-        plt.plot(min_x, min_y, "ro", markersize=10)
-        plt.annotate(
-            "min",
-            (min_x, min_y),
-            textcoords="offset points",
-            xytext=(0, 10),
-            ha="center",
-        )
+        if max is not None:
+            max_x, max_y = max
+            plt.plot(max_x, max_y, "ro", markersize=10)
+            plt.annotate(
+                "max",
+                (max_x, max_y),
+                textcoords="offset points",
+                xytext=(0, 10),
+                ha="center",
+            )
 
-        max_x, max_y = max.get_center_xyxy()
-        plt.plot(max_x, max_y, "ro", markersize=10)
-        plt.annotate(
-            "max",
-            (max_x, max_y),
-            textcoords="offset points",
-            xytext=(0, 10),
-            ha="center",
-        )
+        if center is not None:
+            center_x, center_y = center
+            plt.plot(center_x, center_y, "ro", markersize=10)
+            plt.annotate(
+                "center",
+                (center_x, center_y),
+                textcoords="offset points",
+                xytext=(0, 10),
+                ha="center",
+            )
 
-        center_x, center_y = center.get_center_xyxy()
-        plt.plot(center_x, center_y, "ro", markersize=10)
-        plt.annotate(
-            "center",
-            (center_x, center_y),
-            textcoords="offset points",
-            xytext=(0, 10),
-            ha="center",
-        )
+        if head is not None:
+            head_x, head_y = head
+            plt.plot(head_x, head_y, "ro", markersize=10)
+            plt.annotate(
+                "head",
+                (head_x, head_y),
+                textcoords="offset points",
+                xytext=(0, 10),
+                ha="center",
+            )
 
-        head_x, head_y = head.get_center_xyxy()
-        plt.plot(head_x, head_y, "ro", markersize=10)
-        plt.annotate(
-            "head",
-            (head_x, head_y),
-            textcoords="offset points",
-            xytext=(0, 10),
-            ha="center",
-        )
+        if bottom is not None:
+            bottom_x, bottom_y = bottom
+            plt.plot(bottom_x, bottom_y, "ro", markersize=10)
+            plt.annotate(
+                "bottom",
+                (bottom_x, bottom_y),
+                textcoords="offset points",
+                xytext=(0, 10),
+                ha="center",
+            )
 
-        bottom_x, bottom_y = bottom.get_center_xyxy()
-        plt.plot(bottom_x, bottom_y, "ro", markersize=10)
-        plt.annotate(
-            "bottom",
-            (bottom_x, bottom_y),
-            textcoords="offset points",
-            xytext=(0, 10),
-            ha="center",
-        )
+        if center is not None and min is not None:
+            plt.plot(
+                (center[0], min[0]),
+                (center[1], min[1]),
+                linestyle="-",
+                color="blue",
+            )  # center min line
 
-        plt.plot(
-            (center.get_center_xyxy()[0], min.get_center_xyxy()[0]),
-            (center.get_center_xyxy()[1], min.get_center_xyxy()[1]),
-            linestyle="-",
-            color="blue",
-        )  # center min line
-
-        plt.plot(
-            (center.get_center_xyxy()[0], head.get_center_xyxy()[0]),
-            (center.get_center_xyxy()[1], head.get_center_xyxy()[1]),
-            linestyle="-",
-            color="mediumseagreen",
-        )  # center head line
-
-        plt.plot(
-            (center.get_center_xyxy()[0], max.get_center_xyxy()[0]),
-            (center.get_center_xyxy()[1], max.get_center_xyxy()[1]),
-            linestyle="-",
-            color="fuchsia",
-        )  # center max line
-
-        # plot a vector
-        print(f"vectors: {vectors}")
+        if center is not None and head is not None:
+            plt.plot(
+                (center[0], head[0]),
+                (center[1], head[1]),
+                linestyle="-",
+                color="blue",
+            )  # center head line
+        
+        if center is not None and max is not None:
+            plt.plot(
+                (center[0], max[0]),
+                (center[1], max[1]),
+                linestyle="-",
+                color="blue",
+            )  # center max line
+            
         for v in vectors:
             print(f"v is :{v}")
             plt.plot((v[0], v[2]), (v[1], v[3]), linestyle="-", color="red")
 
-        plt.title(f"{gauge.xyxy}")
+        # plt.title(f"{gauge.xyxy}")
 
         # ---------------------------------------Draw a circle
         # circle = plt.gca().add_patch(
