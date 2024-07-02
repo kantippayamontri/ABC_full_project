@@ -189,8 +189,7 @@ class Transform:
         return new_img, new_bb
 
     def gray(self, img, bb, format=None, p=1.0):
-        ic(f"gray img dim before: {img.shape}")
-        albu_transform = Utils.albu_grayscale(format=format, p=1.0)
+        albu_transform = Utils.albu_grayscale(format=format, p=p)
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         ic(f"gray img dim after: {new_img.shape}")

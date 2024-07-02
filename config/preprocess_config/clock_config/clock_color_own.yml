@@ -1,16 +1,63 @@
-
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
   #FIXME: self data
-  - /home/kan.t/work/ABC_full_project/datasets/number/user13/permanent_set1_3600
-  - /home/kan.t/work/ABC_full_project/datasets/number/user14/permanent_set1_2800
+  # adult
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user1/set1_300
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user1/set2_1398
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user2/set1_300
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user2/user2_1000
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user3/set1_300
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user4/set1_300
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user4/set2_200
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user5/set1_100
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user5/set2_199
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user6/set1_100
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user6/set2_600
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user7/set1_895
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user7/set2_1398
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user8/set1_700
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user8/set2_1591
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user9/set1_100
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user10/set1_1000
+
+   # student
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user1/set1
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user1/set2_94
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user2/set1_498
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user2/set2_100
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user3/set1_298
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user5/set1_100
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user6/set1_400
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user6/set2_100
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user8/set1_300
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user9/set1_299
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user10/set1_494
+
+  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user11/set1_100
 
   DATASET_TYPE: clock
   FINAL_DATASET_PATH: dataset_process/clock/clock_process_color_own/clock
-  PERCENT_TEST: 1
-  PERCENT_TRAIN: 98
-  PERCENT_VAL: 1
+  PERCENT_TEST: 0
+  PERCENT_TRAIN: 100
+  PERCENT_VAL: 0
 PREPROCESS:
   FOLDER:
   - train
@@ -18,7 +65,16 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST:
-  - RESIZE:
+   - CROP:
+      ADD_PIXEL: 10
+      CLASS_CROP_LIST: 
+      - 0
+      CLASS_IGNORE: []
+      NEED_RESIZE: true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: false
+   - RESIZE:
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
       REPLACE: true
