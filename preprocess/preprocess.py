@@ -3,6 +3,8 @@ from utils import Utils
 import sys
 from tqdm import tqdm
 from joblib import Parallel, delayed
+from pathlib import Path
+import os
 
 class Preprocess:
     def __init__(self, preprocess_dict, dataset_path):
@@ -21,7 +23,7 @@ class Preprocess:
                 dataset_folder=dataset_path / folder,
             )
 
-    def preprocess(self, preprocess_list=[], dataset_folder=None):
+    def preprocess(self, preprocess_list=[], dataset_folder=None, remove_original=False):
         from .transforms import Transform
 
         if preprocess_list == []:
@@ -32,6 +34,13 @@ class Preprocess:
             print(f"\t\t[X] PREPROCESS FAIL -> NO DATASET FOLDER")
             return
 
+        count_original_file = Utils.count_files( folder=dataset_folder / "images")
+        if count_original_file ==0:
+            print(f"No image in this folder")
+            return
+        original_filename_bb = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
+        print(original_filename_bb)
+        
 
         for pre_d in preprocess_list:
 
@@ -55,9 +64,23 @@ class Preprocess:
 
             print(f"\t\t[-] {function_name}")
 
-            num_cores = -1 #Use all available CPU cores
-            with Parallel(n_jobs=num_cores) as parallel:
-                parallel(delayed(self.process_image)(img_path, bb_path, function_name, function_parameter, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files))
+            #FIXME: use this 
+            # num_cores = -1 #Use all available CPU cores
+            # with Parallel(n_jobs=num_cores) as parallel:
+            #     parallel(delayed(self.process_image)(img_path, bb_path, function_name, function_parameter, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files))
+            
+            for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
+                self.process_image(img_path, bb_path, function_name, function_parameter, dataset_folder)
+            
+            if function_name == "CROP" and ("REMOVE_ORIGINAL" in function_parameter.keys()):
+                if function_parameter["REMOVE_ORIGINAL"]:
+                    for (img_path, bb_path) in tqdm(original_filename_bb, total=count_original_file):
+                        if Path(img_path).is_file():
+                            os.remove(str(Path(img_path)))
+                        
+                        if Path(bb_path).is_file():
+                            os.remove(str(Path(bb_path)))
+                
                 
             # for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
             #     img = Utils.load_img_cv2(filepath=img_path)
@@ -94,6 +117,15 @@ class Preprocess:
                 
             print(f"\t\t\t[/] {function_name} success, number of error : {self.number_of_error}")
         
+        # if remove_original:
+        #     ic(f"Need to remove original")
+        #     for (img_path, bb_path) in tqdm(original_filename_bb, total=count_original_file):
+        #         if Path(img_path).is_file():
+        #             os.remove(str(Path(img_path)))
+                
+        #         if Path(bb_path).is_file():
+        #             os.remove(str(Path(bb_path)))
+        
         # Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
     
     def process_image(self,img_path, bb_path, function_name, function_parameter, dataset_folder):
@@ -122,7 +154,8 @@ class Preprocess:
                 bb=bb.copy(),
                 target_folder_path=dataset_folder
             )
-        except:
+        except Exception as e:
+            print(f"ERROR: {e}")
             self.number_of_error += 1
             if Utils.check_folder_exists(str(img_path)): #check is image exist
                 Utils.deleted_file(file_path=str(img_path))

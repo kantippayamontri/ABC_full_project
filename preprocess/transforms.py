@@ -2,6 +2,7 @@ from icecream import ic
 import numpy as np
 from utils import Utils, Constants
 import random
+import cv2
 
 
 class Transform:
@@ -188,9 +189,11 @@ class Transform:
         return new_img, new_bb
 
     def gray(self, img, bb, format=None, p=1.0):
+        ic(f"gray img dim before: {img.shape}")
         albu_transform = Utils.albu_grayscale(format=format, p=1.0)
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
+        ic(f"gray img dim after: {new_img.shape}")
         return new_img, new_bb
 
     def channel_shuffle(self, img, bb, format=None, p=1.0):
@@ -257,6 +260,109 @@ class Transform:
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         return new_img, new_bb
+    
+    def gray_erosion_dilate(self, img, bb, format=None, p=1.0, ):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # cv2.imshow(f"mean image : {self.mean_gray_img(image=img)}", img)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        
+        dark_threshold = 100
+        bright_threshold = 150
+
+        check_image_dark =self.is_image_dark(image=img, threshold=dark_threshold) 
+        check_image_bright = self.is_image_bright(image=img, threshold=bright_threshold)
+
+
+        # tag="same birghtnesss"
+        if check_image_dark:
+            # tag = "increase brightness"
+            if self.mean_gray_img(image=img) <= dark_threshold - 20:
+                img = self.increase_brightness(img=img, value=50 + 20)
+            else:
+                img = self.increase_brightness(img=img, value=50)
+        elif check_image_bright:
+            ...
+            # tag = "decrease brightness"
+            # img = self.decrease_brightness(img=img, value=50)
+        
+        # cv2.imshow(tag, img)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+        # create single channel img 
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+
+        #make threshold image
+        res = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 199, 5)
+
+        #for image erosion
+        erosion_kernel_before = np.ones((2,2), np.uint8)
+        erosion_img_before = cv2.erode(res, kernel=erosion_kernel_before, iterations=1)
+
+        #for image dilation
+        dilate_kernel = np.ones((3,3), np.uint8)
+        dilate_img = cv2.dilate(erosion_img_before, kernel=dilate_kernel, iterations=1)
+
+        #for image erosion
+        erosion_kernel_after = np.ones((2,2), np.uint8)
+        erosion_img_after = cv2.erode(dilate_img, kernel=erosion_kernel_after, iterations=1)
+
+        # # Find the edges in the image using canny detector
+        # edges = cv2.Canny(dilate_img, 130, 255)
+
+        # for make binary image from 1 channel to 3 channel
+        three_channel_image = cv2.cvtColor(erosion_img_after, cv2.COLOR_GRAY2BGR)
+
+        # Display the images
+        # cv2.imshow("Gray Image", gray_image)
+        # # cv2.imshow("Equalize Image", equ_image)
+        # cv2.imshow("Binary Image", dilate_img)
+        # cv2.imshow("Three-Channel Image", three_channel_image)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        return three_channel_image, bb
+    
+    def mean_gray_img(self,image): #input is color image
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        mean_brightness = np.mean(gray)
+        return mean_brightness
+        
+    
+    def is_image_dark(self,image, threshold=100):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        mean_brightness = np.mean(gray)
+        return mean_brightness < threshold
+    
+    def is_image_bright(self, image, threshold=100):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        mean_brightness = np.mean(gray)
+        return mean_brightness > threshold
+
+    def decrease_brightness(self, img, value=30):
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+
+        lim = 255 - value
+        v[v > lim ] -= value
+        v[v <= value] = 0
+
+        final_hsv = cv2.merge((h, s, v))
+        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+        return img
+        
+    
+    def increase_brightness(self,img, value=30):
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+
+        lim = 255 - value
+        v[v > lim] = 255
+        v[v <= lim] += value
+
+        final_hsv = cv2.merge((h, s, v))
+        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+        return img
 
     def transform_dict_function(
         self, function_name, function_parameter, img, bb, target_folder_path
@@ -355,6 +461,13 @@ class Transform:
                 min_width=function_parameter["MIN_WIDTH"],
                 min_height=function_parameter["MIN_HEIGHT"],
             )
+        elif function_name == "GRAY_EROSION_DILATE":
+            img, bb = self.gray_erosion_dilate(
+                img=img.copy(),
+                bb=bb.copy(),
+                format=Constants.BoundingBoxFormat.YOLOV8,
+                p=function_parameter["P"],
+            )
 
         else:
             print(f"\t\t Augment function {function_name} is not found.")
@@ -364,7 +477,7 @@ class Transform:
         img, bb = self.prepare_output(img=img, bb=bb)
 
         # for some function need to replace original image
-        try:
+        try:    
             if function_parameter["REPLACE"]:
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)
