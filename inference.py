@@ -1,24 +1,28 @@
 # TODO: this file use to predict the model
-from utils import Utils, Constants
-from inference import (
-    InferenceConstants,
-    InferenceModel,
-    Boxes,
-    InferenceUtils,
-    DigitalBoxes,
-    NumberBoxes,
-    ClockBoxes,
-)
-from ultralytics import YOLO
+import argparse
+import time
+from pathlib import Path
+
+import cv2
+import numpy as np
+import supervision as sv
 import torch
 import torchvision.transforms as transforms
-from PIL import Image
 from icecream import ic
-import cv2
 from PIL import Image
-import time
-import argparse
-from pathlib import Path
+from ultralytics import YOLO
+
+from inference import (
+    Boxes,
+    ClockBoxes,
+    DigitalBoxes,
+    InferenceClock,
+    InferenceConstants,
+    InferenceModel,
+    InferenceUtils,
+    NumberBoxes,
+)
+from utils import Constants, Utils
 
 # Create ArgumentParser object
 parser = argparse.ArgumentParser(description="for training arguments parser")
@@ -29,7 +33,12 @@ parser.add_argument("--gauge_use", type=str, help="type gauge")
 parser.add_argument("--img_path", type=str, help="image path")
 
 # # Add optional argument with a default value
-parser.add_argument("--select_frame", type=int, default=0, help="selcet_frame from path and move to select_frame -> work only in number gauge type")
+parser.add_argument(
+    "--select_frame",
+    type=int,
+    default=0,
+    help="selcet_frame from path and move to select_frame -> work only in number gauge type",
+)
 
 # Parse the command-line arguments
 args = parser.parse_args()
@@ -42,15 +51,20 @@ img_path = args.img_path
 image_size_dict = {
     Constants.GaugeType.digital: (640, 640),
     Constants.GaugeType.number: (640, 640),
-    Constants.GaugeType.clock: (640,640),
+    Constants.GaugeType.clock: (640, 640),
 }
 model_path_dict = {
     Constants.GaugeType.digital: {
-        "digital": Path("./models/digital/digital_model.pt"),
+        "digital": Path(""),
         "number": Path("./models/number/best (2).pt"),
     },
-    Constants.GaugeType.number: Path("/home/kan.t/work/ABC_full_project/experiment/(ds_t)_number_(m_t)_m_3/weights/best.pt"),
-    Constants.GaugeType.clock: Path("/home/kan/Desktop/Work/ABC_full_project/experiment/(ds_t)_clock_(m_t)_m/weights/best.pt")
+    Constants.GaugeType.number: Path(""),
+    Constants.GaugeType.clock: {
+        "clock gauge": Path(
+            "/Users/kantip/Desktop/work/ABC_full_project/clock_gauge_gray.pt"
+        ),
+        "clock inside": "/Users/kantip/Desktop/work/ABC_full_project/clock_in_color.pt",
+    },
 }
 
 if gauge_use == Constants.GaugeType.digital:
@@ -87,8 +101,7 @@ if gauge_use == Constants.GaugeType.digital:
         trans_rgb = InferenceUtils.albu_resize_pad_zero(
             target_size=image_size_dict[gauge_use],
             gray=False,
-        ) # not convert to gray scale image
-
+        )  # not convert to gray scale image
 
         image_tensor = trans(image=image, bboxes=[])["image"]
         image_tensor = torch.div(image_tensor, 255.0)
@@ -97,7 +110,6 @@ if gauge_use == Constants.GaugeType.digital:
         image_tensor_rgb = trans_rgb(image=image, bboxes=[])["image"]
         image_tensor_rgb = torch.div(image_tensor_rgb, 255.0)
         image_tensor_rgb = torch.unsqueeze(image_tensor_rgb, 0)
-
 
         gauge_display_frames = model_gauge.inference_data(input_img=image_tensor)
 
@@ -176,7 +188,7 @@ if gauge_use == Constants.GaugeType.digital:
                     xywhn=nbp.xywhn,
                     xyxy=nbp.xyxy,
                     xyxyn=nbp.xyxyn,
-                    image=torch.squeeze(crop_frame_image,0).numpy().transpose(1,2,0),
+                    image=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0),
                 )
                 ic(boxes.predict_number())
             # break #FIXME: remove this
@@ -199,9 +211,9 @@ elif gauge_use == Constants.GaugeType.number:
     )
 
     number_samples = len(samples)
-   
+
     if args.select_frame:
-        Utils.delete_folder_mkdir(folder_path=Path("./select_frame"),remove=True)
+        Utils.delete_folder_mkdir(folder_path=Path("./select_frame"), remove=True)
 
     start_time = time.time()
 
@@ -251,59 +263,68 @@ elif gauge_use == Constants.GaugeType.number:
             boxes.predict_number()
             if args.select_frame and (boxes.predict_number != ""):
                 ic(f"--- select frame ---")
-                Utils.copy_file(source_file_path=frame_image_path, target_file_path=Path("./select_frame/"))
-
+                Utils.copy_file(
+                    source_file_path=frame_image_path,
+                    target_file_path=Path("./select_frame/"),
+                )
 
     end_time = time.time()
     ic(f"use time : {(end_time - start_time ) / number_samples}")
 
 elif gauge_use == Constants.GaugeType.clock:
     print(f"--- Inference clock ---")
-    
+
     model_clock = InferenceModel(
-        model_path=model_path_dict[gauge_use], 
+        model_path=model_path_dict[gauge_use]["clock gauge"],
         img_target_size=image_size_dict[gauge_use],
-        conf=0.25
+        conf=0.25,
     )
-    
-    samples = Utils.get_filenames_folder(
-        source_folder=Path(img_path)
+
+    model_clock_inside = InferenceModel(
+        model_path=model_path_dict[gauge_use]["clock inside"],
+        img_target_size=image_size_dict[gauge_use],
+        conf=0.1,
     )
+
+    samples = Utils.get_filenames_folder(source_folder=Path(img_path))
 
     number_samples = len(samples)
 
-    start_time =time.time()
-    
+    start_time = time.time()
+
     for clock_index, clock_img_path in enumerate(samples):
         print(f"clock index: {clock_index}")
 
-        image = cv2.imread(str(clock_img_path))
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        trans = InferenceUtils.albu_resize_pad_zero(
-            target_size=image_size_dict[gauge_use],
-            gray=False,
-        )
+        # print(f"image tensor shape: {image_tensor.shape}")
 
-        image_tensor = trans(image=image, bboxes=[])["image"]
-        image_tensor = torch.div(image_tensor, 255.0)
-        image_tensor = torch.unsqueeze(image_tensor, 0)
-
-        print(f"image tensor shape: {image_tensor.shape}")
-
-        clock_result = model_clock.inference_data(input_img=image_tensor)
+        # TODO: load image
+        original_image = cv2.imread(str(clock_img_path))
+        original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 
         # Utils.visualize_img_bb(
-        #     img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
+        #     img=original_image,
         #     bb=[],
         #     with_class=False,
         #     labels=None,
         #     format=None,
         # )
-        # break
+        gray_img = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+        gray_img = cv2.cvtColor(
+            gray_img, cv2.COLOR_GRAY2BGR
+        )  # convert from 1 channel to 3 channel gray scale
+        gray_img = torch.from_numpy(gray_img)
+        gray_img = torch.div(gray_img, 255.0)
+        # ic(gray_img.shape)
+        gray_img = np.transpose(gray_img, (2, 0, 1))
 
-        for r in clock_result:
+        # TODO: find the gauge and crop the image
+        clock_gauge_result = model_clock.inference_data(
+            input_img=torch.unsqueeze(gray_img, 0)
+        )
+
+        gauge_list = []
+        for r in clock_gauge_result:
             nbp = r.boxes.cpu().numpy()
-            # print(nbp)
 
             boxes = ClockBoxes(
                 boxes=nbp.data,
@@ -318,49 +339,142 @@ elif gauge_use == Constants.GaugeType.clock:
                 xywhn=nbp.xywhn,
                 xyxy=nbp.xyxy,
                 xyxyn=nbp.xyxyn,
-                # image=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-                # image_orig=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-                # labels= ['gauge', "min", "max", "center", "head", "bottom"],
+            )
+            print(boxes.gauge_list)
+            gauge_list = boxes.gauge_list
+
+        # ic(f"number of gauge: {len(gauge_list)}")
+
+        # ic(gauge_list[0].xyxy, gauge_list[0].cls)
+        # Utils.visualize_img_bb(
+        #     img=np.transpose(gray_img, (1, 2, 0)),
+        #     bb=[
+        #         {"class": 0, "bb": [(g.xyxy[0], g.xyxy[1]), (g.xyxy[2], g.xyxy[3])]}
+        #         for g in gauge_list
+        #     ],
+        #     with_class=True,
+        #     labels=["gauge"],
+        #     format=Constants.BoundingBoxFormat.XYXY,
+        # )
+
+        if len(gauge_list) == 0:
+            print(f"Can not find the gauge")
+            break
+
+        # TODO: crop the gauge image
+        for gauge in gauge_list:
+            clock_gauge_transform = InferenceUtils.albu_make_frame(
+                img_shape=(640, 640), frame_coor=gauge.xyxy, target_size=(640, 640)
             )
 
-            Utils.visualize_img_bb(
-                # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-                img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-                bb=[],
-                with_class=True,
-                labels=['gauge', "min", "max", "center", "head", "bottom"],
-                format=Constants.BoundingBoxFormat.XYXY,
+            crop_frame_image = clock_gauge_transform(
+                # image=torch.squeeze(gray_img, 0).numpy().transpose(1, 2, 0)
+                image=original_image
+            )[
+                "image"
+            ]  # tensor
+            # ic(crop_frame_image.shape)
+
+            # Utils.visualize_img_bb(
+            #     img=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0),
+            #     bb=[],
+            #     with_class=False,
+            #     labels=None,
+            #     format=None,
+            # )
+
+            # TODO: predict to get the value
+            real_clock_np = (
+                torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0)
             )
+            real_clock_tensor = torch.div(crop_frame_image, 255.0)
+
+            clock_result = model_clock_inside.inference_data(
+                input_img=torch.unsqueeze(real_clock_tensor, 0)
+            )[0]
+
+            detections = sv.Detections.from_ultralytics(clock_result).with_nms(
+                threshold=0.5, class_agnostic=False
+            )
+
+            detection_dict = {
+                "gauge": None,
+                "min": None,
+                "max": None,
+                "head": None,
+                "center": None,
+                "bottom": None,
+            }
+
+            for detec_idx in range(len(detections.xyxy)):
+                if (
+                    detection_dict[str(detections.data["class_name"][detec_idx])]
+                    is None
+                ):
+                    detection_dict[str(detections.data["class_name"][detec_idx])] = {
+                        "xyxy": detections.xyxy[detec_idx],
+                        "class": detections.class_id[detec_idx],
+                    }
+
+            detection_dict_filter = {
+                key: value for key, value in detection_dict.items() if value is not None
+            }  # filter the detection
+
+            # ic(detection_dict)
+
             clock_case = {
                 "normal": "normal",
+                "part": "part",
             }
-            min_value = float(input("Please input min value: "))
-            max_value = float(input("Please input max value: "))
-            
-            
-            Utils.visualize_img_bb(
-                # img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-                img=torch.squeeze(image_tensor, 0).numpy().transpose(1, 2, 0),
-                bb=[
-                    {"class": bb[5], "bb": [(bb[0], bb[1]), (bb[2], bb[3])]}
-                    for bb in boxes.boxes
-                ],
-                with_class=True,
-                labels=['gauge', "min", "max", "center", "head", "bottom"],
-                format=Constants.BoundingBoxFormat.XYXY,
+            # min_value = float(input("Please input min value: "))
+            # max_value = float(input("Please input max value: "))
+            min_value = 0.0
+            max_value = 100.0
+
+            inference_clock = InferenceClock(
+                case="normal",
+                gauge=(
+                    detection_dict["gauge"]["xyxy"]
+                    if detection_dict["gauge"] is not None
+                    else None
+                ),
+                min=(
+                    detection_dict["min"]["xyxy"]
+                    if detection_dict["min"] is not None
+                    else None
+                ),
+                max=(
+                    detection_dict["max"]["xyxy"]
+                    if detection_dict["max"] is not None
+                    else None
+                ),
+                center=(
+                    detection_dict["center"]["xyxy"]
+                    if detection_dict["center"] is not None
+                    else None
+                ),
+                head=(
+                    detection_dict["head"]["xyxy"]
+                    if detection_dict["head"] is not None
+                    else None
+                ),
+                bottom=(
+                    detection_dict["bottom"]["xyxy"]
+                    if detection_dict["bottom"] is not None
+                    else None
+                ),
+                min_value=min_value,
+                max_value=max_value,
             )
-            
-            ic(boxes.predict_clock(clock_case= clock_case["normal"] ,gauge_min_value=min_value, gauge_max_value=max_value))
 
-        
-        if clock_index == 1:
+            # inference_clock.print()
+            # inference_clock.visualize_clock(image=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0))
+            inference_clock.predict_clock()
+
+        if clock_index == 20:
             break
-            
+
         # break
-
-        # gauge_display_frames = number_model.inference_data(input_img=image_tensor)
-
-
 
     end_time = time.time()
     ic(f"use time : {(end_time - start_time ) / number_samples}")

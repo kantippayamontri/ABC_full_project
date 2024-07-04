@@ -93,6 +93,7 @@ class InferenceUtils:
                     min_height=target_size[0],
                     min_width=target_size[1],
                     border_mode=cv2.BORDER_CONSTANT,
+                    value=0
                 ),
                 A.Resize(
                     height=target_resize_height,
@@ -103,3 +104,10 @@ class InferenceUtils:
             ],
         )
         return transform
+    
+    @staticmethod
+    def get_center_xyxy(
+       data 
+    ):
+        x1, y1, x2, y2 = data
+        return (x1 + (x2 - x1) / 2.0, y1 + (y2 - y1) / 2.0)

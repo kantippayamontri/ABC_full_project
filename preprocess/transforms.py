@@ -192,7 +192,6 @@ class Transform:
         albu_transform = Utils.albu_grayscale(format=format, p=p)
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
-        ic(f"gray img dim after: {new_img.shape}")
         return new_img, new_bb
 
     def channel_shuffle(self, img, bb, format=None, p=1.0):
