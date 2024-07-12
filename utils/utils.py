@@ -73,7 +73,6 @@ class Utils:
         os.remove(file_path)
         return
 
-
     @staticmethod
     def move_file(source_file_path, target_file_path):
         shutil.move(str(source_file_path), str(target_file_path))
@@ -243,7 +242,7 @@ class Utils:
                         min_height=target_height,
                         min_width=target_width,
                         border_mode=cv2.BORDER_CONSTANT,
-                        value=[0] # pad with zero value
+                        value=[0],  # pad with zero value
                     ),
                     A.Resize(
                         height=target_height, width=target_width, always_apply=True
@@ -537,24 +536,22 @@ class Utils:
 
         return new_img_bb
 
-
-
     @staticmethod
     def reclass_bb_from_dict(
         bb=None, bb_dict_before=None, bb_dict_after=None, class_crop=None
     ):
         if bb is None:
-            return None        
+            return None
 
         value_to_key_before = {value: key for key, value in bb_dict_before.items()}
 
         bb_temp = []
-        index=0
+        index = 0
         for _bb in bb:
             key = value_to_key_before[int(_bb[0])]
             if key in list(bb_dict_after.keys()):
                 new_value = bb_dict_after[key]
-                bb[index][0] = int(new_value) 
+                bb[index][0] = int(new_value)
                 bb_temp.append(bb[index])
             index += 1
 
@@ -590,6 +587,35 @@ class Utils:
                     (nx + int(nw / 2), ny + int(nh / 2)),
                 ],
             }
+
+    @staticmethod
+    def change_format_xyxy2yolo(img_size=None, bb=None, cls=None, normalize=False):
+        """
+        bb = [x_min, y_min, x_max, y_max] in range (0-img_size)
+        cls = int # class of each bounding box
+        """
+
+        img_w = img_size[1]
+        img_h = img_size[0]
+
+        x_min, y_min, x_max, y_max = bb
+
+        # calculate the yolo bounding box
+        w = int(x_max - x_min)
+        h = int(y_max - y_min)
+        x = int(x_min + w / 2)
+        y = int(y_min + h / 2)
+
+        if normalize:
+            w = w / img_w
+            h = h / img_h
+            x = x / img_w
+            y = y / img_h
+
+        return {
+            "class": cls,
+            "bb": list([x, y, w, h]),
+        }
 
     @staticmethod
     def visualize_img_bb(img, bb, with_class=False, format=None, labels=None):
@@ -783,12 +809,12 @@ class Utils:
                 bb_l = list(float(n) for n in bb_l)
                 if len(bb_l) == 5:
                     for idx, val in enumerate(bb_l):
-                        if idx ==0:
+                        if idx == 0:
                             continue
                         if val > 1.0:
-                            bb_l[idx] =1.0 
+                            bb_l[idx] = 1.0
                         if val < 0.0:
-                            bb_l[idx] =0.0
+                            bb_l[idx] = 0.0
                     bb.append(bb_l)
 
             return np.array(bb) if len(bb) > 0 else None

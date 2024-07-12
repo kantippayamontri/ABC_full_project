@@ -53,19 +53,16 @@ class Transform:
 
     def get_output_tramsformed(self, transformed):
         # bboxes = x,y,w,h,c
-        _bb = np.array(
-            [list(bb_temp) for bb_temp in transformed["bboxes"]]
-        )
+        _bb = np.array([list(bb_temp) for bb_temp in transformed["bboxes"]])
         for j in range(len(_bb)):
-            for i in range(len(_bb[j])-1):
+            for i in range(len(_bb[j]) - 1):
                 if _bb[j][i] < 0.0:
-                    _bb[j][i]  =0.0
-                
+                    _bb[j][i] = 0.0
+
                 if _bb[j][i] > 1.0:
-                    _bb[j][i] =1.0
-            
-            
-        return transformed["image"], _bb 
+                    _bb[j][i] = 1.0
+
+        return transformed["image"], _bb
 
     def crop(
         self,
@@ -254,23 +251,30 @@ class Transform:
         return new_img, new_bb
 
     def pad_if_needed(self, img, bb, format=None, p=1.0, min_width=640, min_height=640):
-        albu_transform = Utils.albu_pad_if_needed(format=format, p=p, min_width=min_width, min_height=min_height)
+        albu_transform = Utils.albu_pad_if_needed(
+            format=format, p=p, min_width=min_width, min_height=min_height
+        )
         transformed = albu_transform(image=img, bboxes=bb)
         new_img, new_bb = self.get_output_tramsformed(transformed=transformed)
         return new_img, new_bb
-    
-    def gray_erosion_dilate(self, img, bb, format=None, p=1.0, ):
+
+    def gray_erosion_dilate(
+        self,
+        img,
+        bb,
+        format=None,
+        p=1.0,
+    ):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # cv2.imshow(f"mean image : {self.mean_gray_img(image=img)}", img)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        
+
         dark_threshold = 100
         bright_threshold = 150
 
-        check_image_dark =self.is_image_dark(image=img, threshold=dark_threshold) 
+        check_image_dark = self.is_image_dark(image=img, threshold=dark_threshold)
         check_image_bright = self.is_image_bright(image=img, threshold=bright_threshold)
-
 
         # tag="same birghtnesss"
         if check_image_dark:
@@ -283,28 +287,32 @@ class Transform:
             ...
             # tag = "decrease brightness"
             # img = self.decrease_brightness(img=img, value=50)
-        
+
         # cv2.imshow(tag, img)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
-        # create single channel img 
-        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+        # create single channel img
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        #make threshold image
-        res = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 199, 5)
+        # make threshold image
+        res = cv2.adaptiveThreshold(
+            gray_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 199, 5
+        )
 
-        #for image erosion
-        erosion_kernel_before = np.ones((2,2), np.uint8)
+        # for image erosion
+        erosion_kernel_before = np.ones((2, 2), np.uint8)
         erosion_img_before = cv2.erode(res, kernel=erosion_kernel_before, iterations=1)
 
-        #for image dilation
-        dilate_kernel = np.ones((3,3), np.uint8)
+        # for image dilation
+        dilate_kernel = np.ones((3, 3), np.uint8)
         dilate_img = cv2.dilate(erosion_img_before, kernel=dilate_kernel, iterations=1)
 
-        #for image erosion
-        erosion_kernel_after = np.ones((2,2), np.uint8)
-        erosion_img_after = cv2.erode(dilate_img, kernel=erosion_kernel_after, iterations=1)
+        # for image erosion
+        erosion_kernel_after = np.ones((2, 2), np.uint8)
+        erosion_img_after = cv2.erode(
+            dilate_img, kernel=erosion_kernel_after, iterations=1
+        )
 
         # # Find the edges in the image using canny detector
         # edges = cv2.Canny(dilate_img, 130, 255)
@@ -319,12 +327,12 @@ class Transform:
         # cv2.imshow("Three-Channel Image", three_channel_image)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        return three_channel_image, bb 
-       
-       
-    def clock_pre_min_head(self,img=None, bb=[] ):
+        return three_channel_image, bb
+
+    def clock_pre_min_head(self, img=None, bb=[]):
         import torch
         import torchvision.ops.boxes as bops
+
         """
         bb = x y w h c
         """
@@ -339,33 +347,58 @@ class Transform:
 
         for index, _bb in enumerate(bb):
             if _bb[4] == min_class:
-                min_bb.append({"index": index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+                min_bb.append(
+                    {"index": index, "bb": [_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]]}
+                )
             elif _bb[4] == head_class:
-                head_bb.append({"index":index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+                head_bb.append(
+                    {"index": index, "bb": [_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]]}
+                )
                 new_bb.append(bb[index])
             else:
                 new_bb.append(bb[index])
 
-        
         if len(min_bb) == 0 or len(head_bb) == 0:
             return img, bb
-        
+
         # is_overlap = False
-        
+
         # loop head
         for _head_dict in head_bb:
             # loop min
             for _min_dict in min_bb:
-                _head_xyxy = Utils.change_format_yolo2xyxy(img_size=img.shape, bb=_head_dict["bb"], with_class=True)["bb"]
-                _min_xyxy = Utils.change_format_yolo2xyxy(img_size=img.shape, bb=_min_dict["bb"], with_class=True)["bb"]
-
+                _head_xyxy = Utils.change_format_yolo2xyxy(
+                    img_size=img.shape, bb=_head_dict["bb"], with_class=True
+                )["bb"]
+                _min_xyxy = Utils.change_format_yolo2xyxy(
+                    img_size=img.shape, bb=_min_dict["bb"], with_class=True
+                )["bb"]
 
                 # check percent overlap
-                _head_xyxy = torch.tensor([[_head_xyxy[0][0], _head_xyxy[0][1], _head_xyxy[1][0], _head_xyxy[1][1]]], dtype=torch.float)
-                _min_xyxy = torch.tensor([[_min_xyxy[0][0], _min_xyxy[0][1], _min_xyxy[1][0], _min_xyxy[1][1]]], dtype=torch.float)
+                _head_xyxy = torch.tensor(
+                    [
+                        [
+                            _head_xyxy[0][0],
+                            _head_xyxy[0][1],
+                            _head_xyxy[1][0],
+                            _head_xyxy[1][1],
+                        ]
+                    ],
+                    dtype=torch.float,
+                )
+                _min_xyxy = torch.tensor(
+                    [
+                        [
+                            _min_xyxy[0][0],
+                            _min_xyxy[0][1],
+                            _min_xyxy[1][0],
+                            _min_xyxy[1][1],
+                        ]
+                    ],
+                    dtype=torch.float,
+                )
 
                 iou = bops.box_iou(_head_xyxy, _min_xyxy)
-                print(f"iou: {iou}")
 
                 if iou >= 0.5:
                     ...
@@ -373,53 +406,121 @@ class Transform:
                     # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
                 else:
                     new_bb.append(bb[_min_dict["index"]])
-        
+
         # if is_overlap:
         #     ic(f"is_overlap : True")
         #     ic(new_bb)
         #     Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in new_bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
-        
+
         return img, np.array(new_bb)
-    
-    def clock_pre_min(self,img=None,bb=[]): # when have multiple min -> use the farest min
+
+    def clock_pre_min_max(
+        self, img=None, bb=[]
+    ):  # when have multiple min -> use the farest min
         """
         bb = x y w h
         """
         min_class = Constants.map_data_dict["clock"]["target"].index("min")
         max_class = Constants.map_data_dict["clock"]["target"].index("max")
+        gauge_class = Constants.map_data_dict["clock"]["target"].index("gauge")
 
         min_bb = []
         max_bb = []
+        gauge_bb = []
 
         new_bb = []
 
         for index, _bb in enumerate(bb):
             if _bb[4] == min_class:
-                min_bb.append({"index": index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
-            elif _bb[4] ==max_class:
-                max_bb.append({"index":index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+                min_bb.append(
+                    {"index": index, "bb": [_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]]}
+                )
+            elif _bb[4] == max_class:
+                max_bb.append(
+                    {"index": index, "bb": [_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]]}
+                )
+            elif _bb[4] == gauge_class:
+                gauge_bb.append(
+                    {"index": index, "bb": [_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]]}
+                )
             else:
                 new_bb.append(_bb)
-        
-        if len(min_bb) > 0:
-            ...
-        
-        if len(max_bb) > 0:
-            ...
 
+        if len(gauge_bb) == 1:  # gauge that don't have other gauge inside
+
+            # if len(min_bb) > 1 and len(max_bb) > 1:
+            #     Utils.visualize_img_bb(
+            #         img=img,
+            #         bb=np.array([[b[4], b[0], b[1], b[2], b[3]] for b in bb]),
+            #         with_class=True,
+            #         labels=["gauge", "min", "max", "center", "head", "bottom"],
+            #     )
+                 
+                
+            if len(min_bb) > 1:
+                min_xyxy_list = [
+                    Utils.change_format_yolo2xyxy(
+                        img_size=img.shape, bb=_bb["bb"], with_class=True
+                    )["bb"]
+                    for _bb in min_bb
+                ]
+                min_xyxy_list = [
+                    [_bb[0][0], _bb[0][1], _bb[1][0], _bb[1][1]]
+                    for _bb in min_xyxy_list
+                ]
+                min_xyxy_list = np.array(min_xyxy_list)
+
+                average_min = np.sum(min_xyxy_list, axis=0) / len(min_xyxy_list)
+                average_min = average_min.astype(np.int64)
+
+                average_min_yolo = Utils.change_format_xyxy2yolo(img_size=img.shape,bb=average_min,cls=min_class, normalize=True)
+                average_min_yolo = average_min_yolo["bb"]
+                average_min_yolo.append(min_class)
+                new_bb.append(average_min_yolo)
+
+
+            if len(max_bb) > 1:
+                max_xyxy_list = [
+                    Utils.change_format_yolo2xyxy(
+                        img_size=img.shape, bb=_bb["bb"], with_class=True
+                    )["bb"]
+                    for _bb in max_bb
+                ]
+                max_xyxy_list = [
+                    [_bb[0][0], _bb[0][1], _bb[1][0], _bb[1][1]]
+                    for _bb in max_xyxy_list
+                ]
+                max_xyxy_list = np.array(max_xyxy_list)
+
+                average_max = np.sum(max_xyxy_list, axis=0) / len(max_xyxy_list)
+                average_max = average_max.astype(np.int64)
+
+                average_max_yolo = Utils.change_format_xyxy2yolo(img_size=img.shape,bb=average_max,cls=max_class, normalize=True)
+                average_max_yolo = average_max_yolo["bb"]
+                average_max_yolo.append(max_class)
+                new_bb.append(average_max_yolo)
             
-    
-    def mean_gray_img(self,image): #input is color image
+            # if len(min_bb) > 1 and len(max_bb) > 1:
+            #     Utils.visualize_img_bb(
+            #         img=img,
+            #         bb=np.array([[b[4], b[0], b[1], b[2], b[3]] for b in new_bb]),
+            #         with_class=True,
+            #         labels=["gauge", "min", "max", "center", "head", "bottom"],
+            #     )
+                
+
+        return img, bb
+
+    def mean_gray_img(self, image):  # input is color image
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         mean_brightness = np.mean(gray)
         return mean_brightness
-        
-    
-    def is_image_dark(self,image, threshold=100):
+
+    def is_image_dark(self, image, threshold=100):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         mean_brightness = np.mean(gray)
         return mean_brightness < threshold
-    
+
     def is_image_bright(self, image, threshold=100):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         mean_brightness = np.mean(gray)
@@ -430,15 +531,14 @@ class Transform:
         h, s, v = cv2.split(hsv)
 
         lim = 255 - value
-        v[v > lim ] -= value
+        v[v > lim] -= value
         v[v <= value] = 0
 
         final_hsv = cv2.merge((h, s, v))
         img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
         return img
-        
-    
-    def increase_brightness(self,img, value=30):
+
+    def increase_brightness(self, img, value=30):
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         h, s, v = cv2.split(hsv)
 
@@ -453,7 +553,7 @@ class Transform:
     def transform_dict_function(
         self, function_name, function_parameter, img, bb, target_folder_path
     ):
-        
+
         img, bb = self.prepare_input(img=img, bb=bb)
 
         # ic(function_name, function_parameter)
@@ -556,9 +656,13 @@ class Transform:
                 p=function_parameter["P"],
             )
         elif function_name == "CLOCK":
-            img, bb = self.clock_pre_min_head(img=img.copy(), bb=bb.copy())
-        elif function_name == "PREPROCESS_MIN":
-            img, bb = self.
+            if function_parameter["PREPROCESS_MIN_HEAD"]:
+                # ic(f"---> function: PREPROCESS_MIN_HEAD")
+                img, bb = self.clock_pre_min_head(img=img.copy(), bb=bb.copy())
+
+            if function_parameter["PREPROCESS_MIN_MAX"]:
+                # ic(f"---> function: PREPROCESS_MIN_MAX")
+                img, bb = self.clock_pre_min_max(img=img.copy(), bb=bb.copy())
 
         else:
             print(f"\t\t Augment function {function_name} is not found.")
@@ -568,7 +672,7 @@ class Transform:
         img, bb = self.prepare_output(img=img, bb=bb)
 
         # for some function need to replace original image
-        try:    
+        try:
             if function_parameter["REPLACE"]:
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)

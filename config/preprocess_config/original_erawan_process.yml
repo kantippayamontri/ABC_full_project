@@ -89,7 +89,7 @@ PREPROCESS:
       TARGET_WIDTH: 640
   - CLOCK:
       PREPROCESS_MIN_HEAD: true # remove min that overlap with head
-      PREPROCESS_MIN: true # when have multiple min use the farest min
+      PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
   #     REPLACE: true
 #   - GRAY:
 #       P: 1.0
