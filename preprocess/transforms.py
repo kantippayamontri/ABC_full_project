@@ -266,9 +266,6 @@ class Transform:
         p=1.0,
     ):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        # cv2.imshow(f"mean image : {self.mean_gray_img(image=img)}", img)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
 
         dark_threshold = 100
         bright_threshold = 150
@@ -285,12 +282,7 @@ class Transform:
                 img = self.increase_brightness(img=img, value=50)
         elif check_image_bright:
             ...
-            # tag = "decrease brightness"
-            # img = self.decrease_brightness(img=img, value=50)
 
-        # cv2.imshow(tag, img)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
 
         # create single channel img
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -320,13 +312,6 @@ class Transform:
         # for make binary image from 1 channel to 3 channel
         three_channel_image = cv2.cvtColor(erosion_img_after, cv2.COLOR_GRAY2BGR)
 
-        # Display the images
-        # cv2.imshow("Gray Image", gray_image)
-        # # cv2.imshow("Equalize Image", equ_image)
-        # cv2.imshow("Binary Image", dilate_img)
-        # cv2.imshow("Three-Channel Image", three_channel_image)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         return three_channel_image, bb
 
     def clock_pre_min_head(self, img=None, bb=[]):
@@ -398,9 +383,9 @@ class Transform:
                     dtype=torch.float,
                 )
 
-                iou = bops.box_iou(_head_xyxy, _min_xyxy)
+                iou = bops.box_iou(_min_xyxy, _head_xyxy)
 
-                if iou >= 0.5:
+                if iou >= 0.3:
                     ...
                     # is_overlap = True
                     # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
@@ -443,20 +428,12 @@ class Transform:
                 gauge_bb.append(
                     {"index": index, "bb": [_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]]}
                 )
+                new_bb.append(_bb)
             else:
                 new_bb.append(_bb)
 
         if len(gauge_bb) == 1:  # gauge that don't have other gauge inside
 
-            # if len(min_bb) > 1 and len(max_bb) > 1:
-            #     Utils.visualize_img_bb(
-            #         img=img,
-            #         bb=np.array([[b[4], b[0], b[1], b[2], b[3]] for b in bb]),
-            #         with_class=True,
-            #         labels=["gauge", "min", "max", "center", "head", "bottom"],
-            #     )
-                 
-                
             if len(min_bb) > 1:
                 min_xyxy_list = [
                     Utils.change_format_yolo2xyxy(
@@ -473,11 +450,23 @@ class Transform:
                 average_min = np.sum(min_xyxy_list, axis=0) / len(min_xyxy_list)
                 average_min = average_min.astype(np.int64)
 
-                average_min_yolo = Utils.change_format_xyxy2yolo(img_size=img.shape,bb=average_min,cls=min_class, normalize=True)
+                average_min_yolo = Utils.change_format_xyxy2yolo(
+                    img_size=img.shape, bb=average_min, cls=min_class, normalize=True
+                )
                 average_min_yolo = average_min_yolo["bb"]
                 average_min_yolo.append(min_class)
                 new_bb.append(average_min_yolo)
-
+            elif len(min_bb) == 1:
+                temp = min_bb[0]["bb"]
+                new_bb.append(
+                    [
+                        temp[1],
+                        temp[2],
+                        temp[3],
+                        temp[4],
+                        temp[0],
+                    ]
+                )
 
             if len(max_bb) > 1:
                 max_xyxy_list = [
@@ -495,21 +484,64 @@ class Transform:
                 average_max = np.sum(max_xyxy_list, axis=0) / len(max_xyxy_list)
                 average_max = average_max.astype(np.int64)
 
-                average_max_yolo = Utils.change_format_xyxy2yolo(img_size=img.shape,bb=average_max,cls=max_class, normalize=True)
+                average_max_yolo = Utils.change_format_xyxy2yolo(
+                    img_size=img.shape, bb=average_max, cls=max_class, normalize=True
+                )
                 average_max_yolo = average_max_yolo["bb"]
                 average_max_yolo.append(max_class)
                 new_bb.append(average_max_yolo)
-            
-            # if len(min_bb) > 1 and len(max_bb) > 1:
-            #     Utils.visualize_img_bb(
-            #         img=img,
-            #         bb=np.array([[b[4], b[0], b[1], b[2], b[3]] for b in new_bb]),
-            #         with_class=True,
-            #         labels=["gauge", "min", "max", "center", "head", "bottom"],
-            #     )
-                
 
-        return img, bb
+            elif len(max_bb) == 1:
+                temp = max_bb[0]["bb"]
+                new_bb.append([temp[1], temp[2], temp[3], temp[4], temp[0]])
+
+        return img, np.array(new_bb)
+
+    def resize_bb(self, img, bb, cls, percent=10):
+        """
+        bb = x,y,w,h,c
+        """
+        new_bb = []
+
+        for _bb in bb:
+            if int(_bb[4]) not in cls:
+                new_bb.append(_bb)
+
+        for _cls in cls:  # loop each class need to resize
+            for _bb in bb:  # loop each bounding box in class
+                if (
+                    int(_bb[4]) == _cls
+                ):  # bounding box in that class that need to resize
+                    _bb_xyxy = Utils.change_format_yolo2xyxy(
+                        img_size=img.shape,
+                        bb=[_bb[4], _bb[0], _bb[1], _bb[2], _bb[3]],
+                        with_class=True,
+                    )["bb"]
+
+                    x_min, y_min = _bb_xyxy[0]
+                    x_max, y_max = _bb_xyxy[1]
+
+                    w = x_max - x_min
+                    h = y_max - y_min
+
+                    w_add = w * (percent / 100) / 2
+                    h_add = h * (percent / 100) / 2
+
+                    x_min = x_min - w_add
+                    y_min = y_min - h_add
+
+                    x_max = x_max + w_add
+                    y_max = y_max + h_add
+
+                    resize_bb = np.array([x_min, y_min, x_max, y_max])
+                    resize_bb_yolo = Utils.change_format_xyxy2yolo(
+                        img_size=img.shape, bb=resize_bb, cls=_cls, normalize=True
+                    )
+                    resize_bb_yolo = resize_bb_yolo["bb"]
+                    resize_bb_yolo.append(_cls)
+                    new_bb.append(resize_bb_yolo)
+
+        return img, np.array(new_bb)
 
     def mean_gray_img(self, image):  # input is color image
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -663,6 +695,14 @@ class Transform:
             if function_parameter["PREPROCESS_MIN_MAX"]:
                 # ic(f"---> function: PREPROCESS_MIN_MAX")
                 img, bb = self.clock_pre_min_max(img=img.copy(), bb=bb.copy())
+
+        elif function_name == "RESIZE_BB":
+            img, bb = self.resize_bb(
+                img=img.copy(),
+                bb=bb.copy(),
+                cls=function_parameter["CLASS"],  # list of int
+                percent=function_parameter["PERCENT"],
+            )
 
         else:
             print(f"\t\t Augment function {function_name} is not found.")

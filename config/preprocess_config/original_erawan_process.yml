@@ -87,9 +87,21 @@ PREPROCESS:
   - RESIZE:
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
+      REPLACE: true
   - CLOCK:
       PREPROCESS_MIN_HEAD: true # remove min that overlap with head
       PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
+      REPLACE: true
+  - RESIZE_BB:
+      PERCENT: 100
+      CLASS : [1,2]
+      REPLACE: true
+  - RESIZE_BB:
+      PERCENT: 150
+      CLASS : [4]
+      REPLACE: true
+  
+  
   #     REPLACE: true
 #   - GRAY:
 #       P: 1.0
