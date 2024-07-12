@@ -565,7 +565,7 @@ class ClockBoxes(Boxes):
             self.center_list,
             self.head_list,
             self.bottom_list,
-        ) = ic(self.make_bb_list(boxes_list=self.boxes_list))
+        ) = self.make_bb_list(boxes_list=self.boxes_list)
 
     def make_bb_list(self, boxes_list):
         _gauge_list = []

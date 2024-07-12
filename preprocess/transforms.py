@@ -319,7 +319,95 @@ class Transform:
         # cv2.imshow("Three-Channel Image", three_channel_image)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        return three_channel_image, bb
+        return three_channel_image, bb 
+       
+       
+    def clock_pre_min_head(self,img=None, bb=[] ):
+        import torch
+        import torchvision.ops.boxes as bops
+        """
+        bb = x y w h c
+        """
+
+        min_class = Constants.map_data_dict["clock"]["target"].index("min")
+        head_class = Constants.map_data_dict["clock"]["target"].index("head")
+
+        min_bb = []
+        head_bb = []
+
+        new_bb = []
+
+        for index, _bb in enumerate(bb):
+            if _bb[4] == min_class:
+                min_bb.append({"index": index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+            elif _bb[4] == head_class:
+                head_bb.append({"index":index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+                new_bb.append(bb[index])
+            else:
+                new_bb.append(bb[index])
+
+        
+        if len(min_bb) == 0 or len(head_bb) == 0:
+            return img, bb
+        
+        # is_overlap = False
+        
+        # loop head
+        for _head_dict in head_bb:
+            # loop min
+            for _min_dict in min_bb:
+                _head_xyxy = Utils.change_format_yolo2xyxy(img_size=img.shape, bb=_head_dict["bb"], with_class=True)["bb"]
+                _min_xyxy = Utils.change_format_yolo2xyxy(img_size=img.shape, bb=_min_dict["bb"], with_class=True)["bb"]
+
+
+                # check percent overlap
+                _head_xyxy = torch.tensor([[_head_xyxy[0][0], _head_xyxy[0][1], _head_xyxy[1][0], _head_xyxy[1][1]]], dtype=torch.float)
+                _min_xyxy = torch.tensor([[_min_xyxy[0][0], _min_xyxy[0][1], _min_xyxy[1][0], _min_xyxy[1][1]]], dtype=torch.float)
+
+                iou = bops.box_iou(_head_xyxy, _min_xyxy)
+                print(f"iou: {iou}")
+
+                if iou >= 0.5:
+                    ...
+                    # is_overlap = True
+                    # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
+                else:
+                    new_bb.append(bb[_min_dict["index"]])
+        
+        # if is_overlap:
+        #     ic(f"is_overlap : True")
+        #     ic(new_bb)
+        #     Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in new_bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
+        
+        return img, np.array(new_bb)
+    
+    def clock_pre_min(self,img=None,bb=[]): # when have multiple min -> use the farest min
+        """
+        bb = x y w h
+        """
+        min_class = Constants.map_data_dict["clock"]["target"].index("min")
+        max_class = Constants.map_data_dict["clock"]["target"].index("max")
+
+        min_bb = []
+        max_bb = []
+
+        new_bb = []
+
+        for index, _bb in enumerate(bb):
+            if _bb[4] == min_class:
+                min_bb.append({"index": index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+            elif _bb[4] ==max_class:
+                max_bb.append({"index":index, "bb":[_bb[4],_bb[0],_bb[1],_bb[2],_bb[3]]})
+            else:
+                new_bb.append(_bb)
+        
+        if len(min_bb) > 0:
+            ...
+        
+        if len(max_bb) > 0:
+            ...
+
+            
     
     def mean_gray_img(self,image): #input is color image
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -365,6 +453,7 @@ class Transform:
     def transform_dict_function(
         self, function_name, function_parameter, img, bb, target_folder_path
     ):
+        
         img, bb = self.prepare_input(img=img, bb=bb)
 
         # ic(function_name, function_parameter)
@@ -466,6 +555,10 @@ class Transform:
                 format=Constants.BoundingBoxFormat.YOLOV8,
                 p=function_parameter["P"],
             )
+        elif function_name == "CLOCK":
+            img, bb = self.clock_pre_min_head(img=img.copy(), bb=bb.copy())
+        elif function_name == "PREPROCESS_MIN":
+            img, bb = self.
 
         else:
             print(f"\t\t Augment function {function_name} is not found.")

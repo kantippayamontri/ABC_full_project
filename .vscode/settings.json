@@ -1,5 +1,7 @@
 {
   "peacock.color": "#42b883",
-  "editor.fontFamily": "'Droid Sans Mono', 'monospace', 'monospace'",
-  "terminal.integrated.gpuAcceleration": "off"
+  "editor.fontFamily": "\"MesloLGS NF\",'Droid Sans Mono', 'monospace', 'monospace'",
+  "terminal.integrated.gpuAcceleration": "off",
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.defaultProfile.windows": "Git Bash"
 }

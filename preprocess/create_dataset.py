@@ -27,6 +27,7 @@ class CreateDataset:
         # preprocess -> all image in finale dataset_path folder
         print("[-] PREPROCESS DATASET")
         self.preprocess = Preprocess(
+            dataset_type=self.dataset_dict["DATASET_TYPE"],
             preprocess_dict=self.preprocess_dict,
             dataset_path=Path(self.dataset_dict["FINAL_DATASET_PATH"]),
         )

@@ -7,7 +7,9 @@ from pathlib import Path
 import os
 
 class Preprocess:
-    def __init__(self, preprocess_dict, dataset_path):
+    def __init__(self,dataset_type="digital", preprocess_dict=None, dataset_path=None):
+        
+        self.dataset_type = dataset_type
         self.preprocess_dict = preprocess_dict
         self.target_folder = dataset_path
 
@@ -39,7 +41,7 @@ class Preprocess:
             print(f"No image in this folder")
             return
         original_filename_bb = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
-        print(original_filename_bb)
+        # print(original_filename_bb)
         
 
         for pre_d in preprocess_list:
@@ -68,6 +70,12 @@ class Preprocess:
             # num_cores = -1 #Use all available CPU cores
             # with Parallel(n_jobs=num_cores) as parallel:
             #     parallel(delayed(self.process_image)(img_path, bb_path, function_name, function_parameter, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files))
+
+            # check CLOCK use only in clock dataset
+            if function_name == "CLOCK":
+                if self.dataset_type != "clock":
+                    print(f"\t\t\t[X] CLOCK function use only for clock dataset")
+                    continue
             
             for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
                 self.process_image(img_path, bb_path, function_name, function_parameter, dataset_folder)
@@ -136,31 +144,31 @@ class Preprocess:
         if (img is None) or (bb is None):
             return
 
-        # transform = Transform(img_path=img_path, bb_path=bb_path)
-        # img, bb = transform.transform_dict_function(
-        #     function_name=function_name,
-        #     function_parameter=function_parameter,
-        #     img=img.copy(),
-        #     bb=bb.copy(),
-        #     target_folder_path=dataset_folder
-        # )
+        transform = Transform(img_path=img_path, bb_path=bb_path)
+        img, bb = transform.transform_dict_function(
+            function_name=function_name,
+            function_parameter=function_parameter,
+            img=img.copy(),
+            bb=bb.copy(),
+            target_folder_path=dataset_folder
+        )
 
-        try:
-            transform = Transform(img_path=img_path, bb_path=bb_path)
-            img, bb = transform.transform_dict_function(
-                function_name=function_name,
-                function_parameter=function_parameter,
-                img=img.copy(),
-                bb=bb.copy(),
-                target_folder_path=dataset_folder
-            )
-        except Exception as e:
-            print(f"ERROR: {e}")
-            self.number_of_error += 1
-            if Utils.check_folder_exists(str(img_path)): #check is image exist
-                Utils.deleted_file(file_path=str(img_path))
+        # try:
+        #     transform = Transform(img_path=img_path, bb_path=bb_path)
+        #     img, bb = transform.transform_dict_function(
+        #         function_name=function_name,
+        #         function_parameter=function_parameter,
+        #         img=img.copy(),
+        #         bb=bb.copy(),
+        #         target_folder_path=dataset_folder
+        #     )
+        # except Exception as e:
+        #     print(f"ERROR: {e}")
+        #     self.number_of_error += 1
+        #     if Utils.check_folder_exists(str(img_path)): #check is image exist
+        #         Utils.deleted_file(file_path=str(img_path))
 
-            if Utils.check_folder_exists(str(bb_path)): #check is image exist
-                Utils.deleted_file(file_path=str(bb_path))
+        #     if Utils.check_folder_exists(str(bb_path)): #check is image exist
+        #         Utils.deleted_file(file_path=str(bb_path))
 
 

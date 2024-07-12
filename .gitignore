@@ -16,6 +16,8 @@ select_frame*
 YOLOv8/
 v9-test/
 erawan*
+.vscode
+test*
 
 # File
 *.pt
