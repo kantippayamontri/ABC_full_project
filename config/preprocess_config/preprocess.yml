@@ -49,20 +49,20 @@ AUGMENT:
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  - /home/kan/Desktop/Work/ABC_full_project/datasets/clock/clock_test/set1_300
-  #   - ./dataset
-#   - /media/kan/kan_ex/digital_1_100_set1 
-#   - /media/kan/kan_ex/digital_1_100_set2 
-  # - /media/kan/kan_ex/
-  # - datasets/digital/digital_1_100_set1
-  # - /Users/kantip/Desktop/work/ABC_training/datasets/digital/digital_1_100_set2
-  # - datasets/user13_101223
-  # - datasets/number/number_test1
-  DATASET_TYPE: clock
-  FINAL_DATASET_PATH: dataset_new/clock/clock_test/clock
-  PERCENT_TEST: 10
-  PERCENT_TRAIN: 80
-  PERCENT_VAL: 10
+  - datasets/dial_for_number/user1/set1_1750
+  - datasets/dial_for_number/user2/set1_1500
+  - datasets/dial_for_number/user3/set1_1500 
+  - datasets/dial_for_number/user4/set1_1478
+  - datasets/dial_for_number/user5/set1_1000
+  - datasets/dial_for_number/user6/set1_1748
+  - datasets/dial_for_number/user7/set1_1494
+  - datasets/dial_for_number/user8/set1_1495
+  - datasets/dial_for_number/user10/set1_1499
+  DATASET_TYPE: digital
+  FINAL_DATASET_PATH: dataset_new/digital/dial_test/digital
+  PERCENT_TEST: 0
+  PERCENT_TRAIN: 100
+  PERCENT_VAL: 0
 PREPROCESS:
   FOLDER:
   - train
@@ -73,16 +73,17 @@ PREPROCESS:
   - CROP:
       ADD_PIXEL: 0
       CLASS_CROP_LIST: 
-      - 0
-      CLASS_IGNORE: []
-      NEED_RESIZE: true
+      - 2
+      CLASS_IGNORE: [0,1]
+      NEED_RESIZE: false
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
       REPLACE: false
-  - RESIZE:
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
-      REPLACE: true
+      REMOVE_ORIGINAL: true
+  # - RESIZE:
+  #     TARGET_HEIGHT: 640
+  #     TARGET_WIDTH: 640
+  #     REPLACE: true
 #   - GRAY:
 #       P: 1.0
 #       REPLACE: true

@@ -94,11 +94,11 @@ PREPROCESS:
       REPLACE: true
   - RESIZE_BB:
       PERCENT: 100
-      CLASS : [1,2]
+      CLASS : [1,2] # add size of min and max
       REPLACE: true
   - RESIZE_BB:
       PERCENT: 150
-      CLASS : [4]
+      CLASS : [4] # add size of head
       REPLACE: true
   
   
