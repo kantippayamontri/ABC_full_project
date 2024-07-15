@@ -4,9 +4,9 @@ DATASET:
   - dataset_process/clock/clock_process_gray_own/clock
   DATASET_TYPE: clock
   FINAL_DATASET_PATH: dataset_process_final/clock/clock_process_gray_own_final/clock
-  PERCENT_TEST: 1
-  PERCENT_TRAIN: 98
-  PERCENT_VAL: 1
+  PERCENT_TEST: 0
+  PERCENT_TRAIN: 100
+  PERCENT_VAL: 0
 PREPROCESS:
   FOLDER:
   - train
