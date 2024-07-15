@@ -283,7 +283,6 @@ class Transform:
         elif check_image_bright:
             ...
 
-
         # create single channel img
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -497,6 +496,57 @@ class Transform:
 
         return img, np.array(new_bb)
 
+    def clock_only_one_gauge(self, img, bb):  # use only img that have only one gauge
+        """
+        bb = x y w h
+        """
+        gauge_class = Constants.map_data_dict["clock"]["target"].index("gauge")
+        # count number of gauge
+        count_gauge = 0
+        for index, _bb in enumerate(bb):
+            if _bb[4] == gauge_class:
+                count_gauge += 1
+
+        if count_gauge > 1:
+            # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
+            return None, None
+
+        return img, bb
+
+    def clock_full_only(self, img, bb):  # choose image only have min, max ,center ,head
+        if img is None or bb is None:
+            return None, None
+
+        gauge_class = Constants.map_data_dict["clock"]["target"].index("gauge")
+        min_class = Constants.map_data_dict["clock"]["target"].index("min")
+        max_class = Constants.map_data_dict["clock"]["target"].index("max")
+        head_class = Constants.map_data_dict["clock"]["target"].index("head")
+        center_class = Constants.map_data_dict["clock"]["target"].index("center")
+
+        check_gauge = False
+        check_min = False
+        check_max = False
+        check_head = False
+        check_center = False
+
+        for _bb in bb:
+            if int(_bb[4]) == gauge_class:
+                check_gauge = True
+            elif int(_bb[4]) == min_class:
+                check_min = True
+            elif int(_bb[4]) == max_class:
+                check_max = True
+            elif int(_bb[4]) == head_class:
+                check_head = True
+            elif int(_bb[4]) == center_class:
+                check_center = True
+
+        if check_gauge and check_min and check_max and check_head and check_center:
+            # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
+            return img, bb
+
+        return None, None
+
     def resize_bb(self, img, bb, cls, percent=10):
         """
         bb = x,y,w,h,c
@@ -583,7 +633,13 @@ class Transform:
         return img
 
     def transform_dict_function(
-        self, function_name, function_parameter, img, bb, target_folder_path
+        self,
+        function_name,
+        function_parameter,
+        img,
+        bb,
+        target_folder_path,
+        dataset_type,
     ):
 
         img, bb = self.prepare_input(img=img, bb=bb)
@@ -696,6 +752,15 @@ class Transform:
                 # ic(f"---> function: PREPROCESS_MIN_MAX")
                 img, bb = self.clock_pre_min_max(img=img.copy(), bb=bb.copy())
 
+            if function_parameter["PREPROCESS_ONLY_ONE_GAUGE"]:
+                # ic(f"---> function: PREPROCESS_ONLY_ONE_GAUGE")
+                img, bb = self.clock_only_one_gauge(img=img.copy(), bb=bb.copy())
+
+            if function_parameter["PREPROCESS_FULL_CLASS"]:
+                # ic(f"---> function: PREPROCESS_FULL_CLASS")
+                if (img is not None) and (bb is not None):
+                    img, bb = self.clock_full_only(img=img.copy(), bb=bb.copy())
+
         elif function_name == "RESIZE_BB":
             img, bb = self.resize_bb(
                 img=img.copy(),
@@ -709,14 +774,15 @@ class Transform:
             img, bb = self.prepare_output(img=img, bb=bb)
             return img, bb
 
-        img, bb = self.prepare_output(img=img, bb=bb)
-
         # for some function need to replace original image
         try:
-            if function_parameter["REPLACE"]:
+            img, bb = self.prepare_output(img=img, bb=bb)
+            if function_parameter["REPLACE"] and (img is not None) and (bb is not None):
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)
         except:
-            pass
+            Utils.deleted_file(file_path=self.img_path)
+            Utils.deleted_file(file_path=self.bb_path)
+
 
         return img, bb

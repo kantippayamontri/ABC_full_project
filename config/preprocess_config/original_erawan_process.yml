@@ -54,7 +54,7 @@ DATASET:
   DATASET_PATH:
   # for number dataset
   # - test_clock_dataset
-  - test_set3_396
+  - test_set1_693
   # - /Users/kantip/Desktop/work/ABC_full_project/dataset/clock/set1_300
 #   - /home/kan.t/work/ABC_full_project/datasets/number/user13/permanent_set1_3600
 #   - /home/kan.t/work/ABC_full_project/datasets/number/user14/permanent_set1_2800
@@ -89,8 +89,10 @@ PREPROCESS:
       TARGET_WIDTH: 640
       REPLACE: true
   - CLOCK:
-      PREPROCESS_MIN_HEAD: true # remove min that overlap with head
+      PREPROCESS_MIN_HEAD: false # remove min that overlap with head
       PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
+      PREPROCESS_ONLY_ONE_GAUGE: true # choose image that has only one gauge in each image
+      PREPROCESS_FULL_CLASS: true # choose image that has min, max , head, center
       REPLACE: true
   - RESIZE_BB:
       PERCENT: 100

@@ -78,7 +78,7 @@ class Preprocess:
                     continue
             
             for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
-                self.process_image(img_path, bb_path, function_name, function_parameter, dataset_folder)
+                self.process_image(img_path, bb_path, function_name, function_parameter, dataset_folder, dataset_type=self.dataset_type)
             
             if function_name == "CROP" and ("REMOVE_ORIGINAL" in function_parameter.keys()):
                 if function_parameter["REMOVE_ORIGINAL"]:
@@ -136,7 +136,7 @@ class Preprocess:
         
         # Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
     
-    def process_image(self,img_path, bb_path, function_name, function_parameter, dataset_folder):
+    def process_image(self,img_path, bb_path, function_name, function_parameter, dataset_folder, dataset_type=None):
         from .transforms import Transform
         img = Utils.load_img_cv2(filepath=img_path)
         bb = Utils.load_bb(filepath=bb_path)
@@ -150,7 +150,8 @@ class Preprocess:
             function_parameter=function_parameter,
             img=img.copy(),
             bb=bb.copy(),
-            target_folder_path=dataset_folder
+            target_folder_path=dataset_folder,
+            dataset_type=dataset_type
         )
 
         # try:
