@@ -1,0 +1,32 @@
+DATASET:
+  DATASET_PATH:
+  #TODO: for number dataset
+  - dataset_process_final/clock/clock_process_color_own_final/clock
+  DATASET_TYPE: clock
+  FINAL_DATASET_PATH: dataset_process_final/clock/clock_min_max_color_final/clock
+  PERCENT_TEST: 1
+  PERCENT_TRAIN: 98
+  PERCENT_VAL: 1
+PREPROCESS:
+  FOLDER:
+  - train
+  - valid
+  - test
+  PREFIX: pre
+  PREPROCESS_LIST: 
+  - CROP:
+      ADD_PIXEL: 0
+      CLASS_CROP_LIST: 
+      - 0
+      CLASS_IGNORE: [0,3,4,5] # use only min and max
+      NEED_RESIZE: true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+      REMOVE_ORIGINAL: false
+AUGMENT:
+  AUGMENT_LIST: []  
+  FOLDER:
+  - train
+  NUMBER_AUGMENT: 3 # augment 3 image for own dataset
+  PREFIX: aug

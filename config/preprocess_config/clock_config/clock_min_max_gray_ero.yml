@@ -1,9 +1,9 @@
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
-  - dataset_process/clock/clock_process_color_own/clock
+  - dataset_process_final/clock/clock_min_max_gray_final/clock
   DATASET_TYPE: clock
-  FINAL_DATASET_PATH: dataset_process_final/clock/clock_process_color_own_final/clock
+  FINAL_DATASET_PATH: dataset_process_final/clock/clock_min_max_gray_ero_final/clock 
   PERCENT_TEST: 1
   PERCENT_TRAIN: 98
   PERCENT_VAL: 1
@@ -13,7 +13,10 @@ PREPROCESS:
   - valid
   - test
   PREFIX: pre
-  PREPROCESS_LIST: []
+  PREPROCESS_LIST: 
+  - GRAY_EROSION_DILATE:
+      P: 1.0
+      REPLACE: true
 AUGMENT:
   AUGMENT_LIST: []  
   FOLDER:

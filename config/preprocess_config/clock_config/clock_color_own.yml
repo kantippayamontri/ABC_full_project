@@ -65,15 +65,15 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST:
-   - CROP:
-      ADD_PIXEL: 10
-      CLASS_CROP_LIST: 
-      - 0
-      CLASS_IGNORE: []
-      NEED_RESIZE: true
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
-      REPLACE: false
+   # - CROP:
+   #    ADD_PIXEL: 10
+   #    CLASS_CROP_LIST: 
+   #    - 0
+   #    CLASS_IGNORE: []
+   #    NEED_RESIZE: true
+   #    TARGET_HEIGHT: 640
+   #    TARGET_WIDTH: 640
+   #    REPLACE: false
    - RESIZE:
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
