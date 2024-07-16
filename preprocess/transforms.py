@@ -547,6 +547,49 @@ class Transform:
 
         return None, None
 
+    def add_needle(self,img, bb):
+        if (img is None) or (bb is None):
+            return None, None
+        
+        head_class = Constants.map_data_dict["clock"]["target"].index("head")
+        center_class = Constants.map_data_dict["clock"]["target"].index("center")
+        bottom_class = Constants.map_data_dict["clock"]["target"].index("bottom")
+
+        check_head = False
+        check_center = False
+        check_bottom = False
+
+        center_list = []
+        head_list = []
+        bottom_list = []
+        
+        for _bb in bb:
+            if int(_bb[4]) == head_class:
+                check_head = True
+                head_list.append(_bb)
+            elif int(_bb[4]) == center_class:
+                check_center = True
+                center_list.append(_bb)
+            elif int(_bb[4]) == bottom_class:
+                check_bottom = True
+                bottom_list.append(_bb)
+        
+        if check_head and check_center and check_bottom:
+            # found head center and bottom -> add needle from head and bottom  
+            _center_bb = center_list[0] # use center at index 0
+            for _head_bb in head_list:
+                ...
+        elif check_head and check_center:
+            # found head and center -> add needle for head and center
+            _center_bb = center_list[0]  
+            for _head_bb in head_list:
+                ...
+        else:
+            return img, bb
+        
+        
+
+
     def resize_bb(self, img, bb, cls, percent=10):
         """
         bb = x,y,w,h,c
@@ -760,6 +803,12 @@ class Transform:
                 # ic(f"---> function: PREPROCESS_FULL_CLASS")
                 if (img is not None) and (bb is not None):
                     img, bb = self.clock_full_only(img=img.copy(), bb=bb.copy())
+            
+            if function_parameter["ADD_NEEDLE"]:
+                ...
+                # if (img is not None) and (bb is not None):
+                #     img, bb = self.add_needle(img=img.copy(), bb=bb.copy())
+                
 
         elif function_name == "RESIZE_BB":
             img, bb = self.resize_bb(

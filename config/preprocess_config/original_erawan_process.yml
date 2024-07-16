@@ -1,46 +1,46 @@
 AUGMENT:
-  AUGMENT_LIST: []  
-   # - RESIZE:
-   #     TARGET_WIDTH: 640
-   #     TARGET_HEIGHT: 640
-   #     REPLACE: true
-   # - CHANNEL_SHUFFLE:
-   #    P: 0.25
-   #    REPLACE: false
-   # - MULTIPLICATIVE_NOISE:
-   #    MULTIPLIER:
-   #    - 0.4
-   #    - 1.0
-   #    ELEMENT_WISE: true
-   #    P: 0.25
-   #    REPLACE: false
-   # - BLUR:
-   #    BLUR_LIMIT:
-   #    - 3
-   #    - 3 
-   #    P: 0.25
-   #    REPLACE: false
-   # - ROTATE:
-   #    LIMIT:
-   #    - -20
-   #    - 20 
-   #    P: 0.25
-   # - COLOR_JITTER:
-   #    BRIGHTNESS: 0.5
-   #    CONTRAST: 0.5
-   #    SATURATION: 0.5
-   #    HUE: 0.5
-   #    P: 0.5
-   #    REPLACE: false
-   # - LONGEST_MAX_SIZE:
-   #    MAX_SIZE: 640
-   #    P: 1.0
-   #    REPLACE: false
-   # - PAD_IF_NEEDED:
-   #    MIN_WIDTH: 640
-   #    MIN_HEIGHT: 640
-   #    P: 1.0
-   #    REPLACE: false
+  AUGMENT_LIST:   
+   - RESIZE:
+       TARGET_WIDTH: 640
+       TARGET_HEIGHT: 640
+       REPLACE: true
+   - CHANNEL_SHUFFLE:
+      P: 0.25
+      REPLACE: false
+   - MULTIPLICATIVE_NOISE:
+      MULTIPLIER:
+      - 0.4
+      - 1.0
+      ELEMENT_WISE: true
+      P: 0.25
+      REPLACE: false
+   - BLUR:
+      BLUR_LIMIT:
+      - 3
+      - 3 
+      P: 0.25
+      REPLACE: false
+   - ROTATE:
+      LIMIT:
+      - -20
+      - 20 
+      P: 0.25
+   - COLOR_JITTER:
+      BRIGHTNESS: 0.5
+      CONTRAST: 0.5
+      SATURATION: 0.5
+      HUE: 0.5
+      P: 0.5
+      REPLACE: false
+   - LONGEST_MAX_SIZE:
+      MAX_SIZE: 640
+      P: 1.0
+      REPLACE: false
+   - PAD_IF_NEEDED:
+      MIN_WIDTH: 640
+      MIN_HEIGHT: 640
+      P: 1.0
+      REPLACE: false
   #  - GRAY:
   #     P: 1.0
   #     REPLACE: false
@@ -93,6 +93,7 @@ PREPROCESS:
       PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
       PREPROCESS_ONLY_ONE_GAUGE: true # choose image that has only one gauge in each image
       PREPROCESS_FULL_CLASS: true # choose image that has min, max , head, center
+      ADD_NEEDLE: true
       REPLACE: true
   - RESIZE_BB:
       PERCENT: 100

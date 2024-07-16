@@ -34,6 +34,7 @@ class CreateDataset:
 
         print(f"[-] AUGMENTED DATASET")
         self.augment = Augment(
+            dataset_type=self.dataset_dict["DATASET_TYPE"],
             augment_dict=self.augment_dict,
             dataset_path=Path(self.dataset_dict["FINAL_DATASET_PATH"]),
         )

@@ -6,9 +6,10 @@ from joblib import Parallel, delayed
 
 
 class Augment:
-    def __init__(self, augment_dict, dataset_path):
+    def __init__(self, augment_dict, dataset_path, dataset_type):
         self.augment_dict = augment_dict
         self.dataset_path = dataset_path
+        self.dataset_type = dataset_type
 
         ic(self.augment_dict)
         ic(self.dataset_path)
@@ -61,19 +62,24 @@ class Augment:
             new_img = img.copy()
             new_bb = bb.copy()
 
-            for aug_d in augment_list:
-                (function_name, function_parameter) = tuple(
-                    (key, value) for key, value in aug_d.items()
-                )[0]
-                # ic(function_name, function_parameter)
-                transform = Transform(img_path=img_path, bb_path=bb_path)
-                new_img, new_bb = transform.transform_dict_function(
-                    function_name=function_name,
-                    function_parameter=function_parameter,
-                    img=new_img,
-                    bb=new_bb,
-                    target_folder_path=dataset_folder,
-                )
+            try:
+                for aug_d in augment_list:
+                    (function_name, function_parameter) = tuple(
+                        (key, value) for key, value in aug_d.items()
+                    )[0]
+                    # ic(function_name, function_parameter)
+                    transform = Transform(img_path=img_path, bb_path=bb_path)
+                    new_img, new_bb = transform.transform_dict_function(
+                        function_name=function_name,
+                        function_parameter=function_parameter,
+                        img=new_img,
+                        bb=new_bb,
+                        target_folder_path=dataset_folder,
+                        dataset_type=self.dataset_type
+                    )
+            except Exception as e:  
+                print(f"Error: {e}" )
+                return 
 
             # save augment image with index of number samples prefix
             new_name_img = transform.make_new_name(
