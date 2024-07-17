@@ -7,14 +7,16 @@ from pathlib import Path
 import os
 
 class Preprocess:
-    def __init__(self,dataset_type="digital", preprocess_dict=None, dataset_path=None):
+    def __init__(self,dataset_type="digital", preprocess_dict=None, dataset_path=None, data_yaml_path=None):
         
         self.dataset_type = dataset_type
         self.preprocess_dict = preprocess_dict
         self.target_folder = dataset_path
+        self.data_yaml_path = data_yaml_path
 
         self.number_of_error =0
 
+        ic(self.data_yaml_path)
         ic(self.preprocess_dict,self.target_folder)
 
 
@@ -72,10 +74,22 @@ class Preprocess:
             #     parallel(delayed(self.process_image)(img_path, bb_path, function_name, function_parameter, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files))
 
             # check CLOCK use only in clock dataset
-            if function_name == "CLOCK":
-                if self.dataset_type != "clock":
-                    print(f"\t\t\t[X] CLOCK function use only for clock dataset")
-                    continue
+            # if function_name == "CLOCK":
+            #     if self.dataset_type != "clock":
+            #         print(f"\t\t\t[X] CLOCK function use only for clock dataset")
+            #         continue
+            #     if function_parameter["ADD_NEEDLE"]:
+            #         data_yaml_dict = Utils.read_yaml_file(yaml_file_path=self.data_yaml_path)
+            #         # add needle to names
+            #         names = data_yaml_dict["names"]
+            #         names.append("needle") # add class needle
+            #         data_yaml_dict["names"] = names
+            #         # add needle to class
+            #         nc = int(data_yaml_dict["nc"])
+            #         nc += 1 # add clas needle
+            #         data_yaml_dict["nc"] = nc
+            #         Utils.write_yaml(data=data_yaml_dict, filepath=self.data_yaml_path) # write the yaml file
+            #         # return 
             
             for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
                 self.process_image(img_path, bb_path, function_name, function_parameter, dataset_folder, dataset_type=self.dataset_type)
@@ -88,6 +102,19 @@ class Preprocess:
                         
                         if Path(bb_path).is_file():
                             os.remove(str(Path(bb_path)))
+            
+            if function_name == "CLOCK" and "ADD_NEEDLE" in function_parameter.keys():
+                if function_parameter["ADD_NEEDLE"]:
+                    data_yaml_dict = Utils.read_yaml_file(yaml_file_path=self.data_yaml_path)
+                    # add needle to names
+                    names = data_yaml_dict["names"]
+                    names.append("needle") # add class needle
+                    data_yaml_dict["names"] = names
+                    # add needle to class
+                    nc = int(data_yaml_dict["nc"])
+                    nc += 1 # add clas needle
+                    data_yaml_dict["nc"] = nc
+                    Utils.write_yaml(data=data_yaml_dict, filepath=self.data_yaml_path) # write the yaml file
                 
                 
             # for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
@@ -123,7 +150,7 @@ class Preprocess:
                 #     if Utils.check_folder_exists(str(bb_path)): #check is image exist
                 #         Utils.deleted_file(file_path=str(bb_path))
                 
-            print(f"\t\t\t[/] {function_name} success, number of error : {self.number_of_error}")
+            # print(f"\t\t\t[/] {function_name} success, number of error : {self.number_of_error}")
         
         # if remove_original:
         #     ic(f"Need to remove original")
