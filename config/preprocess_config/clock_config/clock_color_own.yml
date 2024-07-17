@@ -3,55 +3,29 @@ DATASET:
   #TODO: for number dataset
   #FIXME: self data
   # adult
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user1/set1_300
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user1/set2_1398
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user2/set1_300
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user2/user2_1000
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user3/set1_300
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user4/set1_300
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user4/set2_200
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user5/set1_100
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user5/set2_199
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user6/set1_100
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user6/set2_600
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user7/set1_895
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user7/set2_1398
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user8/set1_700
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user8/set2_1591
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user9/set1_100
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/adult/user10/set1_1000
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user1/set1_3057
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user2/set1_1896
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user3/set1_1899
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user4/set1_900
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user5/set1_695
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user6/set1_1692
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user7/set1_3091
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user8/set1_2871
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user9/set1_693
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/adult/user10/set1_1600
 
    # student
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user1/set1
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user1/set2_94
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user2/set1_498
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user2/set2_100
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user3/set1_298
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user5/set1_100
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user6/set1_400
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user6/set2_100
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user8/set1_300
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user9/set1_299
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user10/set1_494
-
-  - /home/kan.t/work/ABC_full_project/datasets/clock/student/user11/set1_100
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user1/set1_497
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user2/set1_910
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user3/set1_496
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user5/set1_200
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user6/set1_700
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user7/set1_200
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user8/set1_500
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user9/set1_499
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user10/set1_594
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user11/set1_200
+  - /home/kan.t/work/ABC_full_project/high_resolution/clock/student/user16/set1_99
 
   DATASET_TYPE: clock
   FINAL_DATASET_PATH: dataset_process/clock/clock_process_color_own/clock
@@ -75,14 +49,14 @@ PREPROCESS:
    #    TARGET_WIDTH: 640
    #    REPLACE: false
    - RESIZE:
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
+      TARGET_HEIGHT: 2048
+      TARGET_WIDTH: 2048
       REPLACE: true
 AUGMENT:
   AUGMENT_LIST:  
    - RESIZE:
-       TARGET_WIDTH: 640
-       TARGET_HEIGHT: 640
+       TARGET_WIDTH: 2048
+       TARGET_HEIGHT: 2048
        REPLACE: true
    - CHANNEL_SHUFFLE:
       P: 0.25
@@ -113,12 +87,12 @@ AUGMENT:
       P: 0.5
       REPLACE: false
    - LONGEST_MAX_SIZE:
-      MAX_SIZE: 640
+      MAX_SIZE: 2048
       P: 1.0
       REPLACE: false
    - PAD_IF_NEEDED:
-      MIN_WIDTH: 640
-      MIN_HEIGHT: 640
+      MIN_WIDTH: 2048
+      MIN_HEIGHT: 2048
       P: 1.0
       REPLACE: false
   FOLDER:
