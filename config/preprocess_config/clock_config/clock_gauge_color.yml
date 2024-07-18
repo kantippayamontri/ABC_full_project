@@ -19,7 +19,7 @@ PREPROCESS:
       CLASS_CROP_LIST: 
       - 0
       CLASS_IGNORE: [1,2,3,4,5]
-      NEED_RESIZE: true
+      NEED_RESIZE: false
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
       REPLACE: true
