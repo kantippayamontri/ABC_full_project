@@ -4,5 +4,6 @@
   "terminal.integrated.gpuAcceleration": "off",
   "terminal.integrated.defaultProfile.linux": "zsh",
   "terminal.integrated.defaultProfile.windows": "Git Bash",
-  "git.ignoreLimitWarning": true
+  "git.ignoreLimitWarning": true,
+  "djlint.showInstallError": false
 }
