@@ -517,7 +517,7 @@ class Transform:
                 count_gauge += 1
 
         if count_gauge > 1:
-            # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
+            Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
             return None, None
 
         return img, bb
@@ -556,10 +556,10 @@ class Transform:
 
         return None, None
 
-    def add_needle(self,img, bb):
+    def add_needle(self, img, bb):
         if (img is None) or (bb is None):
             return None, None
-        
+
         head_class = Constants.map_data_dict["clock"]["target"].index("head")
         center_class = Constants.map_data_dict["clock"]["target"].index("center")
         bottom_class = Constants.map_data_dict["clock"]["target"].index("bottom")
@@ -571,7 +571,9 @@ class Transform:
         center_list = []
         head_list = []
         bottom_list = []
-        
+
+        new_bb = [] 
+
         for _bb in bb:
             if int(_bb[4]) == head_class:
                 check_head = True
@@ -582,22 +584,94 @@ class Transform:
             elif int(_bb[4]) == bottom_class:
                 check_bottom = True
                 bottom_list.append(_bb)
-        
+            
+            new_bb.append(_bb)
+
         if check_head and check_center and check_bottom:
-            # found head center and bottom -> add needle from head and bottom  
-            _center_bb = center_list[0] # use center at index 0
+            # found head center and bottom -> add needle from head and bottom
+            # _center_bb = center_list[0] # use center at index 0
+            _bottom_bb = bottom_list[0]
             for _head_bb in head_list:
-                ...
+                needle_yolo = self.create_needle(
+                    bb_one=_head_bb,
+                    bb_two=_bottom_bb,
+                    img_size=img.shape,
+                    to_yolo=True, # convert to yolo format  
+                    cls=6
+                )
+                # needle_yolo = needle_yolo["bb"].append(needle_yolo["class"])
+                needle_yolo = needle_yolo["bb"]
+                needle_yolo.append(6) # needle class = 6 
+                needle_yolo = np.array(needle_yolo)
+                new_bb.append(needle_yolo)
+            # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in new_bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom", "needle"])
+            return img, np.array(new_bb)
+
         elif check_head and check_center:
             # found head and center -> add needle for head and center
-            _center_bb = center_list[0]  
+            _center_bb = center_list[0]
             for _head_bb in head_list:
-                ...
+                needle_yolo = self.create_needle(
+                    bb_one=_head_bb,
+                    bb_two=_center_bb,
+                    img_size=img.shape,
+                    to_yolo=True, # convert to yolo format  
+                    cls=6
+                )
+                # needle_yolo = needle_yolo["bb"].append(needle_yolo["class"])
+                needle_yolo = needle_yolo["bb"]
+                needle_yolo.append(6) # needle class = 6 
+                needle_yolo = np.array(needle_yolo)
+                new_bb.append(needle_yolo)
+            # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in new_bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom", "needle"])
+            return img, np.array(new_bb)
         else:
             return img, bb
-        
-        
 
+
+    def create_needle(self, bb_one, bb_two, img_size, to_yolo=False, cls=0):
+        """
+        bb = x y w h c
+        """
+        bb_one_xyxy = Utils.change_format_yolo2xyxy(
+            img_size=img_size,
+            bb=[bb_one[4], bb_one[0], bb_one[1], bb_one[2], bb_one[3]],
+            with_class=True,
+        )["bb"]
+
+        bb_two_xyxy = Utils.change_format_yolo2xyxy(
+            img_size=img_size,
+            bb=[bb_two[4], bb_two[0], bb_two[1], bb_two[2], bb_two[3]],
+            with_class=True,
+        )["bb"]
+
+        center_one_x, center_one_y = self.get_center_xyxy(bb=bb_one_xyxy)
+        center_two_x, center_two_y = self.get_center_xyxy(bb=bb_two_xyxy)
+
+        needle_xyxy = [
+            int(min(center_one_x, center_two_x)), int(min(center_one_y, center_two_y)),
+            int(max(center_one_x, center_two_x)), int(max(center_one_y, center_two_y)),
+        ]
+
+        if to_yolo: # convert to yolo format
+            needle_yolo = Utils.change_format_xyxy2yolo(
+                img_size=img_size,
+                bb=needle_xyxy,
+                cls=cls,
+                normalize=True
+            )
+            return needle_yolo
+
+        return needle_xyxy
+
+    def get_center_xyxy(self, bb):
+        """
+        bb = [(x,y), (x,y)]
+        """
+        x_min, y_min = bb[0]
+        x_max, y_max = bb[1]
+
+        return [x_min + (x_max - x_min) / 2, y_min + (y_max - y_min) / 2]
 
     def resize_bb(self, img, bb, cls, percent=10):
         """
@@ -796,28 +870,35 @@ class Transform:
                 p=function_parameter["P"],
             )
         elif function_name == "CLOCK":
-            if function_parameter["PREPROCESS_MIN_HEAD"]:
-                # ic(f"---> function: PREPROCESS_MIN_HEAD")
-                img, bb = self.clock_pre_min_head(img=img.copy(), bb=bb.copy())
+            if "PREPROCESS_MIN_HEAD" in function_parameter.keys():
+                if function_parameter["PREPROCESS_MIN_HEAD"]:
+                    # ic(f"---> function: PREPROCESS_MIN_HEAD")
+                    img, bb = self.clock_pre_min_head(img=img.copy(), bb=bb.copy())
 
-            if function_parameter["PREPROCESS_MIN_MAX"]:
-                # ic(f"---> function: PREPROCESS_MIN_MAX")
-                img, bb = self.clock_pre_min_max(img=img.copy(), bb=bb.copy())
+            if "PREPROCESS_MIN_MAX" in function_parameter.keys():
+                if function_parameter['PREPROCESS_MIN_MAX']:
+                    # ic(f"---> function: PREPROCESS_MIN_MAX")
+                    img, bb = self.clock_pre_min_max(img=img.copy(), bb=bb.copy())
 
-            if function_parameter["PREPROCESS_ONLY_ONE_GAUGE"]:
-                # ic(f"---> function: PREPROCESS_ONLY_ONE_GAUGE")
-                img, bb = self.clock_only_one_gauge(img=img.copy(), bb=bb.copy())
+            if "PREPROCESS_ONLY_ONE_GAUGE" in function_parameter.keys():
+                if function_parameter["PREPROCESS_ONLY_ONE_GAUGE"]:
+                    # ic(f"---> function: PREPROCESS_ONLY_ONE_GAUGE")
+                    img, bb = self.clock_only_one_gauge(img=img.copy(), bb=bb.copy())
 
-            if function_parameter["PREPROCESS_FULL_CLASS"]:
-                # ic(f"---> function: PREPROCESS_FULL_CLASS")
-                if (img is not None) and (bb is not None):
-                    img, bb = self.clock_full_only(img=img.copy(), bb=bb.copy())
-            
-            if function_parameter["ADD_NEEDLE"]:
-                ...
-                # if (img is not None) and (bb is not None):
-                #     img, bb = self.add_needle(img=img.copy(), bb=bb.copy())
-                
+            if "PREPROCESS_FULL_CLASS" in function_parameter.keys():
+                if function_parameter["PREPROCESS_FULL_CLASS"]:
+                    # ic(f"---> function: PREPROCESS_FULL_CLASS")
+                    if (img is not None) and (bb is not None):
+                        img, bb = self.clock_full_only(img=img.copy(), bb=bb.copy())
+                    else:  
+                        print("can not full class")
+
+            if "ADD_NEEDLE" in  function_parameter.keys():
+                if function_parameter["ADD_NEEDLE"]:
+                    if (img is not None) and (bb is not None):
+                        img, bb = self.add_needle(img=img.copy(), bb=bb.copy())
+                    else:
+                        print(f"can not add_needle img is None or bb in None")
 
         elif function_name == "RESIZE_BB":
             img, bb = self.resize_bb(
@@ -838,9 +919,10 @@ class Transform:
             if function_parameter["REPLACE"] and (img is not None) and (bb is not None):
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)
-        except:
+        except Exception as e :
+            print(f"ERROR: {e}")
+            print(bb)
             Utils.deleted_file(file_path=self.img_path)
             Utils.deleted_file(file_path=self.bb_path)
-
 
         return img, bb

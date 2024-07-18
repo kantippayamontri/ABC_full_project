@@ -678,7 +678,6 @@ class Utils:
 
     @staticmethod
     def visualize_samples(source_folder, number_of_samples=10, gauge_type=None):
-        from preprocess.preprocess_constants import PreprocessConstants
         from utils.constants import Constants
 
         # TODO: get filenames and bb and labels

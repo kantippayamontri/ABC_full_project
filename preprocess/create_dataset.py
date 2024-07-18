@@ -30,6 +30,7 @@ class CreateDataset:
             dataset_type=self.dataset_dict["DATASET_TYPE"],
             preprocess_dict=self.preprocess_dict,
             dataset_path=Path(self.dataset_dict["FINAL_DATASET_PATH"]),
+            data_yaml_path=Path(self.dataset_dict["FINAL_DATASET_PATH"] ) / "data.yaml"
         )
 
         print(f"[-] AUGMENTED DATASET")
