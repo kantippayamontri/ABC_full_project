@@ -517,7 +517,7 @@ class Transform:
                 count_gauge += 1
 
         if count_gauge > 1:
-            Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
+            # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom"])
             return None, None
 
         return img, bb

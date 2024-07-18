@@ -1,6 +1,6 @@
 DATASET:
   # DATASET_PATH: datasets_for_train_eiei
-  DATASET_PATH: dataset_process/clock/test_clock_dataset
+  DATASET_PATH: dataset_new/clock/test_set2_600
   DATASET_TYPE: clock
 MODEL:
   MODEL: 
