@@ -286,30 +286,39 @@ class Transform:
         # create single channel img
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+        se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
+        bg=cv2.morphologyEx(gray_image, cv2.MORPH_DILATE, se)
+        gray_image=cv2.divide(gray_image, bg, scale=255)
+        # cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1] 
+
         # make threshold image
         res = cv2.adaptiveThreshold(
-            gray_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 199, 5
+            gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 199, 5
         )
 
         # for image erosion
-        erosion_kernel_before = np.ones((2, 2), np.uint8)
-        erosion_img_before = cv2.erode(res, kernel=erosion_kernel_before, iterations=1)
+        erosion_kernel_before = np.ones((1, 1), np.uint8)
+        erosion_img_before = cv2.erode(res, kernel=erosion_kernel_before, iterations=3)
 
-        # for image dilation
-        dilate_kernel = np.ones((3, 3), np.uint8)
-        dilate_img = cv2.dilate(erosion_img_before, kernel=dilate_kernel, iterations=1)
+        se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
+        bg=cv2.morphologyEx(erosion_img_before, cv2.MORPH_CLOSE, se)
+        gray_image=cv2.divide(erosion_img_before, bg, scale=255)
 
-        # for image erosion
-        erosion_kernel_after = np.ones((2, 2), np.uint8)
-        erosion_img_after = cv2.erode(
-            dilate_img, kernel=erosion_kernel_after, iterations=1
-        )
+        # # for image dilation
+        # dilate_kernel = np.ones((3, 3), np.uint8)
+        # dilate_img = cv2.dilate(erosion_img_before, kernel=dilate_kernel, iterations=1)
+
+        # # for image erosion
+        # erosion_kernel_after = np.ones((2, 2), np.uint8)
+        # erosion_img_after = cv2.erode(
+        #     dilate_img, kernel=erosion_kernel_after, iterations=1
+        # )
 
         # # Find the edges in the image using canny detector
         # edges = cv2.Canny(dilate_img, 130, 255)
 
         # for make binary image from 1 channel to 3 channel
-        three_channel_image = cv2.cvtColor(erosion_img_after, cv2.COLOR_GRAY2BGR)
+        three_channel_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
 
         return three_channel_image, bb
 

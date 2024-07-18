@@ -49,17 +49,18 @@ AUGMENT:
   PREFIX: aug
 DATASET:
   DATASET_PATH:
-  - datasets/dial_for_number/user1/set1_1750
-  - datasets/dial_for_number/user2/set1_1500
-  - datasets/dial_for_number/user3/set1_1500 
-  - datasets/dial_for_number/user4/set1_1478
-  - datasets/dial_for_number/user5/set1_1000
-  - datasets/dial_for_number/user6/set1_1748
-  - datasets/dial_for_number/user7/set1_1494
-  - datasets/dial_for_number/user8/set1_1495
-  - datasets/dial_for_number/user10/set1_1499
-  DATASET_TYPE: digital
-  FINAL_DATASET_PATH: dataset_new/digital/dial_test/digital
+  - test_set1_200
+  # - datasets/dial_for_number/user1/set1_1750
+  # - datasets/dial_for_number/user2/set1_1500
+  # - datasets/dial_for_number/user3/set1_1500 
+  # - datasets/dial_for_number/user4/set1_1478
+  # - datasets/dial_for_number/user5/set1_1000
+  # - datasets/dial_for_number/user6/set1_1748
+  # - datasets/dial_for_number/user7/set1_1494
+  # - datasets/dial_for_number/user8/set1_1495
+  # - datasets/dial_for_number/user10/set1_1499
+  DATASET_TYPE: clock
+  FINAL_DATASET_PATH: dataset_new/clock/test_set1_200/clock
   PERCENT_TEST: 0
   PERCENT_TRAIN: 100
   PERCENT_VAL: 0
@@ -73,17 +74,34 @@ PREPROCESS:
   - CROP:
       ADD_PIXEL: 0
       CLASS_CROP_LIST: 
-      - 2
-      CLASS_IGNORE: [0,1]
+      - 0
+      CLASS_IGNORE: []
       NEED_RESIZE: false
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
-      REPLACE: false
+      REPLACE: true
       REMOVE_ORIGINAL: true
-  # - RESIZE:
-  #     TARGET_HEIGHT: 640
-  #     TARGET_WIDTH: 640
-  #     REPLACE: true
-#   - GRAY:
-#       P: 1.0
-#       REPLACE: true
+  - RESIZE:
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+  - GRAY:
+      P: 1.0
+      REPLACE: true
+  - GRAY_EROSION_DILATE:
+      P: 1.0
+      REPLACE: true
+  - CLOCK:
+      PREPROCESS_MIN_HEAD: false # remove min that overlap with head
+      PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
+      PREPROCESS_ONLY_ONE_GAUGE: true # choose image that has only one gauge in each image
+      PREPROCESS_FULL_CLASS: true # choose image that has min, max , head, center
+      REPLACE: true
+  - RESIZE_BB:
+      PERCENT: 50
+      CLASS : [1,2] # add size of min and max
+      REPLACE: true
+  - RESIZE_BB:
+      PERCENT: 75
+      CLASS : [4] # add size of head
+      REPLACE: true
