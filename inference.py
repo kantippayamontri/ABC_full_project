@@ -32,7 +32,7 @@ parser.add_argument("--input_file", type=str, help="your python file to run")
 parser.add_argument("--gauge_use", type=str, help="type gauge")
 parser.add_argument("--img_path", type=str, help="image path")
 
-# # Add optional argument with a default value
+# Add optional argument with a default value
 parser.add_argument(
     "--select_frame",
     type=int,
@@ -63,7 +63,7 @@ model_path_dict = {
         "clock gauge": Path(
             "/home/kansmarts777/wsl_code/ABC_full_project/clock_gauge_color.pt"
         ),
-        "clock inside": "/home/kansmarts777/wsl_code/ABC_full_project/clock_inside_gray.pt",
+        "clock inside": "/home/kansmarts777/wsl_code/ABC_full_project/clock_in_color.pt",
     },
 }
 
@@ -317,9 +317,8 @@ elif gauge_use == Constants.GaugeType.clock:
         # gray_img = np.transpose(gray_img, (2, 0, 1))
 
         input_clock_gauge = torch.from_numpy(original_image)
-        input_clock_gauge = torch.div(input_clock_gauge,255.0)
-        input_clock_gauge = np.transpose(input_clock_gauge, (2,0,1))
-
+        input_clock_gauge = torch.div(input_clock_gauge, 255.0)
+        input_clock_gauge = np.transpose(input_clock_gauge, (2, 0, 1))
 
         # TODO: find the gauge and crop the image
         clock_gauge_result = model_clock.inference_data(
@@ -377,17 +376,16 @@ elif gauge_use == Constants.GaugeType.clock:
                 "image"
             ]  # tensor
             # ic(crop_frame_image.shape)
-            
-            #TODO: make crop image gray
-            ic(crop_frame_image.shape)
-            crop_frame_image_np = crop_frame_image.numpy().transpose(1,2,0)
-            crop_frame_image_np = cv2.cvtColor(crop_frame_image_np, cv2.COLOR_RGB2GRAY)
-            crop_frame_image_np = cv2.cvtColor(crop_frame_image_np , cv2.COLOR_GRAY2BGR)  # convert from 1 channel to 3 channel gray scale
+
+            # TODO: make crop image gray
+            # ic(crop_frame_image.shape)
+            crop_frame_image_np = crop_frame_image.numpy().transpose(1, 2, 0)
+            # crop_frame_image_np = cv2.cvtColor(crop_frame_image_np, cv2.COLOR_RGB2GRAY)
+            # crop_frame_image_np = cv2.cvtColor(crop_frame_image_np , cv2.COLOR_GRAY2BGR)  # convert from 1 channel to 3 channel gray scale
 
             crop_frame_image = torch.from_numpy(crop_frame_image_np)
             crop_frame_image = torch.div(crop_frame_image, 255.0)
             crop_frame_image = np.transpose(crop_frame_image, (2, 0, 1))
-
 
             Utils.visualize_img_bb(
                 img=crop_frame_image_np,
@@ -418,7 +416,7 @@ elif gauge_use == Constants.GaugeType.clock:
             detections = sv.Detections.from_ultralytics(clock_result).with_nms(
                 threshold=0.5, class_agnostic=False
             )
-            
+
             # ic(detections)
 
             detection_dict = {
@@ -428,16 +426,18 @@ elif gauge_use == Constants.GaugeType.clock:
                 "head": None,
                 "center": None,
                 "bottom": None,
+                "needle": None,
             }
 
             detection_target_dict = {
-                0:"gauge",
-                1:"min",
-                2:"max",
-                3:"center",
-                4:"head",
-                5:"bottom",
-            } 
+                0: "gauge",
+                1: "min",
+                2: "max",
+                3: "center",
+                4: "head",
+                5: "bottom",
+                6: "needle",
+            }
 
             # ic(f"detection dict before: {detection_dict}")
 
@@ -445,14 +445,18 @@ elif gauge_use == Constants.GaugeType.clock:
                 if (
                     # detection_dict[str(detections.data["class_name"][detec_idx])]
                     # is None
-                    detection_dict[detection_target_dict[detections.class_id[detec_idx]]]
+                    detection_dict[
+                        detection_target_dict[detections.class_id[detec_idx]]
+                    ]
                     is None
                 ):
-                    detection_dict[detection_target_dict[detections.class_id[detec_idx]]] = {
+                    detection_dict[
+                        detection_target_dict[detections.class_id[detec_idx]]
+                    ] = {
                         "xyxy": detections.xyxy[detec_idx],
                         "class": detections.class_id[detec_idx],
                     }
-            
+
             # ic(f"detection dict after: {detection_dict}")
 
             detection_dict_filter = {
@@ -504,15 +508,21 @@ elif gauge_use == Constants.GaugeType.clock:
                     if detection_dict["bottom"] is not None
                     else None
                 ),
+                needle=(
+                    detection_dict["needle"]["xyxy"]
+                    if detection_dict["needle"] is not None
+                    else None
+                ),
                 min_value=min_value,
                 max_value=max_value,
             )
 
             # inference_clock.print()
-            inference_clock.visualize_clock(image=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0))
+            inference_clock.visualize_clock(
+                image=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0)
+            )
             clock_value = inference_clock.predict_clock()
             ic(f"clock value: {clock_value}")
-
 
         if clock_index == 20:
             break

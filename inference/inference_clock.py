@@ -15,6 +15,7 @@ class InferenceClock:
         center=None,
         head=None,
         bottom=None,
+        needle=None,
         min_value=0,
         max_value=100,
     ) -> None:
@@ -25,13 +26,32 @@ class InferenceClock:
         self.center = center
         self.head = head
         self.bottom = bottom
+        self.needle = needle
         self.min_value = min_value
         self.max_value = max_value
+        self.min_max_swap = False
 
         # ic(f"before")
-        # self.visualize_clock()
 
         self.preprocess_clock()
+        self.min_max_swap = self.check_min_max_swap()
+        self.visualize_clock()
+
+    def check_min_max_swap(
+        self,
+    ) -> bool:
+        if not ((self.min is not None) or (self.max is not None)):
+            return False
+
+        _max_center = self.get_center_point(point=self.max)
+        _min_center = self.get_center_point(point=self.min)
+
+        if _max_center[0] < _min_center[0]:  # check x position of min and max
+            self.min, self.max = self.max, self.min
+            ic(f"need to swap min and max")
+            return True
+
+        return False
 
     def preprocess_clock(
         self,
@@ -44,12 +64,11 @@ class InferenceClock:
     def preprocess_normal(
         self,
     ):
-        for i in range(5):
-            if self.center is None:
-                if (self.bottom is not None) and (self.head is None):
-                    self.center = self.bottom
-                    self.bottom = None
-                elif (self.bottom is not None) and (self.head is not None):
+        for _ in range(1):
+            if self.center is None:  # not found center
+                if (self.bottom is not None) and (
+                    self.head is not None
+                ):  # found bottom and head
                     _bottom_point = self.get_center_point(self.bottom)
                     _head_point = self.get_center_point(self.head)
 
@@ -83,9 +102,56 @@ class InferenceClock:
                             _avg_bottom_head[1],
                         ]
                     )
+                elif (self.head is not None) and (
+                    self.needle is not None
+                ):  # foud head and needle
+                    # center is point(from needle) that farest from head
+                    _center_head = self.get_center_point(point=self.head)
+                    n_x_min, n_y_min, n_x_max, n_y_max = self.needle
+                    # find 4 point of needle
+                    n_tl = (n_x_min, n_y_min)  # top left point
+                    n_tr = (n_x_max, n_y_min)  # top righ
+                    n_bl = (n_x_min, n_y_max)  # bottom left point
+                    n_br = (n_x_max, n_y_max)  # bottom righ point
+
+                    needle_point = [n_tl, n_tr, n_bl, n_br]  # list of needle point
+                    needle_point_dict = dict(
+                        zip(
+                            needle_point,
+                            [
+                                self.get_distance_from_2_point(
+                                    point1=_center_head, point2=_p
+                                )
+                                for _p in needle_point
+                            ],
+                        )
+                    )  # dict key=point , value=distance
+                    needle_max_dis_point = max(
+                        needle_point_dict, key=lambda k: needle_point_dict[k]
+                    )
+
+                    self.center = np.array(
+                        [
+                            needle_max_dis_point[0],
+                            needle_max_dis_point[1],
+                            needle_max_dis_point[0],
+                            needle_max_dis_point[1],
+                        ]
+                    )
+
+                    # ic(needle_point)
+                    # ic(needle_point_dict)
+                    # ic(needle_max_dis_point)
+                    # max_dis_point = needle_point[0]
+                    # max_dis=0
+                    # for _needle_p in needle_point:
+                    #     _dis = self.get_distance_from_2_point(point1=_center_head , point2=_needle_p)
+                    #     if _dis > max_dis:
 
             if self.head is None:
-                if (self.bottom is not None) and (self.center is not None):
+                if (self.bottom is not None) and (
+                    self.center is not None
+                ):  # found bottom and center
                     _bottom_origin = self.set_point_2_origin(
                         origin=self.get_center_point(self.center),
                         point=self.get_center_point(self.bottom),
@@ -98,6 +164,23 @@ class InferenceClock:
                     self.head = np.array(
                         [_head_point[0], _head_point[1], _head_point[0], _head_point[1]]
                     )
+
+                elif (self.center is not None) and (
+                    self.needle is not None
+                ):  # found center and needle
+                    _needle_origin = self.set_point_2_origin(
+                        origin=self.get_center_point(self.center),
+                        point=self.get_center_point(self.needle),
+                    )
+                    _head_origin = (_needle_origin[0], _needle_origin[1])
+                    _head_point = self.set_origin_2_point(
+                        origin=self.get_center_point(self.center), point=_head_origin
+                    )
+                    self.head = np.array(
+                        [_head_point[0], _head_point[1], _head_point[0], _head_point[1]]
+                    )
+
+                    self.needle = None
 
             if self.min is None and (self.max is not None and self.center is not None):
                 _max_origin = self.set_point_2_origin(
@@ -145,21 +228,85 @@ class InferenceClock:
         if self.check_attribute_is_none():
             print(f"can not predict -> lack of class")
             return 0
+        
+        # check needle is lower than min
+        max_min_angle, _ = self.angle_between_2_vector(
+            start_vector=self.set_point_2_origin(
+                    origin=self.get_center_point(self.center),
+                    point=self.get_center_point(self.max),
+                    
+                ),
+            end_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.min)
+            )
+        )
+
+        max_head_angle, _ = self.angle_between_2_vector(
+            start_vector=self.set_point_2_origin(
+                    origin=self.get_center_point(self.center),
+                    point=self.get_center_point(self.max),
+                    
+                ),
+            end_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.head)
+            )
+        )
+
+        if max_head_angle > max_min_angle:
+            return self.min_value 
+        
+        # -------------------------------
+        
+        # check needle is higher than max
+
+        head_min_angle, _ = self.angle_between_2_vector(
+            start_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.head),
+            ),
+            end_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.min),
+            ),
+        )
+
+        if head_min_angle > max_min_angle:
+            return self.max_value
+
+        # -------------------------------
 
         head_min_angle, head_min_v = self.angle_between_2_vector(
-            start_vector=self.set_point_2_origin(origin=self.get_center_point(self.center), point=self.get_center_point(self.head)),
-            end_vector=self.set_point_2_origin(origin=self.get_center_point(self.center), point=self.get_center_point(self.min)),
+            start_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.head),
+            ),
+            end_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.min),
+            ),
         )
         # ic(head_min_angle)
 
         max_head_angle, max_head_v = self.angle_between_2_vector(
-            start_vector=self.set_point_2_origin(origin=self.get_center_point(self.center), point=self.get_center_point(self.max)),
-            end_vector=self.set_point_2_origin(origin=self.get_center_point(self.center), point=self.get_center_point(self.head)),
+            start_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.max),
+            ),
+            end_vector=self.set_point_2_origin(
+                origin=self.get_center_point(self.center),
+                point=self.get_center_point(self.head),
+            ),
         )
         # ic(max_head_angle)
 
         all_angle = head_min_angle + max_head_angle
         clock_ratio = head_min_angle / all_angle
+
+        if self.min_max_swap:
+            clock_ratio = 1 - clock_ratio
+
         # ic(clock_ratio)
 
         range_value = self.max_value - self.min_value
@@ -215,7 +362,7 @@ class InferenceClock:
         degree = np.rad2deg(rad)
 
         return degree
-    
+
     def get_distance_from_2_point(self, point1: tuple, point2: tuple):
         """
         point1: tuple (x,y)
@@ -289,16 +436,27 @@ class InferenceClock:
                 ha="center",
             )
 
-        if self.bottom is not None:
-            bottom_x, bottom_y = self.get_center_point(self.bottom)
-            plt.plot(bottom_x, bottom_y, "ro", markersize=10)
-            plt.annotate(
-                "bottom",
-                (bottom_x, bottom_y),
-                textcoords="offset points",
-                xytext=(0, 10),
-                ha="center",
-            )
+        # if self.bottom is not None:
+        #     bottom_x, bottom_y = self.get_center_point(self.bottom)
+        #     plt.plot(bottom_x, bottom_y, "ro", markersize=10)
+        #     plt.annotate(
+        #         "bottom",
+        #         (bottom_x, bottom_y),
+        #         textcoords="offset points",
+        #         xytext=(0, 10),
+        #         ha="center",
+        #     )
+
+        # if self.needle is not None:
+        #     needle_x, needle_y = self.get_center_point(self.needle)
+        #     plt.plot(needle_x, needle_y, "ro", markersize=10)
+        #     plt.annotate(
+        #         "needle",
+        #         (needle_x, needle_y),
+        #         textcoords="offset points",
+        #         xytext=(0, 10),
+        #         ha="center",
+        #     )
 
         # if self.center is not None and self.min is not None:
         #     plt.plot(
@@ -335,6 +493,7 @@ class InferenceClock:
         print(f"center: {self.center}")
         print(f"head: {self.head}")
         print(f"bottom: {self.bottom}")
+        print(f"needle: {self.needle}")
 
     def check_attribute_is_none(
         self,
