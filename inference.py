@@ -301,24 +301,12 @@ elif gauge_use == Constants.GaugeType.clock:
         original_image = cv2.imread(str(clock_img_path))
         original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 
-        # Utils.visualize_img_bb(
-        #     img=original_image,
-        #     bb=[],
-        #     with_class=False,
-        #     labels=None,
-        #     format=None,
-        # )
-        # gray_img = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-        # gray_img = cv2.cvtColor(
-        #     gray_img, cv2.COLOR_GRAY2BGR
-        # )  # convert from 1 channel to 3 channel gray scale
-        # gray_img = torch.from_numpy(gray_img)
-        # gray_img = torch.div(gray_img, 255.0)
-        # gray_img = np.transpose(gray_img, (2, 0, 1))
+        trans = InferenceUtils.albu_resize_pad_zero(
+            target_size=(640,640),
+        )
 
-        input_clock_gauge = torch.from_numpy(original_image)
+        input_clock_gauge = trans(image= original_image, bboxes=[])["image"]
         input_clock_gauge = torch.div(input_clock_gauge, 255.0)
-        input_clock_gauge = np.transpose(input_clock_gauge, (2, 0, 1))
 
         # TODO: find the gauge and crop the image
         clock_gauge_result = model_clock.inference_data(
@@ -345,19 +333,16 @@ elif gauge_use == Constants.GaugeType.clock:
             )
             gauge_list = boxes.gauge_list
 
-        # ic(f"number of gauge: {len(gauge_list)}")
-
-        # ic(gauge_list[0].xyxy, gauge_list[0].cls)
-        Utils.visualize_img_bb(
-            img=np.transpose(input_clock_gauge, (1, 2, 0)),
-            bb=[
-                {"class": 0, "bb": [(g.xyxy[0], g.xyxy[1]), (g.xyxy[2], g.xyxy[3])]}
-                for g in gauge_list
-            ],
-            with_class=True,
-            labels=["gauge"],
-            format=Constants.BoundingBoxFormat.XYXY,
-        )
+        # Utils.visualize_img_bb(
+        #     img=np.transpose(input_clock_gauge, (1, 2, 0)),
+        #     bb=[
+        #         {"class": 0, "bb": [(g.xyxy[0], g.xyxy[1]), (g.xyxy[2], g.xyxy[3])]}
+        #         for g in gauge_list
+        #     ],
+        #     with_class=True,
+        #     labels=["gauge"],
+        #     format=Constants.BoundingBoxFormat.XYXY,
+        # )
 
         if len(gauge_list) == 0:
             print(f"Can not find the gauge")
@@ -370,21 +355,15 @@ elif gauge_use == Constants.GaugeType.clock:
             )
 
             crop_frame_image = clock_gauge_transform(
-                # image=torch.squeeze(gray_img, 0).numpy().transpose(1, 2, 0)
-                image=original_image
+                image = input_clock_gauge.numpy().transpose(1, 2, 0)
             )[
                 "image"
             ]  # tensor
-            # ic(crop_frame_image.shape)
 
             # TODO: make crop image gray
-            # ic(crop_frame_image.shape)
             crop_frame_image_np = crop_frame_image.numpy().transpose(1, 2, 0)
-            # crop_frame_image_np = cv2.cvtColor(crop_frame_image_np, cv2.COLOR_RGB2GRAY)
-            # crop_frame_image_np = cv2.cvtColor(crop_frame_image_np , cv2.COLOR_GRAY2BGR)  # convert from 1 channel to 3 channel gray scale
 
             crop_frame_image = torch.from_numpy(crop_frame_image_np)
-            crop_frame_image = torch.div(crop_frame_image, 255.0)
             crop_frame_image = np.transpose(crop_frame_image, (2, 0, 1))
 
             Utils.visualize_img_bb(
@@ -395,19 +374,7 @@ elif gauge_use == Constants.GaugeType.clock:
                 format=None,
             )
 
-            # Utils.visualize_img_bb(
-            #     img=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0),
-            #     bb=[],
-            #     with_class=False,
-            #     labels=None,
-            #     format=None,
-            # )
-
             # TODO: predict to get the value
-            # real_clock_np = (
-            #     torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0)
-            # )
-            # real_clock_tensor = torch.div(crop_frame_image, 255.0)
 
             clock_result = model_clock_inside.inference_data(
                 input_img=torch.unsqueeze(crop_frame_image, 0)
@@ -416,8 +383,6 @@ elif gauge_use == Constants.GaugeType.clock:
             detections = sv.Detections.from_ultralytics(clock_result).with_nms(
                 threshold=0.5, class_agnostic=False
             )
-
-            # ic(detections)
 
             detection_dict = {
                 "gauge": None,
@@ -439,12 +404,8 @@ elif gauge_use == Constants.GaugeType.clock:
                 6: "needle",
             }
 
-            # ic(f"detection dict before: {detection_dict}")
-
             for detec_idx in range(len(detections.xyxy)):
                 if (
-                    # detection_dict[str(detections.data["class_name"][detec_idx])]
-                    # is None
                     detection_dict[
                         detection_target_dict[detections.class_id[detec_idx]]
                     ]
@@ -457,13 +418,9 @@ elif gauge_use == Constants.GaugeType.clock:
                         "class": detections.class_id[detec_idx],
                     }
 
-            # ic(f"detection dict after: {detection_dict}")
-
             detection_dict_filter = {
                 key: value for key, value in detection_dict.items() if value is not None
             }  # filter the detection
-
-            # ic(detection_dict)
 
             clock_case = {
                 "normal": "normal",
@@ -517,7 +474,6 @@ elif gauge_use == Constants.GaugeType.clock:
                 max_value=max_value,
             )
 
-            # inference_clock.print()
             inference_clock.visualize_clock(
                 image=torch.squeeze(crop_frame_image, 0).numpy().transpose(1, 2, 0)
             )

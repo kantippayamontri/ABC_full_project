@@ -6,6 +6,7 @@ from enum import Enum, auto
 class Constants:
     from utils.utils import Utils
 
+    cpu_cores = os.cpu_count()
     # from utils.dataset_roboflow_dict import DatasetRoboflowDict
     root_path = Path("./")
     dataset_folder = root_path / "dataset"

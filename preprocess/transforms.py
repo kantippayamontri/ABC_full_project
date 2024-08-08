@@ -920,7 +920,7 @@ class Transform:
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)
         except Exception as e :
-            print(f"ERROR: {e}")
+            print(f"ERROR: {e} eiei")
             print(bb)
             Utils.deleted_file(file_path=self.img_path)
             Utils.deleted_file(file_path=self.bb_path)
