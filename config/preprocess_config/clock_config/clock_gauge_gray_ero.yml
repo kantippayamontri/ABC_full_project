@@ -1,7 +1,8 @@
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
-  - dataset_process_final/clock/clock_gauge_gray_final/clock 
+  - dataset_process_final/clock/clock_process_color_own_final/clock
+  # - dataset_process_final/clock/clock_gauge_gray_final/clock 
   DATASET_TYPE: clock
   FINAL_DATASET_PATH: dataset_process_final/clock/clock_gauge_gray_ero_final/clock 
   PERCENT_TEST: 1
@@ -14,8 +15,25 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST: 
+  - CROP:
+      ADD_PIXEL: 0
+      CLASS_CROP_LIST: 
+      - 0
+      CLASS_IGNORE: [1,2,3,4,5]
+      NEED_RESIZE: false
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+      REMOVE_ORIGINAL: false
+  - GRAY:
+      P: 1.0
+      REPLACE: true
   - GRAY_EROSION_DILATE:
       P: 1.0
+      REPLACE: true
+  - RESIZE:
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
       REPLACE: true
 AUGMENT:
   AUGMENT_LIST: []  

@@ -2,13 +2,38 @@
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
-  #FIXME: self data
-  - /home/kan.t/work/ABC_full_project/datasets/digital/user3/permanent_set1_600
-  - /home/kan.t/work/ABC_full_project/datasets/digital/user8/permanent_set1_200
-
+  #TODO: digital
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user1/set1_700
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user2/set1_700
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user3/set1_500
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user4/set1_500
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user5/set1_800
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user6/set1_700
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user7/set1_700
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user8/set1_699
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user9/set1_1107
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/digital/user10/set1_705
+  #TODO: digital student
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/student/user9/set1_200
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/student/user10/set1_800
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/student/user11/set1_200
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/student/user13/set1_4890
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/student/user14/set1_3625
+  - /home/kan.t/work/ABC_full_project/high_resolution/digital/student/user16/set1_599
+  #TODO: dial 
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user1/set1_1750
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user2/set1_1500
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user3/set1_1500
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user4/set1_1478
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user5/set1_1000
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user6/set1_1748
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user7/set1_1494
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user8/set1_1495
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user9/set1_1000
+  - /home/kan.t/work/ABC_full_project/high_resolution/dial/dial/user10/set1_1499
   DATASET_TYPE: digital
-  FINAL_DATASET_PATH: dataset_process/digital/digital_process_color_own/digital
-  PERCENT_TEST: 10
+  FINAL_DATASET_PATH: dataset_process/digital/digital_process_color_own/digital 
+  PERCENT_TEST: 0 
   PERCENT_TRAIN: 90
   PERCENT_VAL: 10
 PREPROCESS:
@@ -25,18 +50,18 @@ PREPROCESS:
       - 1
       CLASS_IGNORE: []
       NEED_RESIZE: false #change to true
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
+      TARGET_HEIGHT: 2048
+      TARGET_WIDTH: 2048
       REPLACE: false
   - RESIZE:
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
+      TARGET_HEIGHT: 2048
+      TARGET_WIDTH: 2048
       REPLACE: true
 AUGMENT:
   AUGMENT_LIST:  
    - RESIZE:
-       TARGET_WIDTH: 640
-       TARGET_HEIGHT: 640
+       TARGET_WIDTH: 2048
+       TARGET_HEIGHT: 2048
        REPLACE: true
    - CHANNEL_SHUFFLE:
       P: 0.25
@@ -59,6 +84,7 @@ AUGMENT:
       - -20
       - 20 
       P: 0.25
+      REPLACE: false
    - COLOR_JITTER:
       BRIGHTNESS: 0.5
       CONTRAST: 0.5
@@ -67,12 +93,12 @@ AUGMENT:
       P: 0.5
       REPLACE: false
    - LONGEST_MAX_SIZE:
-      MAX_SIZE: 640
+      MAX_SIZE: 2048
       P: 1.0
       REPLACE: false
    - PAD_IF_NEEDED:
-      MIN_WIDTH: 640
-      MIN_HEIGHT: 640
+      MIN_WIDTH: 2048
+      MIN_HEIGHT: 2048
       P: 1.0
       REPLACE: false
   FOLDER:

@@ -199,8 +199,8 @@ class YOLOModel(TrainModel):
         command += f"lrf={train_parameters.get_final_learning_rate()} "
         command += f"project='{str(train_parameters.get_project_name())}' "
         command += f"name='{train_parameters.get_name()[0]}' "
-        command += f"fliplr=0.00 " # set flip left and right to zero
-        command += f"optimizer=Adam mosaic=0.0 scale=0.0"
+        command += f"fliplr=0.0 " # set flip left and right to zero
+        command += f"optimizer=Adam mosaic=0.5 scale=0.1" 
         # command += f""
         # command += f""
 
