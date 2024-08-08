@@ -68,28 +68,7 @@ class Preprocess:
 
             print(f"\t\t[-] {function_name}")
 
-            #FIXME: use this 
-            # num_cores = -1 #Use all available CPU cores
-            # with Parallel(n_jobs=num_cores) as parallel:
-            #     parallel(delayed(self.process_image)(img_path, bb_path, function_name, function_parameter, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files))
-
-            # check CLOCK use only in clock dataset
-            # if function_name == "CLOCK":
-            #     if self.dataset_type != "clock":
-            #         print(f"\t\t\t[X] CLOCK function use only for clock dataset")
-            #         continue
-            #     if function_parameter["ADD_NEEDLE"]:
-            #         data_yaml_dict = Utils.read_yaml_file(yaml_file_path=self.data_yaml_path)
-            #         # add needle to names
-            #         names = data_yaml_dict["names"]
-            #         names.append("needle") # add class needle
-            #         data_yaml_dict["names"] = names
-            #         # add needle to class
-            #         nc = int(data_yaml_dict["nc"])
-            #         nc += 1 # add clas needle
-            #         data_yaml_dict["nc"] = nc
-            #         Utils.write_yaml(data=data_yaml_dict, filepath=self.data_yaml_path) # write the yaml file
-            #         # return 
+            
             
             for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
                 self.process_image(img_path, bb_path, function_name, function_parameter, dataset_folder, dataset_type=self.dataset_type)
@@ -117,51 +96,7 @@ class Preprocess:
                     Utils.write_yaml(data=data_yaml_dict, filepath=self.data_yaml_path) # write the yaml file
                 
                 
-            # for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files):
-            #     img = Utils.load_img_cv2(filepath=img_path)
-            #     bb = Utils.load_bb(filepath=bb_path)
-
-            #     if (img is None) or (bb is None):
-            #         continue
-
-            #     transform = Transform(img_path=img_path, bb_path=bb_path)
-            #     img, bb = transform.transform_dict_function(
-            #         function_name=function_name,
-            #         function_parameter=function_parameter,
-            #         img=img.copy(),
-            #         bb=bb.copy(),
-            #         target_folder_path=dataset_folder
-            #     )
-                
-                # try:
-                #     transform = Transform(img_path=img_path, bb_path=bb_path)
-                #     img, bb = transform.transform_dict_function(
-                #         function_name=function_name,
-                #         function_parameter=function_parameter,
-                #         img=img.copy(),
-                #         bb=bb.copy(),
-                #         target_folder_path=dataset_folder
-                #     )
-                # except:
-                #     number_of_error += 1
-                #     if Utils.check_folder_exists(str(img_path)): #check is image exist
-                #         Utils.deleted_file(file_path=str(img_path))
-
-                #     if Utils.check_folder_exists(str(bb_path)): #check is image exist
-                #         Utils.deleted_file(file_path=str(bb_path))
-                
-            # print(f"\t\t\t[/] {function_name} success, number of error : {self.number_of_error}")
-        
-        # if remove_original:
-        #     ic(f"Need to remove original")
-        #     for (img_path, bb_path) in tqdm(original_filename_bb, total=count_original_file):
-        #         if Path(img_path).is_file():
-        #             os.remove(str(Path(img_path)))
-                
-        #         if Path(bb_path).is_file():
-        #             os.remove(str(Path(bb_path)))
-        
-        # Utils.visualize_samples(source_folder=dataset_folder, number_of_samples=10 , gauge_type="digital")
+           
     
     def process_image(self,img_path, bb_path, function_name, function_parameter, dataset_folder, dataset_type=None):
         from .transforms import Transform
@@ -181,22 +116,4 @@ class Preprocess:
             dataset_type=dataset_type
         )
 
-        # try:
-        #     transform = Transform(img_path=img_path, bb_path=bb_path)
-        #     img, bb = transform.transform_dict_function(
-        #         function_name=function_name,
-        #         function_parameter=function_parameter,
-        #         img=img.copy(),
-        #         bb=bb.copy(),
-        #         target_folder_path=dataset_folder
-        #     )
-        # except Exception as e:
-        #     print(f"ERROR: {e}")
-        #     self.number_of_error += 1
-        #     if Utils.check_folder_exists(str(img_path)): #check is image exist
-        #         Utils.deleted_file(file_path=str(img_path))
-
-        #     if Utils.check_folder_exists(str(bb_path)): #check is image exist
-        #         Utils.deleted_file(file_path=str(bb_path))
-
-
+        

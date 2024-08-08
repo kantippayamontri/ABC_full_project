@@ -5,15 +5,29 @@ from icecream import ic
 from pathlib import Path
 import preprocess
 import time
+import os
 
 # Create ArgumentParser object
 parser = argparse.ArgumentParser(description="for training arguments parser")
 
 # # Add positional argument
 parser.add_argument("config", type=str, help="add config file in .yml")
+parser.add_argument('--cores', type=int, default=1, help='Number of CPU cores to use')
 
 # # Parse the command-line arguments
 args = parser.parse_args()
+
+# read cpu cores
+cores = args.cores
+
+print(f"total cpu: {os.cpu_count()}")
+if cores > os.cpu_count():
+    print(f"you have only {os.cpu_count()} cores, Please use cores lower than that")
+    exit()
+else:
+    Constants.cpu_cores = cores
+
+print(f"cpu use: {Constants.cpu_cores}")
 
 # read config file
 data_yaml = Utils.read_yaml_file(args.config)
@@ -21,6 +35,7 @@ ic(data_yaml)
 dataset_dict = data_yaml["DATASET"]
 preprocess_dict = data_yaml["PREPROCESS"]
 augment_dict = data_yaml["AUGMENT"]
+
 
 # check final dataset
 if not Utils.check_folder_exists(Path(dataset_dict["FINAL_DATASET_PATH"])):

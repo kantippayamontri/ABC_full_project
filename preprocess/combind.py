@@ -60,10 +60,6 @@ class Combind:
         print(f"\t[-] number of train images : " + str(len(train_filename_bb)))
         print(f"\t[-] number of valid images : " + str(len(val_filename_bb)))
         print(f"\t[-] number of test images : " + str(len(test_filename_bb))) 
-
-        # num_cores = -1 #Use all available CPU cores
-        # with Parallel(n_jobs=num_cores) as parallel:
-        #     parallel(delayed(self.move_file_parallel)(folder_move, val_filename_bb, test_filename_bb, test_filename_bb, data_dict) for folder_move in ["valid", "test"])
         
         for folder_move in ["valid", "test"]:
             if folder_move == "valid":
@@ -71,7 +67,7 @@ class Combind:
             elif folder_move == "test":
                 fn = test_filename_bb
 
-            num_cores = -1 #Use all avilable CPU cores
+            num_cores = Constants.cpu_cores #Use all avilable CPU cores
             with Parallel(n_jobs=num_cores) as parallel:
                 parallel( delayed(self.move_file_parallel)(img_p, bb_p, data_dict, folder_move) for _, (img_p, bb_p) in enumerate(fn))
 
@@ -244,7 +240,7 @@ class Combind:
             source_folder=None,
         )
 
-        num_cores = -1 #Use all available CPU cores
+        num_cores = Constants.cpu_cores #Use all available CPU cores
         with Parallel(n_jobs=num_cores) as parallel:
             parallel( delayed(self.move_image_and_labels_parallel)(gauge, index, folder_number, _img, target_folder, _bb) for index, (_img, _bb) in enumerate(match_img_bb))
         #FIXME: need pararellel
@@ -340,10 +336,7 @@ class Combind:
             source_folder=source_folder,
         )
 
-        num_cores=-1 #Use all available CPU cores
-        # ic(filename_bb_list[:30])
-        # with Parallel(n_jobs=num_cores) as parallel:
-        #     parallel( delayed(self.reclass_parallel)(bb_path, bb_before, bb_after) for (_, bb_path) in filename_bb_list)
+        
         count_none=0
         for index, (_, bb_path) in enumerate(filename_bb_list):
             new_bb = Utils.reclass_bb_from_dict(

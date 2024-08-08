@@ -641,7 +641,7 @@ class Utils:
         plt.axis("off")  # Turn off axes numbers and ticks
 
         for xyxy in xyxy_bb:
-            print(xyxy)
+            # print(xyxy)
             color_index = 0
             top_left = (0, 0)
             bottom_right = (0, 0)

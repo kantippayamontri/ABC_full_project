@@ -1,8 +1,8 @@
-
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
-  - dataset_process_final/clock/clock_in_gray_final/clock
+#   - dataset_process_final/clock/clock_in_gray_final/clock
+  - dataset_process_final/clock/clock_process_color_own_final/clock
   DATASET_TYPE: clock
   FINAL_DATASET_PATH: dataset_process_final/clock/clock_in_gray_ero_final/clock
   PERCENT_TEST: 1
@@ -15,8 +15,40 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST: 
+  - CROP:
+      ADD_PIXEL: 10
+      CLASS_CROP_LIST: 
+      - 0
+      CLASS_IGNORE: []
+      NEED_RESIZE: false
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: false
+      REMOVE_ORIGINAL: true
+  - GRAY:
+      P: 1.0
+      REPLACE: true
   - GRAY_EROSION_DILATE:
       P: 1.0
+      REPLACE: true
+  - RESIZE:
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REPLACE: true
+  - CLOCK:
+      PREPROCESS_MIN_HEAD: false # remove min that overlap with head
+      PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
+      PREPROCESS_ONLY_ONE_GAUGE: true # choose image that has only one gauge in each image
+      PREPROCESS_FULL_CLASS: true # choose image that has min, max , head, center
+      ADD_NEEDLE: true
+      REPLACE: true
+  - RESIZE_BB:
+      PERCENT: 50
+      CLASS : [1,2] # add size of min and max
+      REPLACE: true
+  - RESIZE_BB:
+      PERCENT: 75
+      CLASS : [4] # add size of head
       REPLACE: true
 AUGMENT:
   AUGMENT_LIST: []  

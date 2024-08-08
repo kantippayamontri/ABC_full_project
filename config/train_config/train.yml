@@ -1,7 +1,7 @@
 DATASET:
   # DATASET_PATH: datasets_for_train_eiei
-  DATASET_PATH: dataset_new/clock/test_set2_600
-  DATASET_TYPE: clock
+  DATASET_PATH: dataset_process/number/test_number_dataset
+  DATASET_TYPE: number
 MODEL:
   MODEL: 
     MODEL_NAME: YOLO
@@ -18,4 +18,4 @@ TRAIN_PARAMETERS:
   LEARNING_RATE: 0.001
   PATIENCE: 15
   RESUME: false
-  WORKERS: 4
+  WORKERS: 1

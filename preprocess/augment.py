@@ -44,7 +44,7 @@ class Augment:
         
         matches_img_bb_gen = ((img_path, bb_path) for (img_path, bb_path) in Utils.get_filename_bb_folder( img_path=dataset_folder / "images", bb_path=dataset_folder / "labels"))
 
-        num_cores = -1 #Use all available CPU cores
+        num_cores = Constants.cpu_cores #Use all available CPU cores
         with Parallel(n_jobs=num_cores) as parallel:
             parallel( delayed(self.augment_image_parallel)(img_path, bb_path, number_augment, augment_list, dataset_folder) for (img_path, bb_path) in tqdm(matches_img_bb_gen, total=number_files)) 
 

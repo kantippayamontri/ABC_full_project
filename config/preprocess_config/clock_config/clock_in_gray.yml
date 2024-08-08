@@ -33,6 +33,7 @@ PREPROCESS:
       PREPROCESS_MIN_MAX: true # when have multiple min and max use the average min, max
       PREPROCESS_ONLY_ONE_GAUGE: true # choose image that has only one gauge in each image
       PREPROCESS_FULL_CLASS: true # choose image that has min, max , head, center
+      ADD_NEEDLE: true
       REPLACE: true
   - RESIZE_BB:
       PERCENT: 100
