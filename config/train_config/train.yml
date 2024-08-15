@@ -1,7 +1,7 @@
 DATASET:
   # DATASET_PATH: datasets_for_train_eiei
-  DATASET_PATH: dataset_process/number/test_number_dataset
-  DATASET_TYPE: number
+  DATASET_PATH: dataset_process/digital/digital_process_color_own
+  DATASET_TYPE: digital
 MODEL:
   MODEL: 
     MODEL_NAME: YOLO

@@ -134,7 +134,7 @@ class Transform:
                     img=full_img,
                     bb_crop=_bbc,
                     format=Constants.BoundingBoxFormat.YOLOV8,
-                    add_pixels=random.randint(0, pixel_added),
+                    add_pixels=random.randint(2, pixel_added),
                     with_class=True,
                 )
 
