@@ -162,6 +162,9 @@ class Transform:
                     prefix=f"{class_crop}_{index_crop}",
                 )
 
+                # check each crop bb have class in class ignore and filter the bb
+                new_bb = np.array([ _bb for _bb in new_bb if (int(_bb[-1]) not in class_ignore)])
+
                 # save crop image
                 self.save_img(
                     img=new_img, path=save_path / Constants.image_folder / new_name_img
@@ -172,6 +175,9 @@ class Transform:
                     bb_list=new_bb_save,
                     path=save_path / Constants.label_folder / new_name_bb,
                 )
+        
+        # remove class in class_ignore
+        bb = np.array([ _bb for _bb in bb if int(_bb[-1]) not in class_ignore ])
 
         return img, bb
 
@@ -286,10 +292,10 @@ class Transform:
         # create single channel img
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
-        bg=cv2.morphologyEx(gray_image, cv2.MORPH_DILATE, se)
-        gray_image=cv2.divide(gray_image, bg, scale=255)
-        # cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1] 
+        se = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 8))
+        bg = cv2.morphologyEx(gray_image, cv2.MORPH_DILATE, se)
+        gray_image = cv2.divide(gray_image, bg, scale=255)
+        # cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1]
 
         # make threshold image
         res = cv2.adaptiveThreshold(
@@ -300,9 +306,9 @@ class Transform:
         erosion_kernel_before = np.ones((1, 1), np.uint8)
         erosion_img_before = cv2.erode(res, kernel=erosion_kernel_before, iterations=3)
 
-        se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
-        bg=cv2.morphologyEx(erosion_img_before, cv2.MORPH_CLOSE, se)
-        gray_image=cv2.divide(erosion_img_before, bg, scale=255)
+        se = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 8))
+        bg = cv2.morphologyEx(erosion_img_before, cv2.MORPH_CLOSE, se)
+        gray_image = cv2.divide(erosion_img_before, bg, scale=255)
 
         # # for image dilation
         # dilate_kernel = np.ones((3, 3), np.uint8)
@@ -572,7 +578,7 @@ class Transform:
         head_list = []
         bottom_list = []
 
-        new_bb = [] 
+        new_bb = []
 
         for _bb in bb:
             if int(_bb[4]) == head_class:
@@ -584,7 +590,7 @@ class Transform:
             elif int(_bb[4]) == bottom_class:
                 check_bottom = True
                 bottom_list.append(_bb)
-            
+
             new_bb.append(_bb)
 
         if check_head and check_center and check_bottom:
@@ -596,12 +602,12 @@ class Transform:
                     bb_one=_head_bb,
                     bb_two=_bottom_bb,
                     img_size=img.shape,
-                    to_yolo=True, # convert to yolo format  
-                    cls=6
+                    to_yolo=True,  # convert to yolo format
+                    cls=6,
                 )
                 # needle_yolo = needle_yolo["bb"].append(needle_yolo["class"])
                 needle_yolo = needle_yolo["bb"]
-                needle_yolo.append(6) # needle class = 6 
+                needle_yolo.append(6)  # needle class = 6
                 needle_yolo = np.array(needle_yolo)
                 new_bb.append(needle_yolo)
             # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in new_bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom", "needle"])
@@ -615,19 +621,18 @@ class Transform:
                     bb_one=_head_bb,
                     bb_two=_center_bb,
                     img_size=img.shape,
-                    to_yolo=True, # convert to yolo format  
-                    cls=6
+                    to_yolo=True,  # convert to yolo format
+                    cls=6,
                 )
                 # needle_yolo = needle_yolo["bb"].append(needle_yolo["class"])
                 needle_yolo = needle_yolo["bb"]
-                needle_yolo.append(6) # needle class = 6 
+                needle_yolo.append(6)  # needle class = 6
                 needle_yolo = np.array(needle_yolo)
                 new_bb.append(needle_yolo)
             # Utils.visualize_img_bb(img=img, bb=np.array([ [b[4], b[0], b[1], b[2], b[3]] for b in new_bb]), with_class=True, labels=["gauge", "min", "max", "center", "head", "bottom", "needle"])
             return img, np.array(new_bb)
         else:
             return img, bb
-
 
     def create_needle(self, bb_one, bb_two, img_size, to_yolo=False, cls=0):
         """
@@ -649,16 +654,15 @@ class Transform:
         center_two_x, center_two_y = self.get_center_xyxy(bb=bb_two_xyxy)
 
         needle_xyxy = [
-            int(min(center_one_x, center_two_x)), int(min(center_one_y, center_two_y)),
-            int(max(center_one_x, center_two_x)), int(max(center_one_y, center_two_y)),
+            int(min(center_one_x, center_two_x)),
+            int(min(center_one_y, center_two_y)),
+            int(max(center_one_x, center_two_x)),
+            int(max(center_one_y, center_two_y)),
         ]
 
-        if to_yolo: # convert to yolo format
+        if to_yolo:  # convert to yolo format
             needle_yolo = Utils.change_format_xyxy2yolo(
-                img_size=img_size,
-                bb=needle_xyxy,
-                cls=cls,
-                normalize=True
+                img_size=img_size, bb=needle_xyxy, cls=cls, normalize=True
             )
             return needle_yolo
 
@@ -801,7 +805,7 @@ class Transform:
                 print(f"ERROR: {e}")
                 Utils.deleted_file(file_path=self.img_path)
                 Utils.deleted_file(file_path=self.bb_path)
-                
+
         elif function_name == "GRAY":
             img, bb = self.gray(
                 img=img.copy(),
@@ -883,7 +887,7 @@ class Transform:
                     img, bb = self.clock_pre_min_head(img=img.copy(), bb=bb.copy())
 
             if "PREPROCESS_MIN_MAX" in function_parameter.keys():
-                if function_parameter['PREPROCESS_MIN_MAX']:
+                if function_parameter["PREPROCESS_MIN_MAX"]:
                     # ic(f"---> function: PREPROCESS_MIN_MAX")
                     img, bb = self.clock_pre_min_max(img=img.copy(), bb=bb.copy())
 
@@ -897,10 +901,10 @@ class Transform:
                     # ic(f"---> function: PREPROCESS_FULL_CLASS")
                     if (img is not None) and (bb is not None):
                         img, bb = self.clock_full_only(img=img.copy(), bb=bb.copy())
-                    else:  
+                    else:
                         print("can not full class")
 
-            if "ADD_NEEDLE" in  function_parameter.keys():
+            if "ADD_NEEDLE" in function_parameter.keys():
                 if function_parameter["ADD_NEEDLE"]:
                     if (img is not None) and (bb is not None):
                         img, bb = self.add_needle(img=img.copy(), bb=bb.copy())
@@ -926,7 +930,7 @@ class Transform:
             if function_parameter["REPLACE"] and (img is not None) and (bb is not None):
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)
-        except Exception as e :
+        except Exception as e:
             print(f"ERROR: {e}")
             Utils.deleted_file(file_path=self.img_path)
             Utils.deleted_file(file_path=self.bb_path)

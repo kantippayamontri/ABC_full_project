@@ -3,13 +3,12 @@ DATASET:
   DATASET_PATH:
   #TODO: for number dataset
   #FIXME: self data
-  - /home/kan.t/work/ABC_full_project/datasets/digital/user3/permanent_set1_600
-  - /home/kan.t/work/ABC_full_project/datasets/digital/user8/permanent_set1_200
+  - datasets/digital/set1_200
 
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_process/digital/digital_process_color_own/digital
   PERCENT_TEST: 10
-  PERCENT_TRAIN: 90
+  PERCENT_TRAIN: 80
   PERCENT_VAL: 10
 PREPROCESS:
   FOLDER:
@@ -23,58 +22,58 @@ PREPROCESS:
       CLASS_CROP_LIST: 
       - 0
       - 1
-      CLASS_IGNORE: []
+      CLASS_IGNORE: [0,1]
       NEED_RESIZE: false #change to true
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
-      REPLACE: false
+      REPLACE: true
   - RESIZE:
       TARGET_HEIGHT: 640
       TARGET_WIDTH: 640
       REPLACE: true
 AUGMENT:
-  AUGMENT_LIST:  
-   - RESIZE:
-       TARGET_WIDTH: 640
-       TARGET_HEIGHT: 640
-       REPLACE: true
-   - CHANNEL_SHUFFLE:
-      P: 0.25
-      REPLACE: false
-   - MULTIPLICATIVE_NOISE:
-      MULTIPLIER:
-      - 0.4
-      - 1.0
-      ELEMENT_WISE: true
-      P: 0.25
-      REPLACE: false
-   - BLUR:
-      BLUR_LIMIT:
-      - 3
-      - 3 
-      P: 0.25
-      REPLACE: false
-   - ROTATE:
-      LIMIT:
-      - -20
-      - 20 
-      P: 0.25
-   - COLOR_JITTER:
-      BRIGHTNESS: 0.5
-      CONTRAST: 0.5
-      SATURATION: 0.5
-      HUE: 0.5
-      P: 0.5
-      REPLACE: false
-   - LONGEST_MAX_SIZE:
-      MAX_SIZE: 640
-      P: 1.0
-      REPLACE: false
-   - PAD_IF_NEEDED:
-      MIN_WIDTH: 640
-      MIN_HEIGHT: 640
-      P: 1.0
-      REPLACE: false
+  AUGMENT_LIST: []
+   # - RESIZE:
+   #     TARGET_WIDTH: 640
+   #     TARGET_HEIGHT: 640
+   #     REPLACE: true
+   # - CHANNEL_SHUFFLE:
+   #    P: 0.25
+   #    REPLACE: false
+   # - MULTIPLICATIVE_NOISE:
+   #    MULTIPLIER:
+   #    - 0.4
+   #    - 1.0
+   #    ELEMENT_WISE: true
+   #    P: 0.25
+   #    REPLACE: false
+   # - BLUR:
+   #    BLUR_LIMIT:
+   #    - 3
+   #    - 3 
+   #    P: 0.25
+   #    REPLACE: false
+   # - ROTATE:
+   #    LIMIT:
+   #    - -20
+   #    - 20 
+   #    P: 0.25
+   # - COLOR_JITTER:
+   #    BRIGHTNESS: 0.5
+   #    CONTRAST: 0.5
+   #    SATURATION: 0.5
+   #    HUE: 0.5
+   #    P: 0.5
+   #    REPLACE: false
+   # - LONGEST_MAX_SIZE:
+   #    MAX_SIZE: 640
+   #    P: 1.0
+   #    REPLACE: false
+   # - PAD_IF_NEEDED:
+   #    MIN_WIDTH: 640
+   #    MIN_HEIGHT: 640
+   #    P: 1.0
+   #    REPLACE: false
   FOLDER:
   - train
   NUMBER_AUGMENT: 3 # augment 3 image for own dataset
