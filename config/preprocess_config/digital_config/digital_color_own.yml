@@ -1,4 +1,3 @@
-
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
@@ -34,8 +33,8 @@ DATASET:
   DATASET_TYPE: digital
   FINAL_DATASET_PATH: dataset_process/digital/digital_process_color_own/digital 
   PERCENT_TEST: 0 
-  PERCENT_TRAIN: 90
-  PERCENT_VAL: 10
+  PERCENT_TRAIN: 100
+  PERCENT_VAL: 0
 PREPROCESS:
   FOLDER:
   - train

@@ -15,7 +15,11 @@ PREPROCESS:
   - valid
   - test
   PREFIX: pre
-  PREPROCESS_LIST: []
+  PREPROCESS_LIST: 
+  - RESIZE:
+       TARGET_WIDTH: 640
+       TARGET_HEIGHT: 640
+       REPLACE: true
 AUGMENT:
   AUGMENT_LIST: []  
   FOLDER: 

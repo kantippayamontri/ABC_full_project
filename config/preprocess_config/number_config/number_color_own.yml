@@ -1,10 +1,21 @@
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
-  #FIXME: self data
-  - /home/kan.t/work/ABC_full_project/datasets/number/user13/permanent_set1_3600
-  - /home/kan.t/work/ABC_full_project/datasets/number/user14/permanent_set1_2800
-
+  #TODO: digital images
+  - high_resolution/number/digital_gauge/user13/set1_3617
+  - high_resolution/number/digital_gauge/user14/set1_2800
+  - high_resolution/number/digital_gauge/user15/set1_750
+  - high_resolution/number/digital_gauge/user15/set2_600
+  - high_resolution/number/water_electric_gauge/user1/set1_750
+  - high_resolution/number/water_electric_gauge/user2/set1_750
+  - high_resolution/number/water_electric_gauge/user3/set1_750
+  - high_resolution/number/water_electric_gauge/user4/set1_750
+  - high_resolution/number/water_electric_gauge/user5/set1_750
+  - high_resolution/number/water_electric_gauge/user6/set1_750
+  - high_resolution/number/water_electric_gauge/user7/set1_748
+  - high_resolution/number/water_electric_gauge/user8/set1_750
+  - high_resolution/number/water_electric_gauge/user9/set1_750
+  - high_resolution/number/water_electric_gauge/user10/set1_750
   DATASET_TYPE: number
   FINAL_DATASET_PATH: dataset_process/number/number_process_color_own/number
   PERCENT_TEST: 0
@@ -18,14 +29,14 @@ PREPROCESS:
   PREFIX: pre
   PREPROCESS_LIST:
   - RESIZE:
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
+      TARGET_HEIGHT: 2048
+      TARGET_WIDTH: 2048
       REPLACE: true
 AUGMENT:
   AUGMENT_LIST:  
    - RESIZE:
-       TARGET_WIDTH: 640
-       TARGET_HEIGHT: 640
+       TARGET_WIDTH: 2048
+       TARGET_HEIGHT: 2048
        REPLACE: true
    - CHANNEL_SHUFFLE:
       P: 0.25
@@ -48,6 +59,7 @@ AUGMENT:
       - -20
       - 20 
       P: 0.25
+      REPLACE: false
    - COLOR_JITTER:
       BRIGHTNESS: 0.5
       CONTRAST: 0.5
@@ -56,12 +68,12 @@ AUGMENT:
       P: 0.5
       REPLACE: false
    - LONGEST_MAX_SIZE:
-      MAX_SIZE: 640
+      MAX_SIZE: 2048
       P: 1.0
       REPLACE: false
    - PAD_IF_NEEDED:
-      MIN_WIDTH: 640
-      MIN_HEIGHT: 640
+      MIN_WIDTH: 2048
+      MIN_HEIGHT: 2048
       P: 1.0
       REPLACE: false
   FOLDER:

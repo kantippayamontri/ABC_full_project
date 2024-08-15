@@ -2,10 +2,8 @@ DATASET:
   DATASET_PATH:
   #TODO: for number dataset
   #FIXME: internet data
-  - /home/kan.t/work/ABC_full_project/datasets/number/svhn/finish_dataset/test
-  - /home/kan.t/work/ABC_full_project/datasets/number/svhn/finish_dataset/train
-#   - /home/kan.t/work/ABC_full_project/datasets/number/svhn/finish_dataset/extra
-
+  - high_resolution/number/svhn/test
+  - high_resolution/number/svhn/train
   DATASET_TYPE: number
   FINAL_DATASET_PATH: dataset_process/number/number_process_color_internet/number
   PERCENT_TEST: 0
@@ -19,14 +17,14 @@ PREPROCESS:
   PREFIX: pre
   PREPROCESS_LIST:
   - RESIZE:
-      TARGET_HEIGHT: 640
-      TARGET_WIDTH: 640
+      TARGET_HEIGHT: 2048
+      TARGET_WIDTH: 2048
       REPLACE: true
 AUGMENT:
   AUGMENT_LIST:  
    - RESIZE:
-       TARGET_WIDTH: 640
-       TARGET_HEIGHT: 640
+       TARGET_WIDTH: 2048
+       TARGET_HEIGHT: 2048
        REPLACE: true
    - CHANNEL_SHUFFLE:
       P: 0.25
@@ -57,12 +55,12 @@ AUGMENT:
       P: 0.5
       REPLACE: false
    - LONGEST_MAX_SIZE:
-      MAX_SIZE: 640
+      MAX_SIZE: 2048
       P: 1.0
       REPLACE: false
    - PAD_IF_NEEDED:
-      MIN_WIDTH: 640
-      MIN_HEIGHT: 640
+      MIN_WIDTH: 2048
+      MIN_HEIGHT: 2048
       P: 1.0
       REPLACE: false
   FOLDER:

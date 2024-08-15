@@ -1,10 +1,9 @@
-
 DATASET:
   DATASET_PATH:
   #TODO: for number dataset
-  - dataset_process/number/number_process_color_own/number
-  DATASET_TYPE: number
-  FINAL_DATASET_PATH: dataset_process/number/number_process_gray_own/number
+  - dataset_process/digital/digital_process_color_own/digital
+  DATASET_TYPE: digital
+  FINAL_DATASET_PATH: dataset_process/digital/digital_process_gray_own/digital
   PERCENT_TEST: 0
   PERCENT_TRAIN: 100
   PERCENT_VAL: 0

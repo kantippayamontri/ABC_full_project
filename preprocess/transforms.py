@@ -786,15 +786,20 @@ class Transform:
                 save_path=target_folder_path,
             )
         elif function_name == "RESIZE":
-            img, bb = self.resize(
-                img=img.copy(),
-                bb=bb.copy(),
-                target_size=(
-                    function_parameter["TARGET_WIDTH"],
-                    function_parameter["TARGET_HEIGHT"],
-                ),
-                format=Constants.BoundingBoxFormat.YOLOV8,
-            )
+            try:
+                img, bb = self.resize(
+                    img=img.copy(),
+                    bb=bb.copy(),
+                    target_size=(
+                        function_parameter["TARGET_WIDTH"],
+                        function_parameter["TARGET_HEIGHT"],
+                    ),
+                    format=Constants.BoundingBoxFormat.YOLOV8,
+                )
+            except Exception as e:
+                print(f"ERROR: {e}")
+                Utils.deleted_file(file_path=self.img_path)
+                Utils.deleted_file(file_path=self.bb_path)
         elif function_name == "GRAY":
             img, bb = self.gray(
                 img=img.copy(),
@@ -920,8 +925,7 @@ class Transform:
                 self.save_img(img=img, path=self.img_path)
                 self.save_bb(bb_list=bb, path=self.bb_path)
         except Exception as e :
-            print(f"ERROR: {e} eiei")
-            print(bb)
+            print(f"ERROR: {e}")
             Utils.deleted_file(file_path=self.img_path)
             Utils.deleted_file(file_path=self.bb_path)
 
