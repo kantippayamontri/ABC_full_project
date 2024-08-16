@@ -1,6 +1,6 @@
 DATASET:
   # DATASET_PATH: datasets_for_train_eiei
-  DATASET_PATH: /home/kansmarts777/wsl_code/ABC_full_project/dataset_process_final/digital/digital_gd_color
+  DATASET_PATH: /home/kansmarts777/wsl_code/ABC_full_project/dataset_process_final/digital/digital_f_color
   DATASET_TYPE: digital
 MODEL:
   MODEL: 

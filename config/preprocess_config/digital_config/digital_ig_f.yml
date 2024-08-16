@@ -1,0 +1,77 @@
+DATASET:
+  DATASET_PATH:
+  #TODO: for number dataset
+  #FIXME: self data
+  - dataset_process/digital/digital_process_color_own/digital
+  DATASET_TYPE: digital
+  FINAL_DATASET_PATH: dataset_process/digital/digital_ig_f_color/digital
+  PERCENT_TEST: 0
+  PERCENT_TRAIN: 95
+  PERCENT_VAL: 5
+PREPROCESS:
+  FOLDER:
+  - train
+  - valid
+  - test
+  PREFIX: pre
+  PREPROCESS_LIST:
+  - CROP:
+      ADD_PIXEL: 20
+      CLASS_CROP_LIST: []
+      CLASS_IGNORE: [2]
+      NEED_RESIZE: false #change to true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REMOVE_ORIGINAL: false
+      REPLACE: true
+  - RESIZE:
+      TARGET_HEIGHT: 2048
+      TARGET_WIDTH: 2048
+      REPLACE: true
+AUGMENT:
+  AUGMENT_LIST: []
+   # - RESIZE:
+   #     TARGET_WIDTH: 640
+   #     TARGET_HEIGHT: 640
+   #     REPLACE: true
+   # - CHANNEL_SHUFFLE:
+   #    P: 0.25
+   #    REPLACE: false
+   # - MULTIPLICATIVE_NOISE:
+   #    MULTIPLIER:
+   #    - 0.4
+   #    - 1.0
+   #    ELEMENT_WISE: true
+   #    P: 0.25
+   #    REPLACE: false
+   # - BLUR:
+   #    BLUR_LIMIT:
+   #    - 3
+   #    - 3 
+   #    P: 0.25
+   #    REPLACE: false
+   # - ROTATE:
+   #    LIMIT:
+   #    - -20
+   #    - 20 
+   #    P: 0.25
+   # - COLOR_JITTER:
+   #    BRIGHTNESS: 0.5
+   #    CONTRAST: 0.5
+   #    SATURATION: 0.5
+   #    HUE: 0.5
+   #    P: 0.5
+   #    REPLACE: false
+   # - LONGEST_MAX_SIZE:
+   #    MAX_SIZE: 640
+   #    P: 1.0
+   #    REPLACE: false
+   # - PAD_IF_NEEDED:
+   #    MIN_WIDTH: 640
+   #    MIN_HEIGHT: 640
+   #    P: 1.0
+   #    REPLACE: false
+  FOLDER:
+  - train
+  NUMBER_AUGMENT: 3 # augment 3 image for own dataset
+  PREFIX: aug 

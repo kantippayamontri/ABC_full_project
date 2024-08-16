@@ -1,0 +1,4 @@
+python preprocess.py /home/kansmarts777/wsl_code/ABC_full_project/config/preprocess_config/digital_config/digital_color_own.yml
+python preprocess.py /home/kansmarts777/wsl_code/ABC_full_project/config/preprocess_config/digital_config/digital_crop_d_ig_gf_color.yml
+python preprocess.py /home/kansmarts777/wsl_code/ABC_full_project/config/preprocess_config/digital_config/digital_crop_g_ig_f_color.yml
+python preprocess.py /home/kansmarts777/wsl_code/ABC_full_project/config/preprocess_config/digital_config/digital_combine_gd_color.yml
