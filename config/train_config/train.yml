@@ -1,6 +1,6 @@
 DATASET:
   # DATASET_PATH: datasets_for_train_eiei
-  DATASET_PATH: dataset_process/digital/digital_process_color_own
+  DATASET_PATH: /home/kansmarts777/wsl_code/ABC_full_project/dataset_process_final/digital/digital_gd_color
   DATASET_TYPE: digital
 MODEL:
   MODEL: 
@@ -13,7 +13,7 @@ TRAIN_PARAMETERS:
   CACHE: false
   DEVICE: 0
   EPOCHS: 20
-  FINAL_LEARNING_RATE: 0.01
+  FINAL_LEARNING_RATE: 0.001
   IMG_SIZE: 640
   LEARNING_RATE: 0.001
   PATIENCE: 15

@@ -2,12 +2,12 @@ DATASET:
   DATASET_PATH:
   #TODO: for number dataset
   #FIXME: self data
-  - datasets/digital/set1_200
+  - dataset_process/digital/digital_process_color_own/digital
   DATASET_TYPE: digital
-  FINAL_DATASET_PATH: dataset_process/digital/digital_process_color_own/digital
+  FINAL_DATASET_PATH: dataset_process/digital/digital_crop_g_ig_f_color/digital
   PERCENT_TEST: 0
-  PERCENT_TRAIN: 100
-  PERCENT_VAL: 0
+  PERCENT_TRAIN: 95
+  PERCENT_VAL: 5
 PREPROCESS:
   FOLDER:
   - train
@@ -15,17 +15,16 @@ PREPROCESS:
   - test
   PREFIX: pre
   PREPROCESS_LIST:
-  # - CROP:
-  #     ADD_PIXEL: 20
-  #     CLASS_CROP_LIST: 
-  #     - 1
-  #     - 2
-  #     CLASS_IGNORE: [0,1]
-  #     NEED_RESIZE: false #change to true
-  #     TARGET_HEIGHT: 640
-  #     TARGET_WIDTH: 640
-  #     REMOVE_ORIGINAL: true
-  #     REPLACE: true
+  - CROP:
+      ADD_PIXEL: 20
+      CLASS_CROP_LIST: 
+      - 0
+      CLASS_IGNORE: [2]
+      NEED_RESIZE: false #change to true
+      TARGET_HEIGHT: 640
+      TARGET_WIDTH: 640
+      REMOVE_ORIGINAL: true
+      REPLACE: true
   - RESIZE:
       TARGET_HEIGHT: 2048
       TARGET_WIDTH: 2048
